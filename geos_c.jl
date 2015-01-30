@@ -1,5 +1,35 @@
-# Julia wrapper for header: geos_c.h
-# Automatically generated using Clang.jl wrap_c, version 0.0.0
+typealias GEOSMessageHandler Ptr{Void}
+typealias GEOSGeometry Ptr{Void}
+typealias GEOSPreparedGeometry Ptr{Void} 
+typealias GEOSCoordSequence Ptr{Void}
+typealias GEOSSTRtree Ptr{Void}
+typealias GEOSBufferParams Ptr{Void}
+typealias GEOSContextHandle_t Ptr{Void}
+typealias GEOSQueryCallback Ptr{Void}
+typealias GEOSInterruptCallback Ptr{Void}
+typealias GEOSWKTReader Ptr{Void}
+typealias GEOSWKTWriter Ptr{Void}
+typealias GEOSWKBReader Ptr{Void}
+typealias GEOSWKBWriter Ptr{Void}
+
+
+typealias GEOSGeom Ptr{GEOSGeometry};
+typealias GEOSCoordSeq Ptr{GEOSCoordSequence};
+
+
+
+const GEOS_POINT=0
+const GEOS_LINESTRING=1
+const GEOS_LINEARRING=2
+const GEOS_POLYGON=3
+const GEOS_MULTIPOINT=4
+const GEOS_MULTILINESTRING=5
+const GEOS_MULTIPOLYGON=6
+const GEOS_GEOMETRYCOLLECTION=7
+
+const GEOS_WKB_XDR = 0
+const GEOS_WKB_NDR = 1
+
 
 
 function initGEOS(notice_function::GEOSMessageHandler,error_function::GEOSMessageHandler)
