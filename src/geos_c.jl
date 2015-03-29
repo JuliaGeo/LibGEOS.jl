@@ -1,3 +1,5 @@
+# Contents of this file is generated. Do not edit by hand!
+
 typealias GEOSMessageHandler Ptr{Void}
 typealias GEOSGeometry Ptr{Void}
 typealias GEOSPreparedGeometry Ptr{Void} 
