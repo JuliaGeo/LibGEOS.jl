@@ -29,34 +29,34 @@ clone(ptr::GEOSCoordSeq) = GEOSCoordSeq_clone(ptr)
 destroy(ptr::GEOSCoordSeq) = GEOSCoordSeq_destroy(ptr)
 
 # Set ordinate values in a Coordinate Sequence (Return 0 on exception)
-setX(ptr::GEOSCoordSeq, i::Int, value::Float64) = GEOSCoordSeq_setX(ptr, uint32(i), value)
-setY(ptr::GEOSCoordSeq, i::Int, value::Float64) = GEOSCoordSeq_setY(ptr, uint32(i), value)
-setZ(ptr::GEOSCoordSeq, i::Int, value::Float64) = GEOSCoordSeq_setZ(ptr, uint32(i), value)
+setX!(ptr::GEOSCoordSeq, i::Int, value::Float64) = GEOSCoordSeq_setX(ptr, uint32(i-1), value)
+setY!(ptr::GEOSCoordSeq, i::Int, value::Float64) = GEOSCoordSeq_setY(ptr, uint32(i-1), value)
+setZ!(ptr::GEOSCoordSeq, i::Int, value::Float64) = GEOSCoordSeq_setZ(ptr, uint32(i-1), value)
 
 # Get ordinate values from a Coordinate Sequence (Return 0 on exception)
-getX(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64}) = GEOSCoordSeq_getX(ptr, uint32(index), pointer(coord))
-getY(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64}) = GEOSCoordSeq_getY(ptr, uint32(index), pointer(coord)+sizeof(Float64))
-getZ(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64}) = GEOSCoordSeq_getZ(ptr, uint32(index), pointer(coord)+2*sizeof(Float64))
+getX!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64}) = GEOSCoordSeq_getX(ptr, uint32(index-1), pointer(coord))
+getY!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64}) = GEOSCoordSeq_getY(ptr, uint32(index-1), pointer(coord)+sizeof(Float64))
+getZ!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64}) = GEOSCoordSeq_getZ(ptr, uint32(index-1), pointer(coord)+2*sizeof(Float64))
 
-# Get size info from a Coordinate Sequence (Return 0 on exception)
 function getSize(ptr::GEOSCoordSeq)
     ncoords = Array(Uint32, 1)
+    # Get size info from a Coordinate Sequence (Return 0 on exception)
     GEOSCoordSeq_getSize(ptr, pointer(ncoords))
     int(ncoords[1])
 end
 
-# Get dimensions info from a Coordinate Sequence (Return 0 on exception)
 function getDimension(ptr::GEOSCoordSeq)
     ndim = Array(Uint32, 1)
+    # Get dimensions info from a Coordinate Sequence (Return 0 on exception)
     GEOSCoordSeq_getDimensions(ptr, pointer(ndim))
     int(ndim[1])
 end
 
 # convenience functions
 function setCoordSeq(ptr::GEOSCoordSeq, i::Int, coords::Vector{Float64})
-    setX(ptr, i, coords[1])
-    setY(ptr, i, coords[2])
-    length(coords) >= 3 && setZ(ptr, i, coords[3])
+    setX!(ptr, i, coords[1])
+    setY!(ptr, i, coords[2])
+    length(coords) >= 3 && setZ!(ptr, i, coords[3])
     ptr
 end
 
@@ -66,7 +66,7 @@ function createCoordSeq(coords::Vector{Vector{Float64}})
         ndim = length(coords[1])
         coordinates = createCoordSeq(ncoords, ndim)
         for (i,coord) in enumerate(coords[:])
-            setCoordSeq(coordinates, i-1, coord)
+            setCoordSeq(coordinates, i, coord)
         end
         return coordinates
     else
@@ -77,7 +77,7 @@ end
 
 function getX(ptr::GEOSCoordSeq, i::Int)
     coord = Array(Float64, 1)
-    GEOSCoordSeq_getX(ptr, uint32(i), pointer(coord))
+    getX!(ptr, i, coord)
     coord[1]
 end
 
@@ -85,14 +85,14 @@ function getX(ptr::GEOSCoordSeq)
     ncoords = getSize(ptr)
     xcoords = Array(Float64, ncoords)
     for i=1:ncoords
-        GEOSCoordSeq_getX(ptr, uint32(i), pointer(xcoords))
+        getX!(ptr, i, xcoords)
     end
     xcoords
 end
 
 function getY(ptr::GEOSCoordSeq, i::Int)
     coord = Array(Float64, 1)
-    GEOSCoordSeq_getY(ptr, uint32(i), pointer(coord))
+    getY!(ptr, i, coord)
     coord[1]
 end
 
@@ -100,14 +100,14 @@ function getY(ptr::GEOSCoordSeq)
     ncoords = getSize(ptr)
     ycoords = Array(Float64, ncoords)
     for i=1:ncoords
-        GEOSCoordSeq_getY(ptr, uint32(i), pointer(ycoords))
+        getY!(ptr, i, ycoords)
     end
     ycoords
 end
 
 function getZ(ptr::GEOSCoordSeq, i::Int)
     coord = Array(Float64, 1)
-    GEOSCoordSeq_getZ(ptr, uint32(i), pointer(coord))
+    getZ!(ptr, i, coord)
     coord[1]
 end
 
@@ -115,34 +115,29 @@ function getZ(ptr::GEOSCoordSeq)
     ncoords = getSize(ptr)
     zcoords = Array(Float64, ncoords)
     for i=1:ncoords
-        GEOSCoordSeq_getZ(ptr, uint32(i), pointer(zcoords))
+        getZ!(ptr, i, zcoords)
     end
     zcoords
 end
 
-function getCoord(ptr::GEOSCoordSeq, i::Int)
+function getCoordinates(ptr::GEOSCoordSeq, i::Int)
     ndim = getDimension(ptr)
-    if ndim >= 3
-        coord = Array(Float64, 3)
-        getX(ptr, i, coord)
-        getY(ptr, i, coord)
-        getZ(ptr, i, coord)
-        return coord
-    else
-        coord = Array(Float64, 2)
-        getX(ptr, i, coord)
-        getY(ptr, i, coord)
-        return coord
+    coord = Array(Float64, ndim)
+    getX!(ptr, i, coord)
+    getY!(ptr, i, coord)
+    if ndim == 3
+        getZ!(ptr, i, coord)
     end
+    coord
 end
 
-function getCoordSeq(ptr::GEOSCoordSeq)
+function getCoordinates(ptr::GEOSCoordSeq)
     ndim = getDimension(ptr)
     ncoords = getSize(ptr)
     coordseq = Vector{Float64}[]
     sizehint(coordseq, ncoords)
     for i=1:ncoords
-        push!(coordseq, getCoord(ptr, i-1))
+        push!(coordseq, getCoordinates(ptr, i))
     end
     coordseq
 end
