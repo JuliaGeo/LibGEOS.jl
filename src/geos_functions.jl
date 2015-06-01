@@ -285,6 +285,8 @@ function createPolygon(shell::GEOSGeom, holes::Vector{GEOSGeom})
     result
 end
 
+createPolygon(coords::Vector{Vector{Vector{Float64}}}) = createPolygon(createLinearRing(coords[1]), map(createLinearRing, coords[2:end]))
+
 function createCollection(geomtype::Int, geoms::Vector{GEOSGeom})
     result = GEOSGeom_createCollection(int32(geomtype), pointer(geoms), length(geoms))
     if result == C_NULL
@@ -772,12 +774,14 @@ end
 # Up to GEOS 3.2.0 the input geometry must be a Collection, in
 # later version it doesn't matter (i.e. getGeometryN(0) for a single will return the input).
 function getGeometry(ptr::GEOSGeom, n::Int)
-    result = GEOSGetGeometryN(ptr, int32(n))
+    result = GEOSGetGeometryN(ptr, int32(n-1))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetGeometryN")
     end
     result
 end
+getGeometries(ptr::GEOSGeom) = GEOSGeom[getGeometry(ptr, i) for i=1:numGeometries(ptr)]
+
 
 # Converts Geometry to normal form (or canonical form).
 # Return -1 on exception, 0 otherwise.
