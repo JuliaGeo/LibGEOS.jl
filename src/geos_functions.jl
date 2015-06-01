@@ -246,19 +246,70 @@ buffer(ptr::GEOSGeom, width::Float64, quadsegs::Int) = GEOSBuffer(ptr, width, in
 # -----
 # (GEOSCoordSequence* arguments will become ownership of the returned object.)
 
-createPoint(ptr::GEOSCoordSeq) = GEOSGeom_createPoint(ptr)
-createLinearRing(ptr::GEOSCoordSeq) = GEOSGeom_createLinearRing(ptr)
-createLineString(ptr::GEOSCoordSeq) = GEOSGeom_createLineString(ptr)
+function createPoint(ptr::GEOSCoordSeq)
+    result = GEOSGeom_createPoint(ptr)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_createPoint")
+    end
+    result
+end
+createPoint(coords::Vector{Vector{Float64}}) = GEOSGeom_createPoint(createCoordSeq(coords))
+createPoint(coords::Vector{Float64}) = GEOSGeom_createPoint(createCoordSeq(Vector{Float64}[coords]))
+
+function createLinearRing(ptr::GEOSCoordSeq)
+    result = GEOSGeom_createLinearRing(ptr)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_createLinearRing")
+    end
+    result
+end
+createLinearRing(coords::Vector{Vector{Float64}}) = GEOSGeom_createLinearRing(createCoordSeq(coords))
+
+function createLineString(ptr::GEOSCoordSeq)
+    result = GEOSGeom_createLineString(ptr)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_createLineString")
+    end
+    result
+end
+createLineString(coords::Vector{Vector{Float64}}) = GEOSGeom_createLineString(createCoordSeq(coords))
 
 # Second argument is an array of GEOSGeometry* objects.
 # The caller remains owner of the array, but pointed-to
 # objects become ownership of the returned GEOSGeometry.
-createPolygon(shell::GEOSGeom, holes::Vector{GEOSGeom}) = GEOSGeom_createPolygon(shell, pointer(holes), uint32(length(holes)))
-createCollection(geomtype::Int, geoms::Vector{GEOSGeom}) = GEOSGeom_createCollection(int32(geomtype), pointer(geoms), length(geoms))
-createEmptyCollection(geomtype::Int) = GEOSGeom_createEmptyCollection(int32(geomtype))
+function createPolygon(shell::GEOSGeom, holes::Vector{GEOSGeom})
+    result = GEOSGeom_createPolygon(shell, pointer(holes), uint32(length(holes)))
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_createPolygon")
+    end
+    result
+end
+
+function createCollection(geomtype::Int, geoms::Vector{GEOSGeom})
+    result = GEOSGeom_createCollection(int32(geomtype), pointer(geoms), length(geoms))
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_createCollection")
+    end
+    result
+end
+
+function createEmptyCollection(geomtype::Int)
+    result = GEOSGeom_createEmptyCollection(int32(geomtype))
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_createEmptyCollection")
+    end
+    result
+end
 
 # Memory management
-cloneGeom(ptr::GEOSGeom) = GEOSGeom_clone(ptr)
+function cloneGeom(ptr::GEOSGeom)
+    result = GEOSGeom_clone(ptr)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_clone")
+    end
+    result
+end
+
 destroyGeom(ptr::GEOSGeom) = GEOSGeom_destroy(ptr)
 
 # -----
@@ -497,8 +548,8 @@ end
 # -----
 
 # GEOSGeometry ownership is retained by caller
-prepare(ptr::GEOSGeom) = GEOSPrepare(ptr)
-destroy(ptr::Ptr{GEOSPreparedGeometry}) = GEOSPreparedGeom_destroy(ptr)
+prepareGeom(ptr::GEOSGeom) = GEOSPrepare(ptr)
+destroyPreparedGeom(ptr::Ptr{GEOSPreparedGeometry}) = GEOSPreparedGeom_destroy(ptr)
 
 function contains(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     result = GEOSPreparedContains(g1, g2)
@@ -790,7 +841,7 @@ function interiorRings(ptr::GEOSGeom)
     if n == 0
         return GEOSGeom[]
     else
-        return GEOSGeom[GEOSGetInteriorRingN(ptr, int32(i)) for i=1:n]
+        return GEOSGeom[GEOSGetInteriorRingN(ptr, int32(i)) for i=0:n-1]
     end
 end
 
@@ -821,6 +872,7 @@ function getCoordSeq(ptr::GEOSGeom)
     end
     result
 end
+getGeomCoordinates(ptr::GEOSGeom) = getCoordinates(getCoordSeq(ptr))
 
 # Return 0 on exception (or empty geometry)
 getDimensions(ptr::GEOSGeom) = GEOSGeom_getDimensions(ptr)
