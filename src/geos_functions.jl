@@ -758,8 +758,7 @@ end
 
 # Return -1 on exception, Geometry must be a Point.
 function getX(ptr::GEOSGeom)
-    ndim = getCoordinateDimension(ptr)
-    x = Array(Float64, ndim)
+    x = Array(Float64, 1)
     result = GEOSGeomGetX(ptr, pointer(x))
     if result == -1
         error("LibGEOS: Error in GEOSGeomGetX")
@@ -768,8 +767,7 @@ function getX(ptr::GEOSGeom)
 end
 
 function getY(ptr::GEOSGeom)
-    ndim = getCoordinateDimension(ptr)
-    y = Array(Float64, ndim)
+    y = Array(Float64, 1)
     result = GEOSGeomGetY(ptr, pointer(y))
     if result == -1
         error("LibGEOS: Error in GEOSGeomGetY")
