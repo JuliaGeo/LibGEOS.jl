@@ -18,7 +18,13 @@ GEOMTYPE = @compat Dict( GEOS_POINT => :Point,
                          GEOS_GEOMETRYCOLLECTION => :GeometryCollection)
 
 
-geomFromWKT(geom::ASCIIString) = GEOSGeomFromWKT(pointer(geom))
+function geomFromWKT(geom::ASCIIString)
+    result = GEOSGeomFromWKT(pointer(geom))
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeomFromWKT")
+    end
+    result
+end
 geomToWKT(geom::Ptr{GEOSGeometry}) = bytestring(GEOSGeomToWKT(geom))
 
 # -----
@@ -87,7 +93,7 @@ function getX!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64})
 end
 
 function getY!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64})
-    result = GEOSCoordSeq_getY(ptr, uint32(index-1), pointer(coord)+sizeof(Float64))
+    result = GEOSCoordSeq_getY(ptr, uint32(index-1), pointer(coord))
     if result == 0
         error("LibGEOS: Error in GEOSCoordSeq_getY")
     end
@@ -95,7 +101,7 @@ function getY!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64})
 end
 
 function getZ!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64})
-    result = GEOSCoordSeq_getZ(ptr, uint32(index-1), pointer(coord)+2*sizeof(Float64))
+    result = GEOSCoordSeq_getZ(ptr, uint32(index-1), pointer(coord))
     if result == 0
         error("LibGEOS: Error in GEOSCoordSeq_getZ")
     end
@@ -174,8 +180,10 @@ end
 function getX(ptr::GEOSCoordSeq)
     ncoords = getSize(ptr)
     xcoords = Array(Float64, ncoords)
-    for i=1:ncoords
-        getX!(ptr, i, xcoords)
+    start = pointer(xcoords)
+    floatsize = sizeof(Float64)
+    for i=0:ncoords-1
+        GEOSCoordSeq_getX(ptr, uint32(i), start + i*floatsize)
     end
     xcoords
 end
@@ -189,8 +197,10 @@ end
 function getY(ptr::GEOSCoordSeq)
     ncoords = getSize(ptr)
     ycoords = Array(Float64, ncoords)
-    for i=1:ncoords
-        getY!(ptr, i, ycoords)
+    start = pointer(ycoords)
+    floatsize = sizeof(Float64)
+    for i=0:ncoords-1
+        GEOSCoordSeq_getY(ptr, uint32(i), start + i*floatsize)
     end
     ycoords
 end
@@ -204,8 +214,10 @@ end
 function getZ(ptr::GEOSCoordSeq)
     ncoords = getSize(ptr)
     zcoords = Array(Float64, ncoords)
-    for i=1:ncoords
-        getZ!(ptr, i, zcoords)
+    start = pointer(zcoords)
+    floatsize = sizeof(Float64)
+    for i=0:ncoords-1
+        GEOSCoordSeq_getZ(ptr, uint32(i), start + i*floatsize)
     end
     zcoords
 end
@@ -213,10 +225,12 @@ end
 function getCoordinates(ptr::GEOSCoordSeq, i::Int)
     ndim = getDimension(ptr)
     coord = Array(Float64, ndim)
-    getX!(ptr, i, coord)
-    getY!(ptr, i, coord)
+    start = pointer(coord)
+    floatsize = sizeof(Float64)
+    GEOSCoordSeq_getX(ptr, uint32(i-1), start)
+    GEOSCoordSeq_getY(ptr, uint32(i-1), start+floatsize)
     if ndim == 3
-        getZ!(ptr, i, coord)
+        GEOSCoordSeq_getZ(ptr, uint32(i-1), start+2*floatsize)
     end
     coord
 end
@@ -366,8 +380,8 @@ function envelope(ptr::GEOSGeom)
     result
 end
 
-function intersection(ptr::GEOSGeom)
-    result = GEOSIntersection(ptr)
+function intersection(g1::GEOSGeom, g2::GEOSGeom)
+    result = GEOSIntersection(g1, g2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSIntersection")
     end
@@ -638,7 +652,7 @@ end
 
 destroyPreparedGeom(ptr::Ptr{GEOSPreparedGeometry}) = GEOSPreparedGeom_destroy(ptr)
 
-function contains(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
+function prepcontains(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     result = GEOSPreparedContains(g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedContains")
@@ -646,7 +660,7 @@ function contains(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     bool(result)
 end
 
-function containsproperly(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
+function prepcontainsproperly(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     result = GEOSPreparedContainsProperly(g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedContainsProperly")
@@ -654,7 +668,7 @@ function containsproperly(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     bool(result)
 end
 
-function coveredby(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
+function prepcoveredby(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     result = GEOSPreparedCoveredBy(g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedCoveredBy")
@@ -662,7 +676,7 @@ function coveredby(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     bool(result)
 end
 
-function covers(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
+function prepcovers(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     result = GEOSPreparedCovers(g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedCovers")
@@ -670,7 +684,7 @@ function covers(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     bool(result)
 end
 
-function crosses(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
+function prepcrosses(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     result = GEOSPreparedCrosses(g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedCrosses")
@@ -678,7 +692,7 @@ function crosses(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     bool(result)
 end
 
-function disjoint(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
+function prepdisjoint(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     result = GEOSPreparedDisjoint(g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedDisjoint")
@@ -686,7 +700,7 @@ function disjoint(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     bool(result)
 end
 
-function intersects(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
+function prepintersects(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     result = GEOSPreparedIntersects(g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedIntersects")
@@ -694,7 +708,7 @@ function intersects(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     bool(result)
 end
 
-function overlaps(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
+function prepoverlaps(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     result = GEOSPreparedOverlaps(g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedOverlaps")
@@ -702,7 +716,7 @@ function overlaps(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     bool(result)
 end
 
-function touches(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
+function preptouches(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     result = GEOSPreparedTouches(g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedTouches")
@@ -710,7 +724,7 @@ function touches(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     bool(result)
 end
 
-function within(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
+function prepwithin(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     result = GEOSPreparedWithin(g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedWithin")
@@ -897,22 +911,22 @@ function numPoints(ptr::GEOSGeom)
 end
 
 # Return -1 on exception, Geometry must be a Point.
-function getX(ptr::GEOSGeom)
+function getGeomX(ptr::GEOSGeom)
     x = Array(Float64, 1)
     result = GEOSGeomGetX(ptr, pointer(x))
     if result == -1
         error("LibGEOS: Error in GEOSGeomGetX")
     end
-    x
+    x[1]
 end
 
-function getY(ptr::GEOSGeom)
+function getGeomY(ptr::GEOSGeom)
     y = Array(Float64, 1)
     result = GEOSGeomGetY(ptr, pointer(y))
     if result == -1
         error("LibGEOS: Error in GEOSGeomGetY")
     end
-    y
+    y[1]
 end
 
 # Return NULL on exception, Geometry must be a Polygon.
@@ -971,7 +985,7 @@ getCoordinateDimension(ptr::GEOSGeom) = int(GEOSGeom_getCoordinateDimension(ptr)
 
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
 function getPoint(ptr::GEOSGeom, n::Int)
-    result = GEOSGeomGetPointN(ptr, int32(n))
+    result = GEOSGeomGetPointN(ptr, int32(n-1))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeomGetPointN")
     end
@@ -1053,7 +1067,7 @@ end
 function getLength(ptr::GEOSGeom)
     len = Array(Float64, 1)
     # Return 0 on exception, 1 otherwise
-    result = GEOSGeomGetLength(ptr, pointer(result))
+    result = GEOSGeomGetLength(ptr, pointer(len))
     if result == 0
         error("LibGEOS: Error in GEOSGeomGetLength")
     end
@@ -1062,11 +1076,5 @@ end
 
 # Return 0 on exception, the closest points of the two geometries otherwise.
 # The first point comes from g1 geometry and the second point comes from g2.
-function nearestPoints(g1::GEOSGeom, g2::GEOSGeom)
-    result = GEOSNearestPoints(g1, g2)
-    if result == C_NULL
-        error("LibGEOS: Error in GEOSNearestPoints")
-    end
-    result
-end
+nearestPoints(g1::GEOSGeom, g2::GEOSGeom) = GEOSNearestPoints(g1, g2)
 
