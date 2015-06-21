@@ -1,14 +1,35 @@
 using LibGEOS, FactCheck
 
+function factcheck_equals(obj1::Vector{Vector{Float64}},
+                          obj2::Vector{Vector{Float64}}; tol=1e-5)
+    for (i,item) in enumerate(obj2)
+        @fact obj1[i] => roughly(item, tol)
+    end
+end
+
+function factcheck_equals(obj1::Vector{Vector{Vector{Float64}}},
+                          obj2::Vector{Vector{Vector{Float64}}}; tol=1e-5)
+    for (i,item) in enumerate(obj2)
+        factcheck_equals(obj1[i], item, tol=tol)
+    end
+end
+
+function factcheck_equals(obj1::Vector{Vector{Vector{Vector{Float64}}}},
+                          obj2::Vector{Vector{Vector{Vector{Float64}}}}; tol=1e-5)
+    for (i,item) in enumerate(obj2)
+        factcheck_equals(obj1[i], item, tol=tol)
+    end
+end
+
 a = LibGEOS.createCoordSeq(Vector{Float64}[[1,2,3],[4,5,6]])
 b = LibGEOS.cloneCoordSeq(a)
-@fact LibGEOS.getCoordinates(b) => roughly(LibGEOS.getCoordinates(a))
+factcheck_equals(LibGEOS.getCoordinates(b), LibGEOS.getCoordinates(a))
 a = LibGEOS.createCoordSeq(Vector{Float64}[[1,2,3],[4,5,6],[7,8,9],[10,11,12]])
 b = LibGEOS.cloneCoordSeq(a)
-@fact LibGEOS.getCoordinates(b) => roughly(LibGEOS.getCoordinates(a))
+factcheck_equals(LibGEOS.getCoordinates(b), LibGEOS.getCoordinates(a))
 LibGEOS.setCoordSeq!(b, 2, [3.0, 3.0, 3.0])
-@fact LibGEOS.getCoordinates(a) => roughly(Vector{Float64}[[1,2,3],[4,5,6],[7,8,9],[10,11,12]], 1e-5)
-@fact LibGEOS.getCoordinates(b) => roughly(Vector{Float64}[[1,2,3],[3,3,3],[7,8,9],[10,11,12]], 1e-5)
+factcheck_equals(LibGEOS.getCoordinates(a), Vector{Float64}[[1,2,3],[4,5,6],[7,8,9],[10,11,12]])
+factcheck_equals(LibGEOS.getCoordinates(b), Vector{Float64}[[1,2,3],[3,3,3],[7,8,9],[10,11,12]])
 c = LibGEOS.createPoint(LibGEOS.createCoordSeq(Vector{Float64}[[1,2]]))
 @fact LibGEOS.getCoordinates(LibGEOS.getCoordSeq(c))[1] => roughly([1,2], 1e-5)
 
@@ -17,14 +38,14 @@ shell = LibGEOS.createLinearRing(Vector{Float64}[[0,0],[10,0],[10,10],[0,10],[0,
 hole1 = LibGEOS.createLinearRing(Vector{Float64}[[1,8],[2,8],[2,9],[1,9],[1,8]])
 hole2 = LibGEOS.createLinearRing(Vector{Float64}[[8,1],[9,1],[9,2],[8,2],[8,1]])
 polygon = LibGEOS.createPolygon(shell,LibGEOS.GEOSGeom[hole1,hole2])
-@fact LibGEOS.getDimension(polygon) => 2
+@fact LibGEOS.getDimensions(polygon) => 2
 @fact LibGEOS.geomTypeId(polygon) => LibGEOS.GEOS_POLYGON
 @fact LibGEOS.geomArea(polygon) => roughly(98.0, 1e-5)
 exterior = LibGEOS.exteriorRing(polygon)
-@fact LibGEOS.getCoordinates(LibGEOS.getCoordSeq(exterior)) => roughly(Vector{Float64}[[0,0],[10,0],[10,10],[0,10],[0,0]], 1e-5)
+factcheck_equals(LibGEOS.getCoordinates(LibGEOS.getCoordSeq(exterior)), Vector{Float64}[[0,0],[10,0],[10,10],[0,10],[0,0]])
 interiors = LibGEOS.interiorRings(polygon)
-@fact LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[1])) => roughly(Vector{Float64}[[1,8],[2,8],[2,9],[1,9],[1,8]], 1e-5)
-@fact LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[2])) => roughly(Vector{Float64}[[8,1],[9,1],[9,2],[8,2],[8,1]], 1e-5)
+factcheck_equals(LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[1])), Vector{Float64}[[1,8],[2,8],[2,9],[1,9],[1,8]])
+factcheck_equals(LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[2])), Vector{Float64}[[8,1],[9,1],[9,2],[8,2],[8,1]])
 
 # Interpolation and Projection
 ls = LibGEOS.createLineString(Vector{Float64}[[8,1],[9,1],[9,2],[8,2]])
@@ -148,24 +169,9 @@ LibGEOS.destroyGeom(geom1_)
 LibGEOS.destroyGeom(geom2_)
 LibGEOS.destroyGeom(geom3_)
 
-geom1_ = LibGEOS.geomFromWKT("POLYGON((0 0, 8.5 1, 10 10, 0.5 9, 0 0),(2 2, 3 8, 7 8, 8 2, 2 2)))");
-geom2_ = LibGEOS.delaunayTriangulation(geom1_, 0.0, false)
-geom3_ = LibGEOS.geomFromWKT("GEOMETRYCOLLECTION (POLYGON ((8 2, 10 10, 8.5 1, 8 2)), POLYGON ((7 8, 10 10, 8 2, 7 8)), POLYGON ((3 8, 10 10, 7 8, 3 8)), POLYGON ((2 2, 8 2, 8.5 1, 2 2)), POLYGON ((2 2, 7 8, 8 2, 2 2)), POLYGON ((2 2, 3 8, 7 8, 2 2)), POLYGON ((0.5 9, 10 10, 3 8, 0.5 9)), POLYGON ((0.5 9, 3 8, 2 2, 0.5 9)), POLYGON ((0 0, 2 2, 8.5 1, 0 0)), POLYGON ((0 0, 0.5 9, 2 2, 0 0)))")
-@fact LibGEOS.geomToWKT(geom2_) => LibGEOS.geomToWKT(geom3_)
-LibGEOS.destroyGeom(geom1_)
-LibGEOS.destroyGeom(geom2_)
-LibGEOS.destroyGeom(geom3_)
-
-geom2_ = LibGEOS.delaunayTriangulation(geom1_, 0.0, true);
-geom3_ = LibGEOS.geomFromWKT("MULTILINESTRING ((8.5 1, 10 10), (8 2, 10 10), (8 2, 8.5 1), (7 8, 10 10), (7 8, 8 2), (3 8, 10 10), (3 8, 7 8), (2 2, 8.5 1), (2 2, 8 2), (2 2, 7 8), (2 2, 3 8), (0.5 9, 10 10), (0.5 9, 3 8), (0.5 9, 2 2), (0 0, 8.5 1), (0 0, 2 2), (0 0, 0.5 9))")
-@fact LibGEOS.geomToWKT(geom2_) => LibGEOS.geomToWKT(geom3_)
-LibGEOS.destroyGeom(geom1_)
-LibGEOS.destroyGeom(geom2_)
-LibGEOS.destroyGeom(geom3_)
-
 geom1_ = LibGEOS.geomFromWKT("MULTIPOINT(0 0, 10 0, 10 10, 11 10)")
 geom2_ = LibGEOS.delaunayTriangulation(geom1_, 2.0, true)
-geom3_ = LibGEOS.geomFromWKT("MULTILINESTRING ((10 0, 10 10), (0 0, 10 10), (0 0, 10 0))")
+geom3_ = LibGEOS.geomFromWKT("MULTILINESTRING ((0 0, 10 10), (0 0, 10 0), (10 0, 10 10))")
 @fact LibGEOS.geomToWKT(geom2_) => LibGEOS.geomToWKT(geom3_)
 LibGEOS.destroyGeom(geom1_)
 LibGEOS.destroyGeom(geom2_)
@@ -264,13 +270,13 @@ LibGEOS.destroyGeom(geom4_)
 # GEOSIntersectsTest
 geom1_ = LibGEOS.geomFromWKT("POLYGON EMPTY")
 geom2_ = LibGEOS.geomFromWKT("POLYGON EMPTY")
-@fact LibGEOS.intersects(geom1_, geom2_) => true
+@fact LibGEOS.intersects(geom1_, geom2_) => false
 LibGEOS.destroyGeom(geom1_)
 LibGEOS.destroyGeom(geom2_)
 
 geom1_ = LibGEOS.geomFromWKT("POLYGON((1 1,1 5,5 5,5 1,1 1))")
 geom2_ = LibGEOS.geomFromWKT("POINT(2 2)")
-LibGEOS.intersects(geom1_, geom2_) => true
+@fact LibGEOS.intersects(geom1_, geom2_) => true
 @fact LibGEOS.intersects(geom2_, geom1_) => true
 LibGEOS.destroyGeom(geom1_)
 LibGEOS.destroyGeom(geom2_)
@@ -382,7 +388,7 @@ geom1_ = LibGEOS.geomFromWKT(
 56.528833333300 25.2103333333, \
 56.528666666700 25.2101666667))""")
 geom2_ = LibGEOS.pointOnSurface(geom1_)
-@fact LibGEOS.getGeomCoordinates(geom2_)[1] => roughly([56.528917,25.210417], 1e-5)
+@fact LibGEOS.getCoordinates(LibGEOS.getCoordSeq(geom2_))[1] => roughly([56.528917,25.210417], 1e-5)
 LibGEOS.destroyGeom(geom1_)
 LibGEOS.destroyGeom(geom2_)
 
@@ -408,7 +414,7 @@ LibGEOS.destroyPreparedGeom(prepGeom1_)
 geom1_ = LibGEOS.geomFromWKT("POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))")
 geom2_ = LibGEOS.geomFromWKT("POLYGON((2 2, 2 3, 3 3, 3 2, 2 2))")
 prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-@fact LibGEOS.containsproperly(prepGeom1_, geom2_) => true
+@fact LibGEOS.prepcontainsproperly(prepGeom1_, geom2_) => true
 LibGEOS.destroyGeom(geom1_)
 LibGEOS.destroyGeom(geom2_)
 LibGEOS.destroyPreparedGeom(prepGeom1_)
@@ -416,7 +422,7 @@ LibGEOS.destroyPreparedGeom(prepGeom1_)
 geom1_ = LibGEOS.geomFromWKT("POLYGON((2 2, 2 3, 3 3, 3 2, 2 2))")
 geom2_ = LibGEOS.geomFromWKT("POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))")
 prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-@fact LibGEOS.containsproperly(prepGeom1_, geom2_) => false
+@fact LibGEOS.prepcontainsproperly(prepGeom1_, geom2_) => false
 LibGEOS.destroyGeom(geom1_)
 LibGEOS.destroyGeom(geom2_)
 LibGEOS.destroyPreparedGeom(prepGeom1_)
@@ -424,7 +430,7 @@ LibGEOS.destroyPreparedGeom(prepGeom1_)
 geom1_ = LibGEOS.geomFromWKT("LINESTRING(0 0, 10 10)")
 geom2_ = LibGEOS.geomFromWKT("LINESTRING(0 10, 10 0)")
 prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-@fact LibGEOS.intersects(prepGeom1_, geom2_) => true
+@fact LibGEOS.prepintersects(prepGeom1_, geom2_) => true
 LibGEOS.destroyGeom(geom1_)
 LibGEOS.destroyGeom(geom2_)
 LibGEOS.destroyPreparedGeom(prepGeom1_)
@@ -432,7 +438,7 @@ LibGEOS.destroyPreparedGeom(prepGeom1_)
 geom1_ = LibGEOS.geomFromWKT("POLYGON((0 0, 0 10, 10 11, 10 0, 0 0))")
 geom2_ = LibGEOS.geomFromWKT("POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))")
 prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-@fact LibGEOS.covers(prepGeom1_, geom2_) => true
+@fact LibGEOS.prepcovers(prepGeom1_, geom2_) => true
 LibGEOS.destroyGeom(geom1_)
 LibGEOS.destroyGeom(geom2_)
 LibGEOS.destroyPreparedGeom(prepGeom1_)
@@ -440,7 +446,7 @@ LibGEOS.destroyPreparedGeom(prepGeom1_)
 geom1_ = LibGEOS.geomFromWKT("POLYGON((0 0, 0 10, 10 11, 10 0, 0 0))")
 geom2_ = LibGEOS.geomFromWKT("POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))")
 prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-@fact LibGEOS.prepareGeomdContains(prepGeom1_, geom2_) => true
+@fact LibGEOS.prepcontains(prepGeom1_, geom2_) => true
 LibGEOS.destroyGeom(geom1_)
 LibGEOS.destroyGeom(geom2_)
 LibGEOS.destroyPreparedGeom(prepGeom1_)
@@ -560,7 +566,7 @@ LibGEOS.destroyGeom(geom4_)
 
 geom1_ = LibGEOS.geomFromWKT("LINESTRING(0 2,5 2,9 2,5 0)")
 geom2_ = LibGEOS.geomFromWKT("POINT(5 0)")
-geom3_ = LibGEOS.snap(geom1_, geom2_, 3)
+geom3_ = LibGEOS.snap(geom1_, geom2_, 3.0)
 geom4_ = LibGEOS.geomFromWKT("LINESTRING (0 2, 5 2, 9 2, 5 0)")
 @fact LibGEOS.geomToWKT(geom3_) => LibGEOS.geomToWKT(geom4_)
 LibGEOS.destroyGeom(geom1_)
