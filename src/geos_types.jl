@@ -1,103 +1,117 @@
 type Position <: GeoInterface.AbstractPosition
     ptr::GEOSCoordSeq
+
+    function Position(ptr::GEOSCoordSeq)
+        position = new(ptr)
+        #finalizer(position, destroyPosition)
+        position
+    end
+    Position(coords::Vector{Vector{Float64}}) = Position(createCoordSeq(coords))
+    Position(coords::Vector{Float64}) = Position(createCoordSeq(coords))
+    Position(x::Float64, y::Float64) = Position(createCoordSeq(x,y))
+    Position(x::Float64, y::Float64, z::Float64) = Position(createCoordSeq(x,y,z))
 end
-Position(x::Float64, y::Float64) = Position(createCoordSeq(Vector{Float64}[[x,y]]))
-Position(x::Float64, y::Float64, z::Float64) = Position(createCoordSeq(Vector{Float64}[[x,y,z]]))
-Position(coords::Vector{Float64}) = Position(createCoordSeq(Vector{Float64}[coords]))
-GeoInterface.coordinates(pos::Position) = getCoordinates(pos.ptr)
+
+function destroyPosition(position::Position)
+    destroyCoordSeq(position.ptr)
+    position.ptr = C_NULL
+end
 
 type Point <: GeoInterface.AbstractPoint
     ptr::GEOSGeom
-end
-Point(position::Position) = Point(createPoint(cloneCoord(position.ptr)))
-Point(coords::Vector{Float64}) = Point(createPoint(coords))
-Point(x::Float64, y::Float64, z::Float64) = Point([x,y,z])
-Point(x::Float64, y::Float64) = Point([x,y])
 
-ndim(point::Point) = getCoordinateDimension(point.ptr)
-GeoInterface.coordinates(point::Point) = getCoordinates(getCoordSeq(point))
+    function Point(ptr::GEOSGeom)
+        point = new(ptr)
+        #finalizer(point, destroyGeom)
+        point
+    end
+    Point(position::Position) = Point(createPoint(cloneCoord(position.ptr)))
+    Point(coords::Vector{Float64}) = Point(createPoint(coords))
+    Point(x::Float64, y::Float64) = Point(createPoint(x,y))
+    Point(x::Float64, y::Float64, z::Float64) = Point(createPoint(x,y,z))
+end
+# ndim(point::Point) = getCoordinateDimension(point.ptr)
 
 type MultiPoint <: GeoInterface.AbstractMultiPoint
     ptr::GEOSGeom
-end
-MultiPoint(points::Vector{Vector{Float64}}) = MultiPoint(createCollection(GEOS_MULTIPOINT, GEOSGeom[createPoint(coords) for coords in points]))
 
-ndim(multipoint::MultiPoint) = getCoordinateDimension(multipoint.ptr)
-GeoInterface.coordinates(multipoint::MultiPoint) = Vector{Float64}[map(GeoInterface.coordinates,getGeometries(multipoint.ptr))...]
+    function MultiPoint(ptr::GEOSGeom)
+        multipoint = new(ptr)
+        #finalizer(multipoint, destroyGeom)
+        multipoint
+    end
+    MultiPoint(multipoint::Vector{Vector{Float64}}) = MultiPoint(createCollection(GEOS_MULTIPOINT, GEOSGeom[createPoint(coords) for coords in multipoint]))
+end
+# ndim(multipoint::MultiPoint) = getCoordinateDimension(multipoint.ptr)
 
 type LineString <: GeoInterface.AbstractLineString
     ptr::GEOSGeom
-end
-LineString(line::Vector{Vector{Float64}}) = LineString(createLineString(line))
 
-ndim(line::LineString) = getCoordinateDimension(line.ptr)
-GeoInterface.coordinates(line::LineString) = getCoordinates(getCoordSeq(line))
+    function LineString(ptr::GEOSGeom)
+        line = new(ptr)
+        #finalizer(line, destroyGeom)
+        line
+    end
+    LineString(line::Vector{Vector{Float64}}) = LineString(createLineString(line))
+end
+# ndim(line::LineString) = getCoordinateDimension(line.ptr)
 
 type MultiLineString <: GeoInterface.AbstractMultiLineString
     ptr::GEOSGeom
-end
-MultiLineString(lines::Vector{Vector{Vector{Float64}}}) = MultiLineString(createCollection(GEOS_MULTILINESTRING, GEOSGeom[createLineString(coords) for coords in lines]))
 
-GeoInterface.coordinates(multiline::MultiLineString) = Vector{Vector{Float64}}[map(GeoInterface.coordinates,getGeometries(multiline.ptr))...]
+    function MultiLineString(ptr::GEOSGeom)
+        multiline = new(ptr)
+        #finalizer(multiline, destroyGeom)
+        multiline
+    end
+    MultiLineString(multiline::Vector{Vector{Vector{Float64}}}) = MultiLineString(createCollection(GEOS_MULTILINESTRING, GEOSGeom[createLineString(coords) for coords in multiline]))
+end
 
 type LinearRing <: GeoInterface.AbstractLineString
     ptr::GEOSGeom
-end
-LinearRing(ring::Vector{Vector{Float64}}) = LinearRing(createLinearRing(ring))
 
-ndim(ring::LinearRing) = getCoordinateDimension(ring.ptr)
-GeoInterface.coordinates(ring::LinearRing) = getCoordinates(getCoordSeq(ring.ptr))
+    function LinearRing(ptr::GEOSGeom)
+        ring = new(ptr)
+        #finalizer(ring, destroyGeom)
+        ring
+    end
+    LinearRing(ring::Vector{Vector{Float64}}) = LinearRing(createLinearRing(ring))
+end
+# ndim(ring::LinearRing) = getCoordinateDimension(ring.ptr)
 
 type Polygon <: GeoInterface.AbstractPolygon
     ptr::GEOSGeom
-end
-Polygon(coords::Vector{Vector{Vector{Float64}}}) = Polygon(createPolygon(coords))
 
-function GeoInterface.coordinates(polygon::Polygon)
-    exterior = exteriorRing(polygon)
-    interiors = interiorRings(polygon)
-    if length(interiors) == 0
-        return Vector{Vector{Float64}}[Vector{Float64}[GeoInterface.coordinates(exterior)]]
-    else
-        return Vector{Vector{Float64}}[Vector{Float64}[GeoInterface.coordinates(exterior)],
-                                       map(GeoInterface.coordinates, interiors)]
+    function Polygon(ptr::GEOSGeom)
+        polygon = new(ptr)
+        #finalizer(polygon, destroyGeom)
+        polygon
     end
+    Polygon(coords::Vector{Vector{Vector{Float64}}}) = Polygon(createPolygon(coords))
 end
 
 type MultiPolygon <: GeoInterface.AbstractMultiPolygon
     ptr::GEOSGeom
-end
-MultiPolygon(polygons::Vector{Vector{Vector{Vector{Float64}}}}) = MultiPolygon(createCollection(GEOS_MULTIPOLYGON, GEOSGeom[createPolygon(coords) for coords in polygons]))
 
-GeoInterface.coordinates(multipolygon::MultiPolygon) = Vector{Vector{Vector{Float64}}}[map(GeoInterface.coordinates,getGeometries(multipolygon.ptr))...]
+    function MultiPolygon(ptr::GEOSGeom)
+        multipolygon = new(ptr)
+        #finalizer(multipolygon, destroyGeom)
+        multipolygon
+    end
+    MultiPolygon(multipolygon::Vector{Vector{Vector{Vector{Float64}}}}) = MultiPolygon(createCollection(GEOS_MULTIPOLYGON, GEOSGeom[createPolygon(coords) for coords in multipolygon]))
+end
 
 type GeometryCollection <: GeoInterface.AbstractGeometryCollection
     ptr::GEOSGeom
-end
-GeometryCollection(collection::Vector{GEOSGeom}) = GeometryCollection(createCollection(GEOS_GEOMETRYCOLLECTION, collection))
 
-function GeoInterface.geometries(obj::GeometryCollection)
-    collection = GeoInterface.AbstractGeometry[]
-    sizehint(collection, numGeometries(obj))
-    for geom in getGeometries(obj.ptr)
-        if geomTypeId(geom) == GEOS_POINT
-            push!(collection, Point(geom))
-        elseif geomTypeId(geom) == GEOS_LINESTRING
-            push!(collection, LineString(geom))
-        elseif geomTypeId(geom) == GEOS_LINEARRING
-            push!(collection, LinearRing(geom))
-        elseif geomTypeId(geom) == GEOS_POLYGON
-            push!(collection, Polygon(geom))
-        elseif geomTypeId(geom) == GEOS_MULTIPOINT
-            push!(collection, MultiPoint(geom))
-        elseif geomTypeId(geom) == GEOS_MULTILINESTRING
-            push!(collection, MultiLineString(geom))
-        elseif geomTypeId(geom) == GEOS_MULTIPOLYGON
-            push!(collection, MultiPolygon(geom))
-        else
-            @assert geomTypeId(geom) == GEOS_GEOMETRYCOLLECTION
-            push!(collection, GeometryCollection(geom))
-        end
+    function GeometryCollection(ptr::GEOSGeom)
+        geometrycollection = new(ptr)
+        #finalizer(geometrycollection, destroyGeom)
+        geometrycollection
     end
-    collection
+    GeometryCollection(collection::Vector{GEOSGeom}) = GeometryCollection(createCollection(GEOS_GEOMETRYCOLLECTION, collection))
+end
+
+for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
+    @eval destroyGeom(obj::$geom) = destroyGeom(obj.ptr)
 end
