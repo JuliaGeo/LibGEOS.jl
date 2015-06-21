@@ -1,13 +1,13 @@
 # Position
 
-Base.copy(pos::Position) = Position(cloneCoord(pos.ptr))
-Base.convert(::Type{Position}, coords::Vector) = Position(coords)
+# Base.copy(pos::Position) = Position(cloneCoord(pos.ptr))
+# Base.convert(::Type{Position}, coords::Vector) = Position(coords)
 
-GeoInterface.x(pos::Position) = getX(pos.ptr)
-GeoInterface.y(pos::Position) = getY(pos.ptr)
-GeoInterface.z(pos::Position) = getZ(pos.ptr)
-GeoInterface.hasz(pos::Position) = (getDimension(pos.ptr) >= 3)
-GeoInterface.coordinates(pos::Position) = getCoordinates(pos.ptr)
+# GeoInterface.x(pos::Position) = getX(pos.ptr)
+# GeoInterface.y(pos::Position) = getY(pos.ptr)
+# GeoInterface.z(pos::Position) = getZ(pos.ptr)
+# GeoInterface.hasz(pos::Position) = (getDimension(pos.ptr) >= 3)
+# GeoInterface.coordinates(pos::Position) = getCoordinates(pos.ptr)
 
 # Geometries
 
@@ -20,41 +20,49 @@ GeoInterface.coordinates(obj::LineString) = getCoordinates(getCoordSeq(obj.ptr))
 GeoInterface.coordinates(obj::LinearRing) = getCoordinates(getCoordSeq(obj.ptr))
 
 function GeoInterface.coordinates(polygon::Polygon)
-    exterior = LinearRing(exteriorRing(polygon.ptr))
-    interiors = map(LinearRing,interiorRings(polygon.ptr))
+    exterior = getCoordinates(getCoordSeq(exteriorRing(polygon.ptr)))
+    interiors = [getCoordinates(getCoordSeq(ring)) for ring in interiorRings(polygon.ptr)]
     if length(interiors) == 0
-        return Vector{Vector{Float64}}[GeoInterface.coordinates(exterior)]
+        return Vector{Vector{Float64}}[exterior]
     else
-        return [Vector{Vector{Float64}}[GeoInterface.coordinates(exterior)],
-                map(GeoInterface.coordinates, interiors)]
+        return [Vector{Vector{Float64}}[exterior], interiors]
     end
 end
 
-GeoInterface.coordinates(multipoint::MultiPoint) = Vector{Float64}[map(GeoInterface.coordinates,map(Point,getGeometries(multipoint.ptr)))...]
-GeoInterface.coordinates(multiline::MultiLineString) = Vector{Vector{Float64}}[map(GeoInterface.coordinates,map(LineString,getGeometries(multiline.ptr)))...]
-GeoInterface.coordinates(multipolygon::MultiPolygon) = Vector{Vector{Vector{Float64}}}[map(GeoInterface.coordinates,map(Polygon,getGeometries(multipolygon.ptr)))...]
+GeoInterface.coordinates(multipoint::MultiPoint) = Vector{Float64}[getCoordinates(getCoordSeq(geom),1) for geom in getGeometries(multipoint.ptr)]
+GeoInterface.coordinates(multiline::MultiLineString) = Vector{Vector{Float64}}[getCoordinates(getCoordSeq(geom)) for geom in getGeometries(multiline.ptr)]
+function GeoInterface.coordinates(multipolygon::MultiPolygon)
+    geometries = getGeometries(multipolygon.ptr)
+    coords = Array(Vector{Vector{Vector{Float64}}}, length(geometries))
+    for (i,geom) in enumerate(getGeometries(multipolygon.ptr))
+        exterior = getCoordinates(getCoordSeq(exteriorRing(geom)))
+        interiors = [getCoordinates(getCoordSeq(ring)) for ring in interiorRings(geom)]
+        coords[i] = [Vector{Vector{Float64}}[exterior], interiors]
+    end
+    coords
+end
 
 function GeoInterface.geometries(obj::GeometryCollection)
     collection = GeoInterface.AbstractGeometry[]
     sizehint(collection, numGeometries(obj.ptr))
     for geom in getGeometries(obj.ptr)
         if geomTypeId(geom) == GEOS_POINT
-            push!(collection, Point(geom))
+            push!(collection, Point(cloneGeom(geom)))
         elseif geomTypeId(geom) == GEOS_LINESTRING
-            push!(collection, LineString(geom))
+            push!(collection, LineString(cloneGeom(geom)))
         elseif geomTypeId(geom) == GEOS_LINEARRING
-            push!(collection, LinearRing(geom))
+            push!(collection, LinearRing(cloneGeom(geom)))
         elseif geomTypeId(geom) == GEOS_POLYGON
-            push!(collection, Polygon(geom))
+            push!(collection, Polygon(cloneGeom(geom)))
         elseif geomTypeId(geom) == GEOS_MULTIPOINT
-            push!(collection, MultiPoint(geom))
+            push!(collection, MultiPoint(cloneGeom(geom)))
         elseif geomTypeId(geom) == GEOS_MULTILINESTRING
-            push!(collection, MultiLineString(geom))
+            push!(collection, MultiLineString(cloneGeom(geom)))
         elseif geomTypeId(geom) == GEOS_MULTIPOLYGON
-            push!(collection, MultiPolygon(geom))
+            push!(collection, MultiPolygon(cloneGeom(geom)))
         else
             @assert geomTypeId(geom) == GEOS_GEOMETRYCOLLECTION
-            push!(collection, GeometryCollection(geom))
+            push!(collection, GeometryCollection(cloneGeom(geom)))
         end
     end
     collection

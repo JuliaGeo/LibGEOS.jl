@@ -1,4 +1,5 @@
-import LibGEOS, GeoInterface, FactCheck
+import LibGEOS, GeoInterface
+using FactCheck
 
 function factcheck_equals(obj1::Vector{Vector{Float64}},
                           obj2::Vector{Vector{Float64}}; tol=1e-5)

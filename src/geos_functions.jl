@@ -339,7 +339,6 @@ function createPolygon(shell::GEOSGeom, holes::Vector{GEOSGeom})
     result
 end
 
-createPolygon(coords::Vector{Vector{Vector{Float64}}}) = createPolygon(createLinearRing(coords[1]), map(createLinearRing, coords[2:end]))
 
 function createCollection(geomtype::Int, geoms::Vector{GEOSGeom})
     result = GEOSGeom_createCollection(int32(geomtype), pointer(geoms), length(geoms))
