@@ -14,9 +14,6 @@ module LibGEOS
     include("geos_c.jl")
     
     #  --- GEOSconnection ---
-    # (see http://stackoverflow.com/questions/21400550/julia-ptrvoid-finalizer-error)
-    # (or  https://groups.google.com/forum/#!msg/julia-dev/qgncotDBFx0/3L1hj9dibrIJ)
-
     type GEOSconnection
         status::Symbol
 
@@ -30,8 +27,7 @@ module LibGEOS
     initializeGEOS() = initGEOS(C_NULL, C_NULL)
     finalizeGEOS(status::GEOSconnection) = finishGEOS()
 
-    status = GEOSconnection()
-
+    _connection = GEOSconnection()
     # --- END GEOSconnection ---
 
     include("geos_functions.jl")
