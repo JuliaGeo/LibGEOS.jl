@@ -118,7 +118,7 @@ function getSize(ptr::GEOSCoordSeq)
     int(ncoords[1])
 end
 
-function getDimension(ptr::GEOSCoordSeq)
+function getDimensions(ptr::GEOSCoordSeq)
     ndim = Array(Uint32, 1)
     # Get dimensions info from a Coordinate Sequence (Return 0 on exception)
     result = GEOSCoordSeq_getDimensions(ptr, pointer(ndim))
@@ -223,7 +223,7 @@ function getZ(ptr::GEOSCoordSeq)
 end
 
 function getCoordinates(ptr::GEOSCoordSeq, i::Int)
-    ndim = getDimension(ptr)
+    ndim = getDimensions(ptr)
     coord = Array(Float64, ndim)
     start = pointer(coord)
     floatsize = sizeof(Float64)
@@ -236,7 +236,7 @@ function getCoordinates(ptr::GEOSCoordSeq, i::Int)
 end
 
 function getCoordinates(ptr::GEOSCoordSeq)
-    ndim = getDimension(ptr)
+    ndim = getDimensions(ptr)
     ncoords = getSize(ptr)
     coordseq = Vector{Float64}[]
     sizehint(coordseq, ncoords)
@@ -881,7 +881,6 @@ function getGeometry(ptr::GEOSGeom, n::Int)
 end
 getGeometries(ptr::GEOSGeom) = GEOSGeom[getGeometry(ptr, i) for i=1:numGeometries(ptr)]
 
-
 # Converts Geometry to normal form (or canonical form).
 # Return -1 on exception, 0 otherwise.
 function normalize(ptr::GEOSGeom)
@@ -975,10 +974,10 @@ function getCoordSeq(ptr::GEOSGeom)
     end
     result
 end
-getGeomCoordinates(ptr::GEOSGeom) = getCoordinates(getCoordSeq(ptr))
+# getGeomCoordinates(ptr::GEOSGeom) = getCoordinates(getCoordSeq(ptr))
 
 # Return 0 on exception (or empty geometry)
-getDimensions(ptr::GEOSGeom) = GEOSGeom_getDimensions(ptr)
+getGeomDimensions(ptr::GEOSGeom) = GEOSGeom_getDimensions(ptr)
 
 # Return 2 or 3.
 getCoordinateDimension(ptr::GEOSGeom) = int(GEOSGeom_getCoordinateDimension(ptr))
