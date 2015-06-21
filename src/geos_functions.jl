@@ -17,6 +17,10 @@ GEOMTYPE = @compat Dict( GEOS_POINT => :Point,
                          GEOS_MULTIPOLYGON => :MultiPolygon,
                          GEOS_GEOMETRYCOLLECTION => :GeometryCollection)
 
+
+geomFromWKT(geom::ASCIIString) = GEOSGeomFromWKT(pointer(geom))
+geomToWKT(geom::Ptr{GEOSGeometry}) = bytestring(GEOSGeomToWKT(geom))
+
 # -----
 # Coordinate Sequence functions
 # -----
