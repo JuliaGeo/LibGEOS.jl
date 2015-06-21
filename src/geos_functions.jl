@@ -23,6 +23,7 @@ GEOMTYPE = @compat Dict( GEOS_POINT => :Point,
 
 # Create a Coordinate sequence with ``size'' coordinates of ``dims'' dimensions (Return NULL on exception)
 function createCoordSeq(size::Int, ndim::Int)
+    @assert ndim >= 2
     result = GEOSCoordSeq_create(uint32(size), uint32(ndim))
     if result == C_NULL
         error("LibGEOS: Error in GEOSCoordSeq_create")
@@ -118,26 +119,46 @@ function getDimension(ptr::GEOSCoordSeq)
 end
 
 # convenience functions
-function setCoordSeq(ptr::GEOSCoordSeq, i::Int, coords::Vector{Float64})
+function setCoordSeq!(ptr::GEOSCoordSeq, i::Int, coords::Vector{Float64})
+    ndim = length(coords)
+    @assert ndim >= 2
     setX!(ptr, i, coords[1])
     setY!(ptr, i, coords[2])
-    length(coords) >= 3 && setZ!(ptr, i, coords[3])
+    ndim >= 3 && setZ!(ptr, i, coords[3])
     ptr
+end
+
+function createCoordSeq(x::Float64, y::Float64)
+    coordinates = createCoordSeq(1, 2)
+    setX!(coordinates, 1, x)
+    setY!(coordinates, 1, y)
+    coordinates
+end
+
+function createCoordSeq(x::Float64, y::Float64, z::Float64)
+    coordinates = createCoordSeq(1, 3)
+    setX!(coordinates, 1, x)
+    setY!(coordinates, 1, y)
+    setZ!(coordinates, 1, z)
+    coordinates
+end
+
+function createCoordSeq(coords::Vector{Float64})
+    ndim = length(coords)
+    @assert ndim >= 2
+    coordinates = createCoordSeq(1, ndim)
+    setCoordSeq!(coordinates, 1, coord)
 end
 
 function createCoordSeq(coords::Vector{Vector{Float64}})
     ncoords = length(coords)
-    if ncoords > 0
-        ndim = length(coords[1])
-        coordinates = createCoordSeq(ncoords, ndim)
-        for (i,coord) in enumerate(coords[:])
-            setCoordSeq(coordinates, i, coord)
-        end
-        return coordinates
-    else
-        warn("No coordinates provided.")
-        return createCoordSeq(0, 0)
+    @assert ncoords > 0
+    ndim = length(coords[1])
+    coordinates = createCoordSeq(ncoords, ndim)
+    for (i,coord) in enumerate(coords)
+        setCoordSeq!(coordinates, i, coord)
     end
+    coordinates
 end
 
 function getX(ptr::GEOSCoordSeq, i::Int)
@@ -215,10 +236,23 @@ end
 # Return distance of point 'p' projected on 'g' from origin of 'g'. Geometry 'g' must be a lineal geometry
 project(g::GEOSGeom, p::GEOSGeom) = GEOSProject(g, p)
 # Return closest point to given distance within geometry (Geometry must be a LineString)
-interpolate(ptr::GEOSGeom, d::Float64) = GEOSInterpolate(ptr, d)
+function interpolate(ptr::GEOSGeom, d::Float64)
+    result = GEOSInterpolate(ptr, d)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSInterpolate")
+    end
+    result
+end
 
 projectNormalized(g::GEOSGeom, p::GEOSGeom) = GEOSProjectNormalized(g, p)
-interpolateNormalized(ptr::GEOSGeom, d::Float64) = GEOSInterpolateNormalized(ptr, d)
+
+function interpolateNormalized(ptr::GEOSGeom, d::Float64)
+    result = GEOSInterpolateNormalized(ptr, d)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSInterpolateNormalized")
+    end
+    result
+end
 
 # -----
 # Buffer related functions
@@ -253,8 +287,10 @@ function createPoint(ptr::GEOSCoordSeq)
     end
     result
 end
-createPoint(coords::Vector{Vector{Float64}}) = GEOSGeom_createPoint(createCoordSeq(coords))
-createPoint(coords::Vector{Float64}) = GEOSGeom_createPoint(createCoordSeq(Vector{Float64}[coords]))
+createPoint(x::Float64, y::Float64) = createPoint(createCoordSeq(x,y))
+createPoint(x::Float64, y::Float64, z::Float64) = createPoint(createCoordSeq(x,y,z))
+createPoint(coords::Vector{Vector{Float64}}) = createPoint(createCoordSeq(coords))
+createPoint(coords::Vector{Float64}) = createPoint(createCoordSeq(Vector{Float64}[coords]))
 
 function createLinearRing(ptr::GEOSCoordSeq)
     result = GEOSGeom_createLinearRing(ptr)
@@ -407,17 +443,49 @@ function node(ptr::GEOSGeom)
 end
 
 # all arguments remain ownership of the caller (both Geometries and pointers)
-polygonize(geoms::Vector{GEOSGeom}) = GEOSPolygonize(pointer(geoms), length(geoms))
+function polygonize(geoms::Vector{GEOSGeom})
+    result = GEOSPolygonize(pointer(geoms), length(geoms))
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSPolygonize")
+    end
+    result
+end
 # GEOSPolygonizer_getCutEdges
 # GEOSPolygonize_full
 
-lineMerge(ptr::GEOSGeom) = GEOSLineMerge(ptr)
-simplify(ptr::GEOSGeom, tol::Float64) = GEOSSimplify(ptr, tol)
-topologyPreserveSimplify(ptr::GEOSGeom, tol::Float64) = GEOSTopologyPreserveSimplify(ptr, tol)
+function lineMerge(ptr::GEOSGeom)
+    result = GEOSLineMerge(ptr)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSLineMerge")
+    end
+    result
+end
+
+function simplify(ptr::GEOSGeom, tol::Float64)
+    result = GEOSSimplify(ptr, tol)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSSimplify")
+    end
+    result
+end
+
+function topologyPreserveSimplify(ptr::GEOSGeom, tol::Float64)
+    result = GEOSTopologyPreserveSimplify(ptr, tol)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSTopologyPreserveSimplify")
+    end
+    result
+end
 
 # Return all distinct vertices of input geometry as a MULTIPOINT.
 # (Note that only 2 dimensions of the vertices are considered when testing for equality)
-uniquePoints(ptr::GEOSGeom) = GEOSGeom_extractUniquePoints(ptr)
+function uniquePoints(ptr::GEOSGeom)
+    result = GEOSGeom_extractUniquePoints(ptr)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_extractUniquePoints")
+    end
+    result
+end
 
 # Find paths shared between the two given lineal geometries.
 # Returns a GEOMETRYCOLLECTION having two elements:
@@ -452,7 +520,13 @@ end
 #                  return a GEOMETRYCOLLECTION containing triangular POLYGONs.
 #
 # @return  a newly allocated geometry, or NULL on exception
-delaunayTriangulation(ptr::GEOSGeom, tol::Float64=0.0, onlyEdges::Bool=false) = GEOSDelaunayTriangulation(ptr, tol, int32(onlyEdges))
+function delaunayTriangulation(ptr::GEOSGeom, tol::Float64=0.0, onlyEdges::Bool=false)
+    result = GEOSDelaunayTriangulation(ptr, tol, int32(onlyEdges))
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSDelaunayTriangulation")
+    end
+    result
+end
 
 # -----
 # Binary predicates - return 2 on exception, 1 on true, 0 on false
@@ -550,7 +624,14 @@ end
 # -----
 
 # GEOSGeometry ownership is retained by caller
-prepareGeom(ptr::GEOSGeom) = GEOSPrepare(ptr)
+function prepareGeom(ptr::GEOSGeom)
+    result = GEOSPrepare(ptr)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSPrepare")
+    end
+    result
+end
+
 destroyPreparedGeom(ptr::Ptr{GEOSPreparedGeometry}) = GEOSPreparedGeom_destroy(ptr)
 
 function contains(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
@@ -726,13 +807,13 @@ end
 # -----
 
 # Return NULL on exception, result must be freed by caller
-function geomType(ptr::GEOSGeom)
-    result = GEOSGeomType(ptr)
-    if result == C_NULL
-        error("LibGEOS: Error in GEOSGeomType")
-    end
-    result
-end
+# function geomType(ptr::GEOSGeom)
+#     result = GEOSGeomType(ptr)
+#     if result == C_NULL
+#         error("LibGEOS: Error in GEOSGeomType")
+#     end
+#     result
+# end
 
 # Return -1 on exception
 function geomTypeId(ptr::GEOSGeom)
