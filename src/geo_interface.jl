@@ -1,19 +1,6 @@
-# Position
-
-# Base.copy(pos::Position) = Position(cloneCoord(pos.ptr))
-# Base.convert(::Type{Position}, coords::Vector) = Position(coords)
-
-# GeoInterface.x(pos::Position) = getX(pos.ptr)
-# GeoInterface.y(pos::Position) = getY(pos.ptr)
-# GeoInterface.z(pos::Position) = getZ(pos.ptr)
-# GeoInterface.hasz(pos::Position) = (getDimension(pos.ptr) >= 3)
-# GeoInterface.coordinates(pos::Position) = getCoordinates(pos.ptr)
-
-# Geometries
-
-for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon)
-    @eval Base.copy(obj::$geom) = ($geom)(GEOSGeom_clone(obj.ptr))
-end
+# for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon)
+#     @eval Base.copy(obj::$geom) = ($geom)(GEOSGeom_clone(obj.ptr))
+# end
 
 GeoInterface.coordinates(obj::Point) = isEmpty(obj.ptr) ? Float64[] : getCoordinates(getCoordSeq(obj.ptr), 1)
 GeoInterface.coordinates(obj::LineString) = getCoordinates(getCoordSeq(obj.ptr))

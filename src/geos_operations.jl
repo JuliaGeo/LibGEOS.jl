@@ -24,19 +24,9 @@ function geomFromGEOS(ptr::GEOSGeom)
 end
 parseWKT(geom::ASCIIString) = geomFromGEOS(geomFromWKT(geom))
 
-for geom in (:Point, :LineString, :LinearRing)
-    @eval Base.size(obj::$geom) = getDimensions(getCoordSeq(obj.ptr))
-end
-
-# for geom in (:MultiPoint, :MultiLineString, :MultiPolygon)
-#     @eval Base.size(obj::$geom) = getDimensions(getCoordSeq(obj.ptr))
-# end
-
 # -----
 # Linear referencing functions -- there are more, but these are probably sufficient for most purposes
 # -----
-# (GEOSGeometry ownership is retained by caller)
-
 project(line::LineString, point::Point) = project(line.ptr, point.ptr)
 projectNormalized(line::LineString, point::Point) = projectprojectNormalized(line.ptr, point.ptr)
 interpolate(line::LineString, dist::Float64) = Point(interpolate(line.ptr, dist))
@@ -98,20 +88,19 @@ for g1 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Pol
     end
 end
 
-# # Return a Delaunay triangulation of the vertex of the given geometry
-# # @param g the input geometry whose vertex will be used as "sites"
-# # @param tolerance optional snapping tolerance to use for improved robustness
-# # @param onlyEdges if non-zero will return a MULTILINESTRING, otherwise it will
-# #                  return a GEOMETRYCOLLECTION containing triangular POLYGONs.
-# #
-# # @return  a newly allocated geometry, or NULL on exception
-for geom in (:Point, :MultiPoint, :Polygon)
-    @eval delaunayTriangulation(obj::$geom, tol::Float64=0.0, onlyEdges::Bool=false) = geomFromGEOS(delaunayTriangulation(obj.ptr, tol, onlyEdges))
+# Return a Delaunay triangulation of the vertex of the given geometry
+# @param g the input geometry whose vertex will be used as "sites"
+# @param tolerance optional snapping tolerance to use for improved robustness
+# @param onlyEdges if non-zero will return a MULTILINESTRING, otherwise it will
+#                  return a GEOMETRYCOLLECTION containing triangular POLYGONs.
+for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
+    @eval delaunayTriangulationEdges(obj::$geom, tol::Float64=0.0) = MultiLineString(delaunayTriangulation(obj.ptr, tol, true))
+    @eval delaunayTriangulation(obj::$geom, tol::Float64=0.0) = GeometryCollection(delaunayTriangulation(obj.ptr, tol, false))
 end
 
-# # -----
-# # Binary predicates - return 2 on exception, 1 on true, 0 on false
-# # -----
+# -----
+# Binary predicates
+# -----
 for g1 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
     for g2 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
         @eval disjoint(obj1::$g1, obj2::$g2) = disjoint(obj1.ptr, obj2.ptr)
@@ -294,26 +283,6 @@ isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
 # #     end
 # #     result
 # # end
-
-# # Return -1 on exception
-# function geomTypeId(ptr::GEOSGeom)
-#     result = GEOSGeomTypeId(ptr)
-#     if result == -1
-#         error("LibGEOS: Error in GEOSGeomTypeId")
-#     end
-#     result
-# end
-
-# # Return 0 on exception
-# function getSRID(ptr::GEOSGeom)
-#     result = GEOSGetSRID(ptr)
-#     if result == 0
-#         error("LibGEOS: Error in GEOSGeomTypeId")
-#     end
-#     result
-# end
-
-# setSRID(ptr::GEOSGeom) = GEOSSetSRID(ptr)
 
 # # May be called on all geometries in GEOS 3.x, returns -1 on error and 1
 # # for non-multi geometries. Older GEOS versions only accept
@@ -504,16 +473,7 @@ endPoint(obj::LineString) = Point(endPoint(obj.ptr)) # Call only on LINESTRING
 #     dist[1]
 # end
 
-# # Call only on LINESTRING
-# function getLength(ptr::GEOSGeom)
-#     len = Array(Float64, 1)
-#     # Return 0 on exception, 1 otherwise
-#     result = GEOSGeomGetLength(ptr, pointer(len))
-#     if result == 0
-#         error("LibGEOS: Error in GEOSGeomGetLength")
-#     end
-#     len[1]
-# end
+getLength(obj::LineString) = getLength(obj.ptr) # Call only on LINESTRING
 
 # Returns the closest points of the two geometries. The first point comes from g1 geometry and the second point comes from g2.
 for g1 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)

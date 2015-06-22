@@ -11,14 +11,12 @@ module LibGEOS
             buffer, envelope, intersection, convexhull, difference, symmetricDifference,
             boundary, union, unaryUnion, pointOnSurface, centroid, node,
             polygonize, lineMerge, simplify, topologyPreserveSimplify, uniquePoints, sharedPaths,
-            snap, delaunayTriangulation,
+            snap, delaunayTriangulation, delaunayTriangulationEdges,
             disjoint, touches, intersects, crosses, within, contains, overlaps, equals, equalsexact, covers, coveredby, 
             prepareGeom, prepcontains, prepcontainsproperly, prepcoveredby, prepcovers, prepcrosses,
             prepdisjoint, prepintersects, prepoverlaps, preptouches, prepwithin,
             isEmpty, isSimple, isRing, hasZ, isClosed, isValid,
             normalize!, startPoint, endPoint, geomArea, geomLength, geomDistance, hausdorffdistance, getLength, nearestPoints
-
-
 
     include("geos_c.jl")
     

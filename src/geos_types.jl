@@ -1,22 +1,3 @@
-# type Position <: GeoInterface.AbstractPosition
-#     ptr::GEOSCoordSeq
-
-#     function Position(ptr::GEOSCoordSeq)
-#         position = new(ptr)
-#         #finalizer(position, destroyPosition)
-#         position
-#     end
-#     Position(coords::Vector{Vector{Float64}}) = Position(createCoordSeq(coords))
-#     Position(coords::Vector{Float64}) = Position(createCoordSeq(coords))
-#     Position(x::Float64, y::Float64) = Position(createCoordSeq(x,y))
-#     Position(x::Float64, y::Float64, z::Float64) = Position(createCoordSeq(x,y,z))
-# end
-
-# function destroyPosition(position::Position)
-#     destroyCoordSeq(position.ptr)
-#     position.ptr = C_NULL
-# end
-
 type Point <: GeoInterface.AbstractPoint
     ptr::GEOSGeom
 
@@ -25,7 +6,6 @@ type Point <: GeoInterface.AbstractPoint
         finalizer(point, destroyGeom)
         point
     end
-    # Point(position::Position) = Point(createPoint(cloneCoord(position.ptr)))
     Point(coords::Vector{Float64}) = Point(createPoint(coords))
     Point(x::Float64, y::Float64) = Point(createPoint(x,y))
     Point(x::Float64, y::Float64, z::Float64) = Point(createPoint(x,y,z))
@@ -41,7 +21,6 @@ type MultiPoint <: GeoInterface.AbstractMultiPoint
     end
     MultiPoint(multipoint::Vector{Vector{Float64}}) = MultiPoint(createCollection(GEOS_MULTIPOINT, GEOSGeom[createPoint(coords) for coords in multipoint]))
 end
-# ndim(multipoint::MultiPoint) = getCoordinateDimension(multipoint.ptr)
 
 type LineString <: GeoInterface.AbstractLineString
     ptr::GEOSGeom
@@ -78,8 +57,6 @@ end
 
 type Polygon <: GeoInterface.AbstractPolygon
     ptr::GEOSGeom
-    ext_ring::GEOSGeom
-    int_rings::Vector{GEOSGeom}
 
     function Polygon(ptr::GEOSGeom)
         polygon = new(ptr)
@@ -91,10 +68,6 @@ type Polygon <: GeoInterface.AbstractPolygon
         interiors = GEOSGeom[createLinearRing(lr) for lr in coords[2:end]]
         polygon = new(createPolygon(exterior,interiors))
         finalizer(polygon, destroyGeom)
-        # destroyGeom(exterior)
-        # for ring in interiors
-        #     destroyGeom(ring)
-        # end
         polygon
     end
 end

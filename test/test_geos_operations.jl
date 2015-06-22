@@ -61,25 +61,25 @@ output = convexhull(input)
 
 # LibGEOS.delaunayTriangulationTest
 g1 = parseWKT("POLYGON EMPTY")
-g2 = delaunayTriangulation(g1,0.0,true)
+g2 = delaunayTriangulationEdges(g1)
 @fact isEmpty(g1) => true
 @fact isEmpty(g2) => true
 @fact GeoInterface.geotype(g2) => :MultiLineString
 
 g1 = parseWKT("POINT(0 0)")
-g2 = delaunayTriangulation(g1, 0.0, false)
+g2 = delaunayTriangulation(g1)
 @fact isEmpty(g2) => true
 @fact GeoInterface.geotype(g2) => :GeometryCollection
 
 g1 = parseWKT("MULTIPOINT(0 0, 5 0, 10 0)")
-g2 = delaunayTriangulation(g1, 0.0, false)
+g2 = delaunayTriangulation(g1, 0.0)
 @fact isEmpty(g2) => true
 @fact GeoInterface.geotype(g2) => :GeometryCollection
-g2 = delaunayTriangulation(g1, 0.0, true)
+g2 = delaunayTriangulationEdges(g1, 0.0)
 equivalent_to_wkt(g2, "MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))")
 
 g1 = parseWKT("MULTIPOINT(0 0, 10 0, 10 10, 11 10)")
-g2 = delaunayTriangulation(g1, 2.0, true)
+g2 = delaunayTriangulationEdges(g1, 2.0)
 equivalent_to_wkt(g2, "MULTILINESTRING ((0 0, 10 10), (0 0, 10 0), (10 0, 10 10))")
 
 # GEOSDistanceTest
