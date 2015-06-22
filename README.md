@@ -14,8 +14,12 @@ to your start-up file (e.g. ``.bash_profile``).
   ```julia
   julia> Pkg.clone("https://github.com/yeesian/LibGEOS.jl.git")
   ```
+3. `LibGEOS` has dependencies on [GeoInterface](https://github.com/yeesian/GeoInterface.jl), so you will need to install it by running
+  ```julia
+  julia> Pkg.clone(https://github.com/yeesian/GeoInterface.jl.git)
+  ```
 
-3. Test that `LibGEOS` works by runnning
+4. Test that `LibGEOS` works by runnning
   ```julia
   julia> Pkg.test("LibGEOS")
   ```
