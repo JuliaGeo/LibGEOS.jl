@@ -36,6 +36,7 @@ interpolateNormalized(line::LineString, dist::Float64) = Point(interpolateNormal
 # # Topology operations
 # # -----
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
+    @eval buffer(obj::$geom, dist::Float64, quadsegs::Int=8) = Polygon(buffer(obj.ptr, dist, quadsegs))
     @eval envelope(obj::$geom) = geomFromGEOS(envelope(obj.ptr))
     @eval convexhull(obj::$geom) = geomFromGEOS(convexhull(obj.ptr))
     @eval boundary(obj::$geom) = geomFromGEOS(boundary(obj.ptr))
@@ -77,6 +78,8 @@ for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :P
     @eval simplify(obj::$geom, tol::Float64) = geomFromGEOS(simplify(obj.ptr, tol))
     @eval topologyPreserveSimplify(obj::$geom, tol::Float64) = geomFromGEOS(topologyPreserveSimplify(obj.ptr, tol))
     @eval uniquePoints(obj::$geom) = MultiPoint(uniquePoints(obj.ptr))
+    @eval delaunayTriangulationEdges(obj::$geom, tol::Float64=0.0) = MultiLineString(delaunayTriangulation(obj.ptr, tol, true))
+    @eval delaunayTriangulation(obj::$geom, tol::Float64=0.0) = GeometryCollection(delaunayTriangulation(obj.ptr, tol, false))
 end
 
 sharedPaths(obj1::LineString, obj2::LineString) = GeometryCollection(sharedPaths(obj1.ptr, obj2.ptr))
@@ -86,16 +89,6 @@ for g1 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Pol
     for g2 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
         @eval snap(obj1::$g1, obj2::$g2, tol::Float64) = geomFromGEOS(snap(obj1.ptr, obj2.ptr, tol))
     end
-end
-
-# Return a Delaunay triangulation of the vertex of the given geometry
-# @param g the input geometry whose vertex will be used as "sites"
-# @param tolerance optional snapping tolerance to use for improved robustness
-# @param onlyEdges if non-zero will return a MULTILINESTRING, otherwise it will
-#                  return a GEOMETRYCOLLECTION containing triangular POLYGONs.
-for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
-    @eval delaunayTriangulationEdges(obj::$geom, tol::Float64=0.0) = MultiLineString(delaunayTriangulation(obj.ptr, tol, true))
-    @eval delaunayTriangulation(obj::$geom, tol::Float64=0.0) = GeometryCollection(delaunayTriangulation(obj.ptr, tol, false))
 end
 
 # -----
@@ -229,10 +222,8 @@ for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :P
     @eval isEmpty(obj::$geom) = isEmpty(obj.ptr)
     @eval isSimple(obj::$geom) = isSimple(obj.ptr)
     @eval isRing(obj::$geom) = isRing(obj.ptr)
+    @eval isValid(obj::$geom) = isValid(obj.ptr)
     @eval hasZ(obj::$geom) = hasZ(obj.ptr)
-    @eval pointOnSurface(obj::$geom) = Point(pointOnSurface(obj.ptr))
-    @eval centroid(obj::$geom) = Point(centroid(obj.ptr))
-    @eval node(obj::$geom) = geomFromGEOS(node(obj.ptr))
 end
 
 isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
@@ -255,14 +246,6 @@ isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
 # #     GEOSVALID_ALLOW_SELFTOUCHING_RING_FORMING_HOLE=1
 # # };
 
-# function isValid(ptr::GEOSGeom)
-#     result = GEOSisValid(ptr)
-#     if result == 0x02
-#         error("LibGEOS: Error in GEOSisValid")
-#     end
-#     bool(result)
-# end
-
 # # * return NULL on exception, a string to GEOSFree otherwise
 # # GEOSisValidReason
 
@@ -274,15 +257,6 @@ isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
 # # -----
 # # Geometry info
 # # -----
-
-# # Return NULL on exception, result must be freed by caller
-# # function geomType(ptr::GEOSGeom)
-# #     result = GEOSGeomType(ptr)
-# #     if result == C_NULL
-# #         error("LibGEOS: Error in GEOSGeomType")
-# #     end
-# #     result
-# # end
 
 # # May be called on all geometries in GEOS 3.x, returns -1 on error and 1
 # # for non-multi geometries. Older GEOS versions only accept
@@ -317,24 +291,6 @@ for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :P
     @eval normalize!(obj::$geom) = normalize!(obj.ptr)
 end
 
-# # Return -1 on exception
-# function numInteriorRings(ptr::GEOSGeom)
-#     result = GEOSGetNumInteriorRings(ptr)
-#     if result == -1
-#         error("LibGEOS: Error in GEOSGetNumInteriorRings")
-#     end
-#     result
-# end
-
-# # Call only on LINESTRING (returns -1 on exception)
-# function numPoints(ptr::GEOSGeom)
-#     result = GEOSGeomGetNumPoints(ptr)
-#     if result == -1
-#         error("LibGEOS: Error in GEOSGeomGetNumPoints")
-#     end
-#     result
-# end
-
 # # Return -1 on exception, Geometry must be a Point.
 # function getGeomX(ptr::GEOSGeom)
 #     x = Array(Float64, 1)
@@ -354,34 +310,8 @@ end
 #     y[1]
 # end
 
-# # Return NULL on exception, Geometry must be a Polygon.
-# # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
-# function interiorRing(ptr::GEOSGeom, n::Int)
-#     result = GEOSGetInteriorRingN(ptr, int32(n))
-#     if result == C_NULL
-#         error("LibGEOS: Error in GEOSGetInteriorRingN")
-#     end
-#     result
-# end
-
-# function interiorRings(ptr::GEOSGeom)
-#     n = numInteriorRings(ptr)
-#     if n == 0
-#         return GEOSGeom[]
-#     else
-#         return GEOSGeom[GEOSGetInteriorRingN(ptr, int32(i)) for i=0:n-1]
-#     end
-# end
-
-# # Return NULL on exception, Geometry must be a Polygon.
-# # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
-# function exteriorRing(ptr::GEOSGeom)
-#     result = GEOSGetExteriorRing(ptr)
-#     if result == C_NULL
-#         error("LibGEOS: Error in GEOSGetExteriorRing")
-#     end
-#     result
-# end
+interiorRings(obj::Polygon) = map(LinearRing, interiorRings(obj.ptr))
+exteriorRing(obj::Polygon) = LinearRing(exteriorRing(obj.ptr))
 
 # # Return -1 on exception
 # function numCoordinates(ptr::GEOSGeom)
@@ -417,63 +347,25 @@ end
 #     result
 # end
 
+numPoints(obj::LineString) = numPoints(obj.ptr) # Call only on LINESTRING
 startPoint(obj::LineString) = Point(startPoint(obj.ptr)) # Call only on LINESTRING
 endPoint(obj::LineString) = Point(endPoint(obj.ptr)) # Call only on LINESTRING
 
 # # -----
 # # Misc functions
 # # -----
-# function geomArea(ptr::GEOSGeom)
-#     area = Array(Float64, 1)
-#     # Return 0 on exception, 1 otherwise
-#     result = GEOSArea(ptr, pointer(area))
-#     if result == 0
-#         error("LibGEOS: Error in GEOSArea")
-#     end
-#     area[1]
-# end
+for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
+    @eval area(obj::$geom) = geomArea(obj.ptr)
+    @eval geomLength(obj::$geom) = geomLength(obj.ptr)
+end
 
-# function geomLength(ptr::GEOSGeom)
-#     len = Array(Float64, 1)
-#     # Return 0 on exception, 1 otherwise
-#     result = GEOSLength(ptr, pointer(len))
-#     if result == 0
-#         error("LibGEOS: Error in GEOSLength")
-#     end
-#     len[1]
-# end
-
-# function geomDistance(g1::GEOSGeom, g2::GEOSGeom)
-#     dist = Array(Float64, 1)
-#     # Return 0 on exception, 1 otherwise
-#     result = GEOSDistance(g1, g2, pointer(dist))
-#     if result == 0
-#         error("LibGEOS: Error in GEOSDistance")
-#     end
-#     dist[1]
-# end
-
-# function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom)
-#     dist = Array(Float64, 1)
-#     # Return 0 on exception, 1 otherwise
-#     result = GEOSHausdorffDistance(g1, g2, pointer(dist))
-#     if result == 0
-#         error("LibGEOS: Error in GEOSHausdorffDistance")
-#     end
-#     dist[1]
-# end
-
-# function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, densifyFrac::Float64)
-#     dist = Array(Float64, 1)
-#     # Return 0 on exception, 1 otherwise
-#     result = GEOSHausdorffDistanceDensify(g1, g2, densifyFrac, pointer(dist))
-#     if result == 0
-#         error("LibGEOS: Error in GEOSHausdorffDistanceDensify")
-#     end
-#     dist[1]
-# end
-
-getLength(obj::LineString) = getLength(obj.ptr) # Call only on LINESTRING
+for g1 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
+    for g2 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
+        @eval distance(obj1::$g1, obj2::$g2) = geomDistance(obj1.ptr, obj2.ptr)
+        @eval hausdorffdistance(obj1::$g1, obj2::$g2) = hausdorffdistance(obj1.ptr, obj2.ptr)
+        @eval hausdorffdistance(obj1::$g1, obj2::$g2, densify::Float64) = hausdorffdistance(obj1.ptr, obj2.ptr, densify)
+    end
+end
 
 # Returns the closest points of the two geometries. The first point comes from g1 geometry and the second point comes from g2.
 for g1 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)

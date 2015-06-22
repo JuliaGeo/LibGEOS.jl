@@ -275,9 +275,12 @@ end
 # -----
 # Buffer related functions
 # -----
+# Computes the buffer of a geometry, for both positive and negative buffer distances.
+# Since true buffer curves may contain circular arcs, computed buffer polygons can only be approximations to the true geometry.
+# The user can control the accuracy of the curve approximation by specifying the number of linear segments with which to approximate a curve.
 
-# always returns a polygon
-buffer(ptr::GEOSGeom, width::Float64, quadsegs::Int) = GEOSBuffer(ptr, width, int32(quadsegs))
+# Always returns a polygon. The negative or zero-distance buffer of lines and points is always an empty Polygon.
+buffer(ptr::GEOSGeom, width::Float64, quadsegs::Int=8) = GEOSBuffer(ptr, width, int32(quadsegs))
 
 # enum GEOSBufCapStyles
 # enum GEOSBufJoinStyles
@@ -882,7 +885,7 @@ function getGeometry(ptr::GEOSGeom, n::Int)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetGeometryN")
     end
-    result
+    cloneGeom(result)
 end
 getGeometries(ptr::GEOSGeom) = GEOSGeom[getGeometry(ptr, i) for i=1:numGeometries(ptr)]
 
@@ -936,11 +939,11 @@ end
 # Return NULL on exception, Geometry must be a Polygon.
 # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
 function interiorRing(ptr::GEOSGeom, n::Int)
-    result = GEOSGetInteriorRingN(ptr, int32(n))
+    result = GEOSGetInteriorRingN(ptr, int32(n-1))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetInteriorRingN")
     end
-    result
+    cloneGeom(result)
 end
 
 function interiorRings(ptr::GEOSGeom)
@@ -948,7 +951,7 @@ function interiorRings(ptr::GEOSGeom)
     if n == 0
         return GEOSGeom[]
     else
-        return GEOSGeom[GEOSGetInteriorRingN(ptr, int32(i)) for i=0:n-1]
+        return GEOSGeom[interiorRing(ptr, i) for i=1:n]
     end
 end
 
@@ -959,7 +962,7 @@ function exteriorRing(ptr::GEOSGeom)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetExteriorRing")
     end
-    result
+    cloneGeom(result)
 end
 
 # Return -1 on exception
@@ -1065,17 +1068,6 @@ function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, densifyFrac::Float64)
         error("LibGEOS: Error in GEOSHausdorffDistanceDensify")
     end
     dist[1]
-end
-
-# Call only on LINESTRING
-function getLength(ptr::GEOSGeom)
-    len = Array(Float64, 1)
-    # Return 0 on exception, 1 otherwise
-    result = GEOSGeomGetLength(ptr, pointer(len))
-    if result == 0
-        error("LibGEOS: Error in GEOSGeomGetLength")
-    end
-    len[1]
 end
 
 # Return 0 on exception, the closest points of the two geometries otherwise.

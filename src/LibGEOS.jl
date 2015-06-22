@@ -15,8 +15,8 @@ module LibGEOS
             disjoint, touches, intersects, crosses, within, contains, overlaps, equals, equalsexact, covers, coveredby, 
             prepareGeom, prepcontains, prepcontainsproperly, prepcoveredby, prepcovers, prepcrosses,
             prepdisjoint, prepintersects, prepoverlaps, preptouches, prepwithin,
-            isEmpty, isSimple, isRing, hasZ, isClosed, isValid,
-            normalize!, startPoint, endPoint, geomArea, geomLength, geomDistance, hausdorffdistance, getLength, nearestPoints
+            isEmpty, isSimple, isRing, hasZ, isClosed, isValid, normalize!, interiorRings, exteriorRing,
+            numPoints, startPoint, endPoint, area, geomLength, distance, hausdorffdistance, nearestPoints
 
     include("geos_c.jl")
     
