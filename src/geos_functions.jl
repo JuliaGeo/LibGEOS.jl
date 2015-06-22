@@ -387,6 +387,12 @@ function intersection(g1::GEOSGeom, g2::GEOSGeom)
     result
 end
 
+@doc """
+Returns a Geometry that represents the convex hull of the input geometry. The returned geometry contains the minimal number of points needed to represent the convex hull. In particular, no more than two consecutive points will be collinear.
+
+Returns:
+if the convex hull contains 3 or more points, a Polygon; 2 points, a LineString; 1 point, a Point; 0 points, an empty GeometryCollection.
+""" ->
 function convexhull(ptr::GEOSGeom)
     result = GEOSConvexHull(ptr)
     if result == C_NULL
@@ -612,7 +618,7 @@ function equals(g1::GEOSGeom, g2::GEOSGeom)
     bool(result)
 end
 
-function equalsexact(g1::GEOSGeom, g2::GEOSGeom, tol)
+function equalsexact(g1::GEOSGeom, g2::GEOSGeom, tol::Float64)
     result = GEOSEqualsExact(g1, g2, tol)
     if result == 0x02
         error("LibGEOS: Error in GEOSEqualsExact")
@@ -882,7 +888,7 @@ getGeometries(ptr::GEOSGeom) = GEOSGeom[getGeometry(ptr, i) for i=1:numGeometrie
 
 # Converts Geometry to normal form (or canonical form).
 # Return -1 on exception, 0 otherwise.
-function normalize(ptr::GEOSGeom)
+function normalize!(ptr::GEOSGeom)
     result = GEOSNormalize(ptr)
     if result == -1
         error("LibGEOS: Error in GEOSNormalize")
