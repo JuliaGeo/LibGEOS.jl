@@ -5,9 +5,6 @@
 #   GEOSGeom objects to avoid memory leaks, and to GEOSFree()
 #   all returned char * (unless const).
 
-# Supported geometry types
-# This was renamed from GEOSGeomTypeId in GEOS 2.2.X, which might
-# break compatibility, this issue is still under investigation.
 GEOMTYPE = @compat Dict( GEOS_POINT => :Point,
                          GEOS_LINESTRING => :LineString,
                          GEOS_LINEARRING => :LinearRing,
@@ -390,12 +387,10 @@ function intersection(g1::GEOSGeom, g2::GEOSGeom)
     result
 end
 
-@doc """
-Returns a Geometry that represents the convex hull of the input geometry. The returned geometry contains the minimal number of points needed to represent the convex hull. In particular, no more than two consecutive points will be collinear.
+# Returns a Geometry that represents the convex hull of the input geometry. The returned geometry contains the minimal number of points needed to represent the convex hull. In particular, no more than two consecutive points will be collinear.
 
-Returns:
-if the convex hull contains 3 or more points, a Polygon; 2 points, a LineString; 1 point, a Point; 0 points, an empty GeometryCollection.
-""" ->
+# Returns:
+# if the convex hull contains 3 or more points, a Polygon; 2 points, a LineString; 1 point, a Point; 0 points, an empty GeometryCollection.
 function convexhull(ptr::GEOSGeom)
     result = GEOSConvexHull(ptr)
     if result == C_NULL

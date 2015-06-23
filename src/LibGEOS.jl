@@ -2,8 +2,7 @@ module LibGEOS
 
     @unix_only const libgeos = "libgeos_c"
 
-    using Compat, GeoInterface, Docile
-    @docstrings
+    using Compat, GeoInterface
 
     export  Point, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection,
             parseWKT, geomFromWKT, geomToWKT,
