@@ -37,14 +37,10 @@ to your start-up file (e.g. ``.bash_profile``).
 
 2. At the Julia prompt, run 
   ```julia
-  julia> Pkg.clone("https://github.com/yeesian/LibGEOS.jl.git")
-  ```
-3. `LibGEOS` has dependencies on [GeoInterface](https://github.com/yeesian/GeoInterface.jl), so you will need to install it by running
-  ```julia
-  julia> Pkg.clone(https://github.com/yeesian/GeoInterface.jl.git)
+  julia> Pkg.add("LibGEOS")
   ```
 
-4. Test that `LibGEOS` works by runnning
+3. Test that `LibGEOS` works by runnning
   ```julia
   julia> Pkg.test("LibGEOS")
   ```
