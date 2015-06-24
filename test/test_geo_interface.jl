@@ -60,7 +60,7 @@ factcheck_equals(GeoInterface.coordinates(polygon), coords)
 @fact GeoInterface.geotype(polygon) => :Polygon
 
 polygon = LibGEOS.Polygon(LibGEOS.geomFromWKT("POLYGON EMPTY"))
-factcheck_equals(GeoInterface.coordinates(polygon), Vector{Vector{Float64}}[[[]]])
+factcheck_equals(GeoInterface.coordinates(polygon), Vector{Vector{Float64}}[[]])
 @fact GeoInterface.geotype(polygon) => :Polygon
 
 multipolygon = LibGEOS.MultiPolygon(LibGEOS.geomFromWKT("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))"))
