@@ -12,7 +12,7 @@ function GeoInterface.coordinates(polygon::Polygon)
     if length(interiors) == 0
         return Vector{Vector{Float64}}[exterior]
     else
-        return [Vector{Vector{Float64}}[exterior], interiors]
+        return [Vector{Vector{Float64}}[exterior]; interiors]
     end
 end
 
@@ -24,14 +24,14 @@ function GeoInterface.coordinates(multipolygon::MultiPolygon)
     for (i,geom) in enumerate(getGeometries(multipolygon.ptr))
         exterior = getCoordinates(getCoordSeq(exteriorRing(geom)))
         interiors = [getCoordinates(getCoordSeq(ring)) for ring in interiorRings(geom)]
-        coords[i] = [Vector{Vector{Float64}}[exterior], interiors]
+        coords[i] = [Vector{Vector{Float64}}[exterior]; interiors]
     end
     coords
 end
 
 function GeoInterface.geometries(obj::GeometryCollection)
     collection = GeoInterface.AbstractGeometry[]
-    sizehint(collection, numGeometries(obj.ptr))
+    sizehint!(collection, numGeometries(obj.ptr))
     for geom in getGeometries(obj.ptr)
         if geomTypeId(geom) == GEOS_POINT
             push!(collection, Point(cloneGeom(geom)))

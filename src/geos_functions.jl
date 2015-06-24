@@ -31,7 +31,7 @@ geomToWKT(geom::Ptr{GEOSGeometry}) = bytestring(GEOSGeomToWKT(geom))
 # Create a Coordinate sequence with ``size'' coordinates of ``dims'' dimensions (Return NULL on exception)
 function createCoordSeq(size::Int, ndim::Int)
     @assert ndim >= 2
-    result = GEOSCoordSeq_create(uint32(size), uint32(ndim))
+    result = GEOSCoordSeq_create(@compat(UInt32(size)), @compat(UInt32(ndim)))
     if result == C_NULL
         error("LibGEOS: Error in GEOSCoordSeq_create")
     end
@@ -57,7 +57,7 @@ end
 
 # Set ordinate values in a Coordinate Sequence (Return 0 on exception)
 function setX!(ptr::GEOSCoordSeq, i::Int, value::Float64)
-    result = GEOSCoordSeq_setX(ptr, uint32(i-1), value)
+    result = GEOSCoordSeq_setX(ptr, @compat(UInt32(i-1)), value)
     if result == 0
         error("LibGEOS: Error in GEOSCoordSeq_setX")
     end
@@ -65,7 +65,7 @@ function setX!(ptr::GEOSCoordSeq, i::Int, value::Float64)
 end
 
 function setY!(ptr::GEOSCoordSeq, i::Int, value::Float64)
-    result = GEOSCoordSeq_setY(ptr, uint32(i-1), value)
+    result = GEOSCoordSeq_setY(ptr, @compat(UInt32(i-1)), value)
     if result == 0
         error("LibGEOS: Error in GEOSCoordSeq_setY")
     end
@@ -73,7 +73,7 @@ function setY!(ptr::GEOSCoordSeq, i::Int, value::Float64)
 end
 
 function setZ!(ptr::GEOSCoordSeq, i::Int, value::Float64)
-    result = GEOSCoordSeq_setZ(ptr, uint32(i-1), value)
+    result = GEOSCoordSeq_setZ(ptr, @compat(UInt32(i-1)), value)
     if result == 0
         error("LibGEOS: Error in GEOSCoordSeq_setZ")
     end
@@ -82,7 +82,7 @@ end
 
 # Get ordinate values from a Coordinate Sequence (Return 0 on exception)
 function getX!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64})
-    result = GEOSCoordSeq_getX(ptr, uint32(index-1), pointer(coord))
+    result = GEOSCoordSeq_getX(ptr, @compat(UInt32(index-1)), pointer(coord))
     if result == 0
         error("LibGEOS: Error in GEOSCoordSeq_getX")
     end
@@ -90,7 +90,7 @@ function getX!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64})
 end
 
 function getY!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64})
-    result = GEOSCoordSeq_getY(ptr, uint32(index-1), pointer(coord))
+    result = GEOSCoordSeq_getY(ptr, @compat(UInt32(index-1)), pointer(coord))
     if result == 0
         error("LibGEOS: Error in GEOSCoordSeq_getY")
     end
@@ -98,7 +98,7 @@ function getY!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64})
 end
 
 function getZ!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64})
-    result = GEOSCoordSeq_getZ(ptr, uint32(index-1), pointer(coord))
+    result = GEOSCoordSeq_getZ(ptr, @compat(UInt32(index-1)), pointer(coord))
     if result == 0
         error("LibGEOS: Error in GEOSCoordSeq_getZ")
     end
@@ -106,23 +106,23 @@ function getZ!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64})
 end
 
 function getSize(ptr::GEOSCoordSeq)
-    ncoords = Array(Uint32, 1)
+    ncoords = Array(UInt32, 1)
     # Get size info from a Coordinate Sequence (Return 0 on exception)
     result = GEOSCoordSeq_getSize(ptr, pointer(ncoords))
     if result == 0
         error("LibGEOS: Error in GEOSCoordSeq_getSize")
     end
-    int(ncoords[1])
+    @compat Int(ncoords[1])
 end
 
 function getDimensions(ptr::GEOSCoordSeq)
-    ndim = Array(Uint32, 1)
+    ndim = Array(UInt32, 1)
     # Get dimensions info from a Coordinate Sequence (Return 0 on exception)
     result = GEOSCoordSeq_getDimensions(ptr, pointer(ndim))
     if result == 0
         error("LibGEOS: Error in GEOSCoordSeq_getDimensions")
     end
-    int(ndim[1])
+    @compat Int(ndim[1])
 end
 
 # convenience functions
@@ -180,7 +180,7 @@ function getX(ptr::GEOSCoordSeq)
     start = pointer(xcoords)
     floatsize = sizeof(Float64)
     for i=0:ncoords-1
-        GEOSCoordSeq_getX(ptr, uint32(i), start + i*floatsize)
+        GEOSCoordSeq_getX(ptr, @compat(UInt32(i)), start + i*floatsize)
     end
     xcoords
 end
@@ -197,7 +197,7 @@ function getY(ptr::GEOSCoordSeq)
     start = pointer(ycoords)
     floatsize = sizeof(Float64)
     for i=0:ncoords-1
-        GEOSCoordSeq_getY(ptr, uint32(i), start + i*floatsize)
+        GEOSCoordSeq_getY(ptr, @compat(UInt32(i)), start + i*floatsize)
     end
     ycoords
 end
@@ -214,7 +214,7 @@ function getZ(ptr::GEOSCoordSeq)
     start = pointer(zcoords)
     floatsize = sizeof(Float64)
     for i=0:ncoords-1
-        GEOSCoordSeq_getZ(ptr, uint32(i), start + i*floatsize)
+        GEOSCoordSeq_getZ(ptr, @compat(UInt32(i)), start + i*floatsize)
     end
     zcoords
 end
@@ -224,10 +224,10 @@ function getCoordinates(ptr::GEOSCoordSeq, i::Int)
     coord = Array(Float64, ndim)
     start = pointer(coord)
     floatsize = sizeof(Float64)
-    GEOSCoordSeq_getX(ptr, uint32(i-1), start)
-    GEOSCoordSeq_getY(ptr, uint32(i-1), start+floatsize)
+    GEOSCoordSeq_getX(ptr, @compat(UInt32(i-1)), start)
+    GEOSCoordSeq_getY(ptr, @compat(UInt32(i-1)), start+floatsize)
     if ndim == 3
-        GEOSCoordSeq_getZ(ptr, uint32(i-1), start+2*floatsize)
+        GEOSCoordSeq_getZ(ptr, @compat(UInt32(i-1)), start+2*floatsize)
     end
     coord
 end
@@ -236,7 +236,7 @@ function getCoordinates(ptr::GEOSCoordSeq)
     ndim = getDimensions(ptr)
     ncoords = getSize(ptr)
     coordseq = Vector{Float64}[]
-    sizehint(coordseq, ncoords)
+    sizehint!(coordseq, ncoords)
     for i=1:ncoords
         push!(coordseq, getCoordinates(ptr, i))
     end
@@ -277,7 +277,7 @@ end
 # The user can control the accuracy of the curve approximation by specifying the number of linear segments with which to approximate a curve.
 
 # Always returns a polygon. The negative or zero-distance buffer of lines and points is always an empty Polygon.
-buffer(ptr::GEOSGeom, width::Float64, quadsegs::Int=8) = GEOSBuffer(ptr, width, int32(quadsegs))
+buffer(ptr::GEOSGeom, width::Float64, quadsegs::Int=8) = GEOSBuffer(ptr, width, @compat(Int32(quadsegs)))
 
 # enum GEOSBufCapStyles
 # enum GEOSBufJoinStyles
@@ -332,7 +332,7 @@ createLineString(coords::Vector{Vector{Float64}}) = GEOSGeom_createLineString(cr
 # The caller remains owner of the array, but pointed-to
 # objects become ownership of the returned GEOSGeometry.
 function createPolygon(shell::GEOSGeom, holes::Vector{GEOSGeom})
-    result = GEOSGeom_createPolygon(shell, pointer(holes), uint32(length(holes)))
+    result = GEOSGeom_createPolygon(shell, pointer(holes), @compat(UInt32(length(holes))))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_createPolygon")
     end
@@ -341,7 +341,7 @@ end
 
 
 function createCollection(geomtype::Int, geoms::Vector{GEOSGeom})
-    result = GEOSGeom_createCollection(int32(geomtype), pointer(geoms), length(geoms))
+    result = GEOSGeom_createCollection(@compat(Int32(geomtype)), pointer(geoms), length(geoms))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_createCollection")
     end
@@ -349,7 +349,7 @@ function createCollection(geomtype::Int, geoms::Vector{GEOSGeom})
 end
 
 function createEmptyCollection(geomtype::Int)
-    result = GEOSGeom_createEmptyCollection(int32(geomtype))
+    result = GEOSGeom_createEmptyCollection(@compat(Int32(geomtype)))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_createEmptyCollection")
     end
@@ -542,7 +542,7 @@ end
 #
 # @return  a newly allocated geometry, or NULL on exception
 function delaunayTriangulation(ptr::GEOSGeom, tol::Float64=0.0, onlyEdges::Bool=false)
-    result = GEOSDelaunayTriangulation(ptr, tol, int32(onlyEdges))
+    result = GEOSDelaunayTriangulation(ptr, tol, @compat(Int32(onlyEdges)))
     if result == C_NULL
         error("LibGEOS: Error in GEOSDelaunayTriangulation")
     end
@@ -557,7 +557,7 @@ function disjoint(g1::GEOSGeom, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSDisjoint")
     end
-    bool(result)
+    result != 0x00
 end
 
 function touches(g1::GEOSGeom, g2::GEOSGeom)
@@ -565,7 +565,7 @@ function touches(g1::GEOSGeom, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSTouches")
     end
-    bool(result)
+    result != 0x00
 end
 
 function intersects(g1::GEOSGeom, g2::GEOSGeom)
@@ -573,7 +573,7 @@ function intersects(g1::GEOSGeom, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSIntersects")
     end
-    bool(result)
+    result != 0x00
 end
 
 function crosses(g1::GEOSGeom, g2::GEOSGeom)
@@ -581,7 +581,7 @@ function crosses(g1::GEOSGeom, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSCrosses")
     end
-    bool(result)
+    result != 0x00
 end
 
 function within(g1::GEOSGeom, g2::GEOSGeom)
@@ -589,7 +589,7 @@ function within(g1::GEOSGeom, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSWithin")
     end
-    bool(result)
+    result != 0x00
 end
 
 function contains(g1::GEOSGeom, g2::GEOSGeom)
@@ -597,7 +597,7 @@ function contains(g1::GEOSGeom, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSContains")
     end
-    bool(result)
+    result != 0x00
 end
 
 function overlaps(g1::GEOSGeom, g2::GEOSGeom)
@@ -605,7 +605,7 @@ function overlaps(g1::GEOSGeom, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSOverlaps")
     end
-    bool(result)
+    result != 0x00
 end
 
 function equals(g1::GEOSGeom, g2::GEOSGeom)
@@ -613,7 +613,7 @@ function equals(g1::GEOSGeom, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSEquals")
     end
-    bool(result)
+    result != 0x00
 end
 
 function equalsexact(g1::GEOSGeom, g2::GEOSGeom, tol::Float64)
@@ -621,7 +621,7 @@ function equalsexact(g1::GEOSGeom, g2::GEOSGeom, tol::Float64)
     if result == 0x02
         error("LibGEOS: Error in GEOSEqualsExact")
     end
-    bool(result)
+    result != 0x00
 end
 
 function covers(g1::GEOSGeom, g2::GEOSGeom)
@@ -629,7 +629,7 @@ function covers(g1::GEOSGeom, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSCovers")
     end
-    bool(result)
+    result != 0x00
 end
 
 function coveredby(g1::GEOSGeom, g2::GEOSGeom)
@@ -637,7 +637,7 @@ function coveredby(g1::GEOSGeom, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSCoveredBy")
     end
-    bool(result)
+    result != 0x00
 end
 
 # -----
@@ -660,7 +660,7 @@ function prepcontains(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedContains")
     end
-    bool(result)
+    result != 0x00
 end
 
 function prepcontainsproperly(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
@@ -668,7 +668,7 @@ function prepcontainsproperly(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedContainsProperly")
     end
-    bool(result)
+    result != 0x00
 end
 
 function prepcoveredby(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
@@ -676,7 +676,7 @@ function prepcoveredby(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedCoveredBy")
     end
-    bool(result)
+    result != 0x00
 end
 
 function prepcovers(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
@@ -684,7 +684,7 @@ function prepcovers(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedCovers")
     end
-    bool(result)
+    result != 0x00
 end
 
 function prepcrosses(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
@@ -692,7 +692,7 @@ function prepcrosses(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedCrosses")
     end
-    bool(result)
+    result != 0x00
 end
 
 function prepdisjoint(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
@@ -700,7 +700,7 @@ function prepdisjoint(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedDisjoint")
     end
-    bool(result)
+    result != 0x00
 end
 
 function prepintersects(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
@@ -708,7 +708,7 @@ function prepintersects(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedIntersects")
     end
-    bool(result)
+    result != 0x00
 end
 
 function prepoverlaps(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
@@ -716,7 +716,7 @@ function prepoverlaps(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedOverlaps")
     end
-    bool(result)
+    result != 0x00
 end
 
 function preptouches(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
@@ -724,7 +724,7 @@ function preptouches(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedTouches")
     end
-    bool(result)
+    result != 0x00
 end
 
 function prepwithin(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
@@ -732,7 +732,7 @@ function prepwithin(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedWithin")
     end
-    bool(result)
+    result != 0x00
 end
 
 # -----
@@ -753,7 +753,7 @@ function isEmpty(ptr::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSisEmpty")
     end
-    bool(result)
+    result != 0x00
 end
 
 function isSimple(ptr::GEOSGeom)
@@ -761,7 +761,7 @@ function isSimple(ptr::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSisSimple")
     end
-    bool(result)
+    result != 0x00
 end
 
 function isRing(ptr::GEOSGeom)
@@ -769,7 +769,7 @@ function isRing(ptr::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSisRing")
     end
-    bool(result)
+    result != 0x00
 end
 
 function hasZ(ptr::GEOSGeom)
@@ -777,7 +777,7 @@ function hasZ(ptr::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSHasZ")
     end
-    bool(result)
+    result != 0x00
 end
 
 # Call only on LINESTRING (return 2 on exception, 1 on true, 0 on false)
@@ -786,7 +786,7 @@ function isClosed(ptr::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSisClosed")
     end
-    bool(result)
+    result != 0x00
 end
 
 # -----
@@ -812,7 +812,7 @@ function isValid(ptr::GEOSGeom)
     if result == 0x02
         error("LibGEOS: Error in GEOSisValid")
     end
-    bool(result)
+    result != 0x00
 end
 
 # * return NULL on exception, a string to GEOSFree otherwise
@@ -876,7 +876,7 @@ end
 # Up to GEOS 3.2.0 the input geometry must be a Collection, in
 # later version it doesn't matter (i.e. getGeometryN(0) for a single will return the input).
 function getGeometry(ptr::GEOSGeom, n::Int)
-    result = GEOSGetGeometryN(ptr, int32(n-1))
+    result = GEOSGetGeometryN(ptr, @compat(Int32(n-1)))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetGeometryN")
     end
@@ -934,7 +934,7 @@ end
 # Return NULL on exception, Geometry must be a Polygon.
 # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
 function interiorRing(ptr::GEOSGeom, n::Int)
-    result = GEOSGetInteriorRingN(ptr, int32(n-1))
+    result = GEOSGetInteriorRingN(ptr, @compat(Int32(n-1)))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetInteriorRingN")
     end
@@ -987,7 +987,7 @@ getCoordinateDimension(ptr::GEOSGeom) = int(GEOSGeom_getCoordinateDimension(ptr)
 
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
 function getPoint(ptr::GEOSGeom, n::Int)
-    result = GEOSGeomGetPointN(ptr, int32(n-1))
+    result = GEOSGeomGetPointN(ptr, @compat(Int32(n-1)))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeomGetPointN")
     end
