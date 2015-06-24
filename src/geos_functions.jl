@@ -105,24 +105,28 @@ function getZ!(ptr::GEOSCoordSeq, index::Int, coord::Vector{Float64})
     result
 end
 
-function getSize(ptr::GEOSCoordSeq)
-    ncoords = Array(UInt32, 1)
-    # Get size info from a Coordinate Sequence (Return 0 on exception)
-    result = GEOSCoordSeq_getSize(ptr, pointer(ncoords))
-    if result == 0
-        error("LibGEOS: Error in GEOSCoordSeq_getSize")
+let out = Array(UInt32, 1)
+    global getSize
+    function getSize(ptr::GEOSCoordSeq)
+        # Get size info from a Coordinate Sequence (Return 0 on exception)
+        result = GEOSCoordSeq_getSize(ptr, pointer(out))
+        if result == 0
+            error("LibGEOS: Error in GEOSCoordSeq_getSize")
+        end
+        @compat Int(out[1])
     end
-    @compat Int(ncoords[1])
 end
 
-function getDimensions(ptr::GEOSCoordSeq)
-    ndim = Array(UInt32, 1)
-    # Get dimensions info from a Coordinate Sequence (Return 0 on exception)
-    result = GEOSCoordSeq_getDimensions(ptr, pointer(ndim))
-    if result == 0
-        error("LibGEOS: Error in GEOSCoordSeq_getDimensions")
+let out = Array(UInt32, 1)
+    global getDimensions
+    function getDimensions(ptr::GEOSCoordSeq)
+        # Get dimensions info from a Coordinate Sequence (Return 0 on exception)
+        result = GEOSCoordSeq_getDimensions(ptr, pointer(out))
+        if result == 0
+            error("LibGEOS: Error in GEOSCoordSeq_getDimensions")
+        end
+        @compat Int(out[1])
     end
-    @compat Int(ndim[1])
 end
 
 # convenience functions
@@ -168,10 +172,12 @@ function createCoordSeq(coords::Vector{Vector{Float64}})
     coordinates
 end
 
-function getX(ptr::GEOSCoordSeq, i::Int)
-    coord = Array(Float64, 1)
-    getX!(ptr, i, coord)
-    coord[1]
+let out = Array(Float64, 1)
+    global getX
+    function getX(ptr::GEOSCoordSeq, i::Int)
+        getX!(ptr, i, out)
+        out[1]
+    end
 end
 
 function getX(ptr::GEOSCoordSeq)
@@ -185,10 +191,13 @@ function getX(ptr::GEOSCoordSeq)
     xcoords
 end
 
-function getY(ptr::GEOSCoordSeq, i::Int)
-    coord = Array(Float64, 1)
-    getY!(ptr, i, coord)
-    coord[1]
+let out = Array(Float64, 1)
+    global getY
+    function getY(ptr::GEOSCoordSeq, i::Int)
+        out = Array(Float64, 1)
+        getY!(ptr, i, out)
+        out[1]
+    end
 end
 
 function getY(ptr::GEOSCoordSeq)
@@ -202,10 +211,12 @@ function getY(ptr::GEOSCoordSeq)
     ycoords
 end
 
-function getZ(ptr::GEOSCoordSeq, i::Int)
-    coord = Array(Float64, 1)
-    getZ!(ptr, i, coord)
-    coord[1]
+let out = Array(Float64, 1)
+    global getZ
+    function getZ(ptr::GEOSCoordSeq, i::Int)
+        getZ!(ptr, i, out)
+        out[1]
+    end
 end
 
 function getZ(ptr::GEOSCoordSeq)
@@ -913,22 +924,26 @@ function numPoints(ptr::GEOSGeom)
 end
 
 # Return -1 on exception, Geometry must be a Point.
-function getGeomX(ptr::GEOSGeom)
-    x = Array(Float64, 1)
-    result = GEOSGeomGetX(ptr, pointer(x))
-    if result == -1
-        error("LibGEOS: Error in GEOSGeomGetX")
+let out = Array(Float64, 1)
+    global getGeomX
+    function getGeomX(ptr::GEOSGeom)
+        result = GEOSGeomGetX(ptr, pointer(out))
+        if result == -1
+            error("LibGEOS: Error in GEOSGeomGetX")
+        end
+        out[1]
     end
-    x[1]
 end
 
-function getGeomY(ptr::GEOSGeom)
-    y = Array(Float64, 1)
-    result = GEOSGeomGetY(ptr, pointer(y))
-    if result == -1
-        error("LibGEOS: Error in GEOSGeomGetY")
+let out = Array(Float64, 1)
+    global getGeomY
+    function getGeomY(ptr::GEOSGeom)
+        result = GEOSGeomGetY(ptr, pointer(out))
+        if result == -1
+            error("LibGEOS: Error in GEOSGeomGetY")
+        end
+        out[1]
     end
-    y[1]
 end
 
 # Return NULL on exception, Geometry must be a Polygon.
@@ -1015,54 +1030,64 @@ end
 # -----
 # Misc functions
 # -----
-function geomArea(ptr::GEOSGeom)
-    area = Array(Float64, 1)
-    # Return 0 on exception, 1 otherwise
-    result = GEOSArea(ptr, pointer(area))
-    if result == 0
-        error("LibGEOS: Error in GEOSArea")
+let out = Array(Float64, 1)
+    global geomArea
+    function geomArea(ptr::GEOSGeom)
+        # Return 0 on exception, 1 otherwise
+        result = GEOSArea(ptr, pointer(out))
+        if result == 0
+            error("LibGEOS: Error in GEOSArea")
+        end
+        out[1]
     end
-    area[1]
 end
 
-function geomLength(ptr::GEOSGeom)
-    len = Array(Float64, 1)
-    # Return 0 on exception, 1 otherwise
-    result = GEOSLength(ptr, pointer(len))
-    if result == 0
-        error("LibGEOS: Error in GEOSLength")
+let out = Array(Float64, 1)
+    global geomLength
+    function geomLength(ptr::GEOSGeom)
+        # Return 0 on exception, 1 otherwise
+        result = GEOSLength(ptr, pointer(out))
+        if result == 0
+            error("LibGEOS: Error in GEOSLength")
+        end
+        out[1]
     end
-    len[1]
 end
 
-function geomDistance(g1::GEOSGeom, g2::GEOSGeom)
-    dist = Array(Float64, 1)
-    # Return 0 on exception, 1 otherwise
-    result = GEOSDistance(g1, g2, pointer(dist))
-    if result == 0
-        error("LibGEOS: Error in GEOSDistance")
+let out = Array(Float64, 1)
+    global geomDistance
+    function geomDistance(g1::GEOSGeom, g2::GEOSGeom)
+        # Return 0 on exception, 1 otherwise
+        result = GEOSDistance(g1, g2, pointer(out))
+        if result == 0
+            error("LibGEOS: Error in GEOSDistance")
+        end
+        out[1]
     end
-    dist[1]
 end
 
-function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom)
-    dist = Array(Float64, 1)
-    # Return 0 on exception, 1 otherwise
-    result = GEOSHausdorffDistance(g1, g2, pointer(dist))
-    if result == 0
-        error("LibGEOS: Error in GEOSHausdorffDistance")
+let out = Array(Float64, 1)
+    global hausdorffdistance
+    function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom)
+        # Return 0 on exception, 1 otherwise
+        result = GEOSHausdorffDistance(g1, g2, pointer(out))
+        if result == 0
+            error("LibGEOS: Error in GEOSHausdorffDistance")
+        end
+        out[1]
     end
-    dist[1]
 end
 
-function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, densifyFrac::Float64)
-    dist = Array(Float64, 1)
-    # Return 0 on exception, 1 otherwise
-    result = GEOSHausdorffDistanceDensify(g1, g2, densifyFrac, pointer(dist))
-    if result == 0
-        error("LibGEOS: Error in GEOSHausdorffDistanceDensify")
+let out = Array(Float64, 1)
+    global hausdorffdistance
+    function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, densifyFrac::Float64)
+        # Return 0 on exception, 1 otherwise
+        result = GEOSHausdorffDistanceDensify(g1, g2, densifyFrac, pointer(out))
+        if result == 0
+            error("LibGEOS: Error in GEOSHausdorffDistanceDensify")
+        end
+        out[1]
     end
-    dist[1]
 end
 
 # Return 0 on exception, the closest points of the two geometries otherwise.

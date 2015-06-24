@@ -292,22 +292,26 @@ for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :P
 end
 
 # # Return -1 on exception, Geometry must be a Point.
-# function getGeomX(ptr::GEOSGeom)
-#     x = Array(Float64, 1)
-#     result = GEOSGeomGetX(ptr, pointer(x))
-#     if result == -1
-#         error("LibGEOS: Error in GEOSGeomGetX")
+# let out = Array(Float64, 1)
+#     global getGeomX
+#     function getGeomX(ptr::GEOSGeom)
+#         result = GEOSGeomGetX(ptr, pointer(out))
+#         if result == -1
+#             error("LibGEOS: Error in GEOSGeomGetX")
+#         end
+#         out[1]
 #     end
-#     x[1]
 # end
 
-# function getGeomY(ptr::GEOSGeom)
-#     y = Array(Float64, 1)
-#     result = GEOSGeomGetY(ptr, pointer(y))
-#     if result == -1
-#         error("LibGEOS: Error in GEOSGeomGetY")
+# let out = Array(Float64, 1)
+#     global getGeomY
+#     function getGeomY(ptr::GEOSGeom)
+#         result = GEOSGeomGetY(ptr, pointer(out))
+#         if result == -1
+#             error("LibGEOS: Error in GEOSGeomGetY")
+#         end
+#         out[1]
 #     end
-#     y[1]
 # end
 
 interiorRings(obj::Polygon) = map(LinearRing, interiorRings(obj.ptr))
