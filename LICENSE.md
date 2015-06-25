@@ -1,4 +1,4 @@
-Copyright (c) 2015: Fabian Gans, Ng Yee Sian
+Copyright (c) 2015: Fabian Gans, Sean Garborg, Ng Yee Sian
          
 The LibGEOS module is licensed under the **[LGPL]** version 3:
 
