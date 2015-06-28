@@ -9,6 +9,7 @@ type Point <: GeoInterface.AbstractPoint
     Point(coords::Vector{Float64}) = Point(createPoint(coords))
     Point(x::Float64, y::Float64) = Point(createPoint(x,y))
     Point(x::Float64, y::Float64, z::Float64) = Point(createPoint(x,y,z))
+    Point{T<:GeoInterface.AbstractPoint}(obj::T) = Point(GeoInterface.coordinates(obj))
 end
 
 type MultiPoint <: GeoInterface.AbstractMultiPoint
@@ -20,6 +21,7 @@ type MultiPoint <: GeoInterface.AbstractMultiPoint
         multipoint
     end
     MultiPoint(multipoint::Vector{Vector{Float64}}) = MultiPoint(createCollection(GEOS_MULTIPOINT, GEOSGeom[createPoint(coords) for coords in multipoint]))
+    MultiPoint{T<:GeoInterface.AbstractMultiPoint}(obj::T) = MultiPoint(GeoInterface.coordinates(obj))
 end
 
 type LineString <: GeoInterface.AbstractLineString
@@ -31,6 +33,7 @@ type LineString <: GeoInterface.AbstractLineString
         line
     end
     LineString(line::Vector{Vector{Float64}}) = LineString(createLineString(line))
+    LineString{T<:GeoInterface.AbstractLineString}(obj::T) = LineString(GeoInterface.coordinates(obj))
 end
 
 type MultiLineString <: GeoInterface.AbstractMultiLineString
@@ -42,6 +45,7 @@ type MultiLineString <: GeoInterface.AbstractMultiLineString
         multiline
     end
     MultiLineString(multiline::Vector{Vector{Vector{Float64}}}) = MultiLineString(createCollection(GEOS_MULTILINESTRING, GEOSGeom[createLineString(coords) for coords in multiline]))
+    MultiLineString{T<:GeoInterface.AbstractMultiLineString}(obj::T) = MultiLineString(GeoInterface.coordinates(obj))
 end
 
 type LinearRing <: GeoInterface.AbstractLineString
@@ -53,6 +57,7 @@ type LinearRing <: GeoInterface.AbstractLineString
         ring
     end
     LinearRing(ring::Vector{Vector{Float64}}) = LinearRing(createLinearRing(ring))
+    LinearRing{T<:GeoInterface.AbstractLineString}(obj::T) = LinearRing(GeoInterface.coordinates(obj))
 end
 
 type Polygon <: GeoInterface.AbstractPolygon
@@ -70,6 +75,7 @@ type Polygon <: GeoInterface.AbstractPolygon
         finalizer(polygon, destroyGeom)
         polygon
     end
+    Polygon{T<:GeoInterface.AbstractPolygon}(obj::T) = Polygon(GeoInterface.coordinates(obj))
 end
 
 type MultiPolygon <: GeoInterface.AbstractMultiPolygon
@@ -81,6 +87,7 @@ type MultiPolygon <: GeoInterface.AbstractMultiPolygon
         multipolygon
     end
     MultiPolygon(multipolygon::Vector{Vector{Vector{Vector{Float64}}}}) = MultiPolygon(createCollection(GEOS_MULTIPOLYGON, GEOSGeom[createPolygon(coords) for coords in multipolygon]))
+    MultiPolygon{T<:GeoInterface.AbstractMultiPolygon}(obj::T) = MultiPolygon(GeoInterface.coordinates(obj))
 end
 
 type GeometryCollection <: GeoInterface.AbstractGeometryCollection
