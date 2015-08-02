@@ -1,6 +1,6 @@
 module LibGEOS
 
-    @unix_only const libgeos = "libgeos_c"
+    const libgeos = @unix ? "libgeos_c" : "geos_c"
 
     using Compat, GeoInterface
 
