@@ -1,6 +1,10 @@
 module LibGEOS
 
-    @unix_only const libgeos = "libgeos_c"
+    if isfile(joinpath(dirname(@__FILE__),"..","deps","deps.jl"))
+        include("../deps/deps.jl")
+    else
+        error("LibGEOS not properly installed. Please run Pkg.build(\"LibGEOS\")")
+    end
 
     using Compat, GeoInterface
 
