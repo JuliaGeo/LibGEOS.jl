@@ -2,7 +2,7 @@ using BinDeps, Compat
 @BinDeps.setup
 
 libgeos = library_dependency("libgeos",aliases=["libgeos_c", "libgeos_c-1"], validate = function(path, handle)
-    return @compat(Libdl.dlsym_e(handle,:initGEOS)) != C_NULL
+    return @compat(Libdl.dlsym_e(handle,:initGEOS)) != C_NULL && @compat(Libdl.dlsym_e(handle,:GEOSDelaunayTriangulation)) != C_NULL
 end)
 
 version = "3.4.2"
