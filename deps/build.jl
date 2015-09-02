@@ -9,7 +9,7 @@ version = "3.4.2"
 
 provides(Sources, URI("http://download.osgeo.org/geos/geos-$(version).tar.bz2"), [libgeos], os = :Unix)
 provides(BuildProcess,Autotools(libtarget = "capi/.libs/libgeos_c."*BinDeps.shlib_ext),libgeos)
-provides(AptGet,"libgeos-dev", libgeos)
+# provides(AptGet,"libgeos-dev", libgeos)
 # TODO: provides(Yum,"libgeos-dev", libgeos)
 # TODO: provides(Pacman,"libgeos-dev", libgeos)
 
