@@ -352,7 +352,7 @@ end
 
 
 function createCollection(geomtype::Int, geoms::Vector{GEOSGeom})
-    result = GEOSGeom_createCollection(@compat(Int32(geomtype)), pointer(geoms), length(geoms))
+    result = GEOSGeom_createCollection(@compat(Int32(geomtype)), pointer(geoms), @compat(UInt32(length(geoms))))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_createCollection")
     end
@@ -1093,4 +1093,3 @@ end
 # Return 0 on exception, the closest points of the two geometries otherwise.
 # The first point comes from g1 geometry and the second point comes from g2.
 nearestPoints(g1::GEOSGeom, g2::GEOSGeom) = GEOSNearestPoints(g1, g2)
-
