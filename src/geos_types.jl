@@ -7,8 +7,8 @@ type Point <: GeoInterface.AbstractPoint
         point
     end
     Point(coords::Vector{Float64}) = Point(createPoint(coords))
-    Point(x::Float64, y::Float64) = Point(createPoint(x,y))
-    Point(x::Float64, y::Float64, z::Float64) = Point(createPoint(x,y,z))
+    Point(x::Real, y::Real) = Point(createPoint(x,y))
+    Point(x::Real, y::Real, z::Real) = Point(createPoint(x,y,z))
     Point{T<:GeoInterface.AbstractPoint}(obj::T) = Point(GeoInterface.coordinates(obj))
 end
 
@@ -86,7 +86,11 @@ type MultiPolygon <: GeoInterface.AbstractMultiPolygon
         finalizer(multipolygon, destroyGeom)
         multipolygon
     end
-    MultiPolygon(multipolygon::Vector{Vector{Vector{Vector{Float64}}}}) = MultiPolygon(createCollection(GEOS_MULTIPOLYGON, GEOSGeom[createPolygon(coords) for coords in multipolygon]))
+    MultiPolygon(multipolygon::Vector{Vector{Vector{Vector{Float64}}}}) =
+        MultiPolygon(createCollection(GEOS_MULTIPOLYGON,
+                                      GEOSGeom[createPolygon(createLinearRing(coords[1]),
+                                                             GEOSGeom[createLinearRing(c) for c in coords[2:end]])
+                                               for coords in multipolygon]))
     MultiPolygon{T<:GeoInterface.AbstractMultiPolygon}(obj::T) = MultiPolygon(GeoInterface.coordinates(obj))
 end
 
