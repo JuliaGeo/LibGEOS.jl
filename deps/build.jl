@@ -15,8 +15,8 @@ provides(BuildProcess,Autotools(libtarget = "capi/.libs/libgeos_c."*BinDeps.shli
 
 @windows_only begin
     using WinRPM
-    push!(WinRPM.sources, "http://download.opensuse.org/repositories/home:yeesian/openSUSE_13.1")
-    push!(WinRPM.sources, "http://download.opensuse.org/repositories/home:yeesian/windows_mingw_win32_openSUSE_13.1")
+    push!(WinRPM.sources, "http://download.opensuse.org/repositories/home:yeesian/openSUSE_13.2")
+    push!(WinRPM.sources, "http://download.opensuse.org/repositories/home:yeesian/windows_mingw_win32_openSUSE_13.2")
     WinRPM.update()
     provides(WinRPM.RPM, "libgeos", [libgeos], os = :Windows)
 end
