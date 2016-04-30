@@ -39,18 +39,18 @@ end
 
 g1 = parseWKT("POLYGON EMPTY")
 g2 = parseWKT("POLYGON EMPTY")
-@fact contains(g1, g2) --> false
-@fact contains(g1, g2) --> false
+@fact LibGEOS.contains(g1, g2) --> false
+@fact LibGEOS.contains(g1, g2) --> false
 
 g1 = parseWKT("POLYGON((1 1,1 5,5 5,5 1,1 1))")
 g2 = parseWKT("POINT(2 2)")
-@fact contains(g1, g2) --> true
-@fact contains(g2, g1) --> false
+@fact LibGEOS.contains(g1, g2) --> true
+@fact LibGEOS.contains(g2, g1) --> false
 
 g1 = parseWKT("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
 g2 = parseWKT("POLYGON((1 1,1 2,2 2,2 1,1 1))")
-@fact contains(g1, g2) --> true
-@fact contains(g1, g2) --> false
+@fact LibGEOS.contains(g1, g2) --> true
+@fact LibGEOS.contains(g1, g2) --> false
 
 # GEOSConvexHullTest
 input = parseWKT("MULTIPOINT (130 240, 130 240, 130 240, 570 240, 570 240, 570 240, 650 240)")
@@ -197,7 +197,7 @@ equivalent_to_wkt(simplify(g1, 0.0), "POLYGON EMPTY")
 function test_snap(g1::ASCIIString, g2::ASCIIString, expected::ASCIIString, tol::Float64=0.0)
     equivalent_to_wkt(snap(parseWKT(g1), parseWKT(g2), tol), expected)
 end
-test_snap("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", "POINT(0.5 0)", 
+test_snap("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", "POINT(0.5 0)",
           "POLYGON ((0.5 0, 10 0, 10 10, 0 10, 0.5 0))", 1.0)
 test_snap("LINESTRING (-30 -20, 50 60, 50 0)", "LINESTRING (-29 -20, 40 60, 51 0)",
           "LINESTRING (-29 -20, 50 60, 51 0)", 2.0)
