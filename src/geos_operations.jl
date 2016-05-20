@@ -29,14 +29,14 @@ parseWKT(geom::ASCIIString) = geomFromGEOS(geomFromWKT(geom))
 # -----
 project(line::LineString, point::Point) = project(line.ptr, point.ptr)
 projectNormalized(line::LineString, point::Point) = projectprojectNormalized(line.ptr, point.ptr)
-interpolate(line::LineString, dist::Float64) = Point(interpolate(line.ptr, dist))
-interpolateNormalized(line::LineString, dist::Float64) = Point(interpolateNormalized(line.ptr, dist))
+interpolate(line::LineString, dist::Real) = Point(interpolate(line.ptr, dist))
+interpolateNormalized(line::LineString, dist::Real) = Point(interpolateNormalized(line.ptr, dist))
 
 # # -----
 # # Topology operations
 # # -----
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
-    @eval buffer(obj::$geom, dist::Float64, quadsegs::Int=8) = Polygon(buffer(obj.ptr, dist, quadsegs))
+    @eval buffer(obj::$geom, dist::Real, quadsegs::Integer=8) = Polygon(buffer(obj.ptr, dist, quadsegs))
     @eval envelope(obj::$geom) = geomFromGEOS(envelope(obj.ptr))
     @eval convexhull(obj::$geom) = geomFromGEOS(convexhull(obj.ptr))
     @eval boundary(obj::$geom) = geomFromGEOS(boundary(obj.ptr))
@@ -75,11 +75,11 @@ end
 # end
 
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
-    @eval simplify(obj::$geom, tol::Float64) = geomFromGEOS(simplify(obj.ptr, tol))
-    @eval topologyPreserveSimplify(obj::$geom, tol::Float64) = geomFromGEOS(topologyPreserveSimplify(obj.ptr, tol))
+    @eval simplify(obj::$geom, tol::Real) = geomFromGEOS(simplify(obj.ptr, tol))
+    @eval topologyPreserveSimplify(obj::$geom, tol::Real) = geomFromGEOS(topologyPreserveSimplify(obj.ptr, tol))
     @eval uniquePoints(obj::$geom) = MultiPoint(uniquePoints(obj.ptr))
-    @eval delaunayTriangulationEdges(obj::$geom, tol::Float64=0.0) = MultiLineString(delaunayTriangulation(obj.ptr, tol, true))
-    @eval delaunayTriangulation(obj::$geom, tol::Float64=0.0) = GeometryCollection(delaunayTriangulation(obj.ptr, tol, false))
+    @eval delaunayTriangulationEdges(obj::$geom, tol::Real=0.0) = MultiLineString(delaunayTriangulation(obj.ptr, tol, true))
+    @eval delaunayTriangulation(obj::$geom, tol::Real=0.0) = GeometryCollection(delaunayTriangulation(obj.ptr, tol, false))
 end
 
 sharedPaths(obj1::LineString, obj2::LineString) = GeometryCollection(sharedPaths(obj1.ptr, obj2.ptr))
@@ -87,7 +87,7 @@ sharedPaths(obj1::LineString, obj2::LineString) = GeometryCollection(sharedPaths
 # # Snap first geometry on to second with given tolerance
 for g1 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
     for g2 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
-        @eval snap(obj1::$g1, obj2::$g2, tol::Float64) = geomFromGEOS(snap(obj1.ptr, obj2.ptr, tol))
+        @eval snap(obj1::$g1, obj2::$g2, tol::Real) = geomFromGEOS(snap(obj1.ptr, obj2.ptr, tol))
     end
 end
 
@@ -104,7 +104,7 @@ for g1 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Pol
         @eval contains(obj1::$g1, obj2::$g2) = contains(obj1.ptr, obj2.ptr)
         @eval overlaps(obj1::$g1, obj2::$g2) = overlaps(obj1.ptr, obj2.ptr)
         @eval equals(obj1::$g1, obj2::$g2) = equals(obj1.ptr, obj2.ptr)
-        @eval equalsexact(obj1::$g1, obj2::$g2, tol::Float64) = equalsexact(obj1.ptr, obj2.ptr, tol)
+        @eval equalsexact(obj1::$g1, obj2::$g2, tol::Real) = equalsexact(obj1.ptr, obj2.ptr, tol)
         @eval covers(obj1::$g1, obj2::$g2) = covers(obj1.ptr, obj2.ptr)
         @eval coveredby(obj1::$g1, obj2::$g2) = coveredby(obj1.ptr, obj2.ptr)
     end
@@ -277,7 +277,7 @@ isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
 # # it must NOT be destroyed directly.
 # # Up to GEOS 3.2.0 the input geometry must be a Collection, in
 # # later version it doesn't matter (i.e. getGeometryN(0) for a single will return the input).
-# function getGeometry(ptr::GEOSGeom, n::Int)
+# function getGeometry(ptr::GEOSGeom, n::Integer)
 #     result = GEOSGetGeometryN(ptr, @compat(Int32(n-1)))
 #     if result == C_NULL
 #         error("LibGEOS: Error in GEOSGetGeometryN")
@@ -343,7 +343,7 @@ exteriorRing(obj::Polygon) = LinearRing(exteriorRing(obj.ptr))
 # getCoordinateDimension(ptr::GEOSGeom) = int(GEOSGeom_getCoordinateDimension(ptr))
 
 # # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
-# function getPoint(ptr::GEOSGeom, n::Int)
+# function getPoint(ptr::GEOSGeom, n::Integer)
 #     result = GEOSGeomGetPointN(ptr, @compat(Int32(n-1)))
 #     if result == C_NULL
 #         error("LibGEOS: Error in GEOSGeomGetPointN")
@@ -367,7 +367,7 @@ for g1 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Pol
     for g2 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
         @eval distance(obj1::$g1, obj2::$g2) = geomDistance(obj1.ptr, obj2.ptr)
         @eval hausdorffdistance(obj1::$g1, obj2::$g2) = hausdorffdistance(obj1.ptr, obj2.ptr)
-        @eval hausdorffdistance(obj1::$g1, obj2::$g2, densify::Float64) = hausdorffdistance(obj1.ptr, obj2.ptr, densify)
+        @eval hausdorffdistance(obj1::$g1, obj2::$g2, densify::Real) = hausdorffdistance(obj1.ptr, obj2.ptr, densify)
     end
 end
 
