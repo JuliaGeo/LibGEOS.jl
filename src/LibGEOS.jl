@@ -7,6 +7,7 @@ module LibGEOS
     end
 
     using Compat, GeoInterface
+    import Base: normalize!, contains
 
     export  Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection,
             parseWKT, geomFromWKT, geomToWKT,
