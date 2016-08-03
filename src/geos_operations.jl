@@ -278,7 +278,7 @@ isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
 # # Up to GEOS 3.2.0 the input geometry must be a Collection, in
 # # later version it doesn't matter (i.e. getGeometryN(0) for a single will return the input).
 # function getGeometry(ptr::GEOSGeom, n::Integer)
-#     result = GEOSGetGeometryN(ptr, @compat(Int32(n-1)))
+#     result = GEOSGetGeometryN(ptr, Int32(n-1))
 #     if result == C_NULL
 #         error("LibGEOS: Error in GEOSGetGeometryN")
 #     end
@@ -344,7 +344,7 @@ exteriorRing(obj::Polygon) = LinearRing(exteriorRing(obj.ptr))
 
 # # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
 # function getPoint(ptr::GEOSGeom, n::Integer)
-#     result = GEOSGeomGetPointN(ptr, @compat(Int32(n-1)))
+#     result = GEOSGeomGetPointN(ptr, Int32(n-1))
 #     if result == C_NULL
 #         error("LibGEOS: Error in GEOSGeomGetPointN")
 #     end
@@ -386,4 +386,3 @@ for g1 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Pol
         end
     end
 end
-

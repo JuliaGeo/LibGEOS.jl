@@ -5,14 +5,14 @@
 #   GEOSGeom objects to avoid memory leaks, and to GEOSFree()
 #   all returned char * (unless const).
 
-GEOMTYPE = @compat Dict( GEOS_POINT => :Point,
-                         GEOS_LINESTRING => :LineString,
-                         GEOS_LINEARRING => :LinearRing,
-                         GEOS_POLYGON => :Polygon,
-                         GEOS_MULTIPOINT => :MultiPoint,
-                         GEOS_MULTILINESTRING => :MultiLineString,
-                         GEOS_MULTIPOLYGON => :MultiPolygon,
-                         GEOS_GEOMETRYCOLLECTION => :GeometryCollection)
+GEOMTYPE = Dict( GEOS_POINT => :Point,
+                 GEOS_LINESTRING => :LineString,
+                 GEOS_LINEARRING => :LinearRing,
+                 GEOS_POLYGON => :Polygon,
+                 GEOS_MULTIPOINT => :MultiPoint,
+                 GEOS_MULTILINESTRING => :MultiLineString,
+                 GEOS_MULTIPOLYGON => :MultiPolygon,
+                 GEOS_GEOMETRYCOLLECTION => :GeometryCollection)
 
 
 function geomFromWKT(geom::Compat.ASCIIString)
@@ -22,7 +22,7 @@ function geomFromWKT(geom::Compat.ASCIIString)
     end
     result
 end
-geomToWKT(geom::Ptr{GEOSGeometry}) = Compat.unsafe_string(GEOSGeomToWKT(geom))
+geomToWKT(geom::Ptr{GEOSGeometry}) = unsafe_string(GEOSGeomToWKT(geom))
 
 # -----
 # Coordinate Sequence functions
@@ -113,7 +113,7 @@ let out = Array(UInt32, 1)
         if result == 0
             error("LibGEOS: Error in GEOSCoordSeq_getSize")
         end
-        @compat Int(out[1])
+        Int(out[1])
     end
 end
 
@@ -125,7 +125,7 @@ let out = Array(UInt32, 1)
         if result == 0
             error("LibGEOS: Error in GEOSCoordSeq_getDimensions")
         end
-        @compat Int(out[1])
+        Int(out[1])
     end
 end
 
@@ -288,7 +288,7 @@ end
 # The user can control the accuracy of the curve approximation by specifying the number of linear segments with which to approximate a curve.
 
 # Always returns a polygon. The negative or zero-distance buffer of lines and points is always an empty Polygon.
-buffer(ptr::GEOSGeom, width::Real, quadsegs::Integer=8) = GEOSBuffer(ptr, width, @compat(Int32(quadsegs)))
+buffer(ptr::GEOSGeom, width::Real, quadsegs::Integer=8) = GEOSBuffer(ptr, width, Int32(quadsegs))
 
 # enum GEOSBufCapStyles
 # enum GEOSBufJoinStyles
@@ -552,7 +552,7 @@ end
 #
 # @return  a newly allocated geometry, or NULL on exception
 function delaunayTriangulation(ptr::GEOSGeom, tol::Real=0.0, onlyEdges::Bool=false)
-    result = GEOSDelaunayTriangulation(ptr, tol, @compat(Int32(onlyEdges)))
+    result = GEOSDelaunayTriangulation(ptr, tol, Int32(onlyEdges))
     if result == C_NULL
         error("LibGEOS: Error in GEOSDelaunayTriangulation")
     end
