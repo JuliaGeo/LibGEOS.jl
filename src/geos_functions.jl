@@ -15,14 +15,14 @@ GEOMTYPE = @compat Dict( GEOS_POINT => :Point,
                          GEOS_GEOMETRYCOLLECTION => :GeometryCollection)
 
 
-function geomFromWKT(geom::ASCIIString)
+function geomFromWKT(geom::Compat.ASCIIString)
     result = GEOSGeomFromWKT(pointer(geom))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeomFromWKT")
     end
     result
 end
-geomToWKT(geom::Ptr{GEOSGeometry}) = bytestring(GEOSGeomToWKT(geom))
+geomToWKT(geom::Ptr{GEOSGeometry}) = Compat.unsafe_string(GEOSGeomToWKT(geom))
 
 # -----
 # Coordinate Sequence functions

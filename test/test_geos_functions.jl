@@ -1,25 +1,3 @@
-using LibGEOS, FactCheck
-
-function factcheck_equals(obj1::Vector{Vector{Float64}},
-                          obj2::Vector{Vector{Float64}}; tol=1e-5)
-    for (i,item) in enumerate(obj2)
-        @fact obj1[i] --> roughly(item, tol)
-    end
-end
-
-function factcheck_equals(obj1::Vector{Vector{Vector{Float64}}},
-                          obj2::Vector{Vector{Vector{Float64}}}; tol=1e-5)
-    for (i,item) in enumerate(obj2)
-        factcheck_equals(obj1[i], item, tol=tol)
-    end
-end
-
-function factcheck_equals(obj1::Vector{Vector{Vector{Vector{Float64}}}},
-                          obj2::Vector{Vector{Vector{Vector{Float64}}}}; tol=1e-5)
-    for (i,item) in enumerate(obj2)
-        factcheck_equals(obj1[i], item, tol=tol)
-    end
-end
 
 a = LibGEOS.createCoordSeq(Vector{Float64}[[1,2,3],[4,5,6]])
 b = LibGEOS.cloneCoordSeq(a)
