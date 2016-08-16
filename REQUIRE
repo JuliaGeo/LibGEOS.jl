@@ -1,5 +1,5 @@
 julia 0.4
-Compat 0.8
+Compat 0.8.7
 GeoInterface 0.1
 BinDeps
 @osx Homebrew
