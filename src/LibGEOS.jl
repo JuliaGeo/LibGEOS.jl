@@ -7,7 +7,16 @@ module LibGEOS
     end
 
     using Compat, GeoInterface
-    import Base: normalize!, contains
+    import Base: contains
+
+    # normalize! was added in julia v0.5, for v0.4 extend Compat version
+    if isdefined(Base, :normalize!)
+        import Base: normalize!
+    else
+        import Compat: normalize!
+        export normalize!
+    end
+
 
     export  Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection,
             parseWKT, geomFromWKT, geomToWKT,
@@ -19,7 +28,7 @@ module LibGEOS
             disjoint, touches, intersects, crosses, within, contains, overlaps, equals, equalsexact, covers, coveredby,
             prepareGeom, prepcontains, prepcontainsproperly, prepcoveredby, prepcovers, prepcrosses,
             prepdisjoint, prepintersects, prepoverlaps, preptouches, prepwithin,
-            isEmpty, isSimple, isRing, hasZ, isClosed, isValid, normalize!, interiorRings, exteriorRing,
+            isEmpty, isSimple, isRing, hasZ, isClosed, isValid, interiorRings, exteriorRing,
             numPoints, startPoint, endPoint, area, geomLength, distance, hausdorffdistance, nearestPoints
 
     include("geos_c.jl")

@@ -144,15 +144,15 @@ points = nearestPoints(g1, g2)
 
 # GEOSNodeTest
 g1 = node(parseWKT("LINESTRING(0 0, 10 10, 10 0, 0 10)"))
-LibGEOS.normalize!(g1)
+normalize!(g1)
 equivalent_to_wkt(g1, "MULTILINESTRING ((5 5, 10 0, 10 10, 5 5), (0 10, 5 5), (0 0, 5 5))")
 
 g1 = node(parseWKT("MULTILINESTRING((0 0, 2 0, 4 0),(5 0, 3 0, 1 0))"))
-LibGEOS.normalize!(g1)
+normalize!(g1)
 equivalent_to_wkt(g1, "MULTILINESTRING ((4 0, 5 0), (3 0, 4 0), (2 0, 3 0), (1 0, 2 0), (0 0, 1 0))")
 
 g1 = node(parseWKT("MULTILINESTRING((0 0, 2 0, 4 0),(0 0, 2 0, 4 0))"))
-LibGEOS.normalize!(g1)
+normalize!(g1)
 equivalent_to_wkt(g1, "MULTILINESTRING ((2 0, 4 0), (0 0, 2 0))")
 
 # GEOSPointOnSurfaceTest
