@@ -90,7 +90,7 @@ cs_2 = LibGEOS.createCoordSeq([5.0, 3.0])
 @fact LibGEOS.getDimensions(cs_2) --> 2
 @fact LibGEOS.getCoordinates(cs_2) --> [5.0, 3.0]
 
-cs_3 = LibGEOS.createCoordSeq([[5.0, 3.0], [1.0, 2.0], [1.0, 3.0]])
+cs_3 = LibGEOS.createCoordSeq(Vector{Float64}[[5.0, 3.0], [1.0, 2.0], [1.0, 3.0]])
 @fact LibGEOS.getSize(cs_3) --> 3
 @fact LibGEOS.getDimensions(cs_3) --> 2
 @fact LibGEOS.getCoordinates(cs_3)[1] --> [5.0, 3.0]
