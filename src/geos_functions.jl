@@ -27,9 +27,12 @@ geomToWKT(geom::Ptr{GEOSGeometry}) = unsafe_string(GEOSGeomToWKT(geom))
 # -----
 # Coordinate Sequence functions
 # -----
+"""
+    createCoordSeq(size::Integer; ndim::Integer=2) -> Ptr{Ptr{Void}}
 
-# Create a Coordinate sequence with ``size'' coordinates of ``dims'' dimensions (Return NULL on exception)
-function createCoordSeq(size::Integer, ndim::Integer)
+Create a Coordinate sequence with ``size'' coordinates of ``dims'' dimensions (Return NULL on exception)
+"""
+function createCoordSeq(size::Integer; ndim::Integer=2)
     @assert ndim >= 2
     result = GEOSCoordSeq_create(size, ndim)
     if result == C_NULL
@@ -139,33 +142,53 @@ function setCoordSeq!(ptr::GEOSCoordSeq, i::Integer, coords::Vector{Float64})
     ptr
 end
 
+"""
+    createCoordSeq(x::Real, y::Real) -> Ptr{Ptr{Void}}
+
+Create a createCoordSeq of a single 2D coordinate
+"""
 function createCoordSeq(x::Real, y::Real)
-    coordinates = createCoordSeq(1, 2)
+    coordinates = createCoordSeq(1, ndim=2)
     setX!(coordinates, 1, x)
     setY!(coordinates, 1, y)
     coordinates
 end
 
+"""
+    createCoordSeq(x::Real, y::Real, z::Real) -> Ptr{Ptr{Void}}
+
+Create a createCoordSeq of a single 3D coordinate
+"""
 function createCoordSeq(x::Real, y::Real, z::Real)
-    coordinates = createCoordSeq(1, 3)
+    coordinates = createCoordSeq(1, ndim=3)
     setX!(coordinates, 1, x)
     setY!(coordinates, 1, y)
     setZ!(coordinates, 1, z)
     coordinates
 end
 
+"""
+    createCoordSeq(coords::Vector{Float64}) -> Ptr{Ptr{Void}}
+
+Create a createCoordSeq of a single N dimensional coordinate
+"""
 function createCoordSeq(coords::Vector{Float64})
     ndim = length(coords)
     @assert ndim >= 2
-    coordinates = createCoordSeq(1, ndim)
+    coordinates = createCoordSeq(1, ndim=ndim)
     setCoordSeq!(coordinates, 1, coords)
 end
 
+"""
+    createCoordSeq(coords::Vector{Float64}) -> Ptr{Ptr{Void}}
+
+Create a createCoordSeq of a multiple N dimensional coordinate
+"""
 function createCoordSeq(coords::Vector{Vector{Float64}})
     ncoords = length(coords)
     @assert ncoords > 0
     ndim = length(coords[1])
-    coordinates = createCoordSeq(ncoords, ndim)
+    coordinates = createCoordSeq(ncoords, ndim=ndim)
     for (i,coord) in enumerate(coords)
         setCoordSeq!(coordinates, i, coord)
     end
