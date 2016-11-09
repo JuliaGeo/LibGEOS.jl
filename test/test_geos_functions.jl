@@ -80,10 +80,15 @@ LibGEOS.destroyGeom(expected_)
 LibGEOS.destroyGeom(output_)
 
 # GEOSCoordSeqTest
-
 cs_ = LibGEOS.createCoordSeq(5, 3)
 @fact LibGEOS.getSize(cs_) --> 5
 @fact LibGEOS.getDimensions(cs_) --> 3
+
+csf_ = LibGEOS.createCoordSeq([5.0, 3.0])
+@fact LibGEOS.getSize(cs_) --> 1
+@fact LibGEOS.getDimensions(cs_) --> 2
+@fact LibGEOS.getCoordinates(LibGEOS.createCoordSeq([5.0, 3.0])) --> [5.0, 3.0]
+
 
 for i=1:5
     x = i*10.0

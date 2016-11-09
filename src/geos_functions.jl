@@ -158,7 +158,7 @@ function createCoordSeq(coords::Vector{Float64})
     ndim = length(coords)
     @assert ndim >= 2
     coordinates = createCoordSeq(1, ndim)
-    setCoordSeq!(coordinates, 1, coord)
+    setCoordSeq!(coordinates, 1, coords)
 end
 
 function createCoordSeq(coords::Vector{Vector{Float64}})
