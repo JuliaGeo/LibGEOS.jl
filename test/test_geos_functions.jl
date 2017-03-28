@@ -81,13 +81,21 @@ LibGEOS.destroyGeom(output_)
 
 # GEOSCoordSeqTest
 cs_ = LibGEOS.createCoordSeq(5, 3)
-@fact LibGEOS.getSize(cs_) --> 5
-@fact LibGEOS.getDimensions(cs_) --> 3
-
-csf_ = LibGEOS.createCoordSeq([5.0, 3.0])
 @fact LibGEOS.getSize(cs_) --> 1
 @fact LibGEOS.getDimensions(cs_) --> 2
-@fact LibGEOS.getCoordinates(LibGEOS.createCoordSeq([5.0, 3.0])) --> [5.0, 3.0]
+@fact LibGEOS.getCoordinates(cs_) --> [5, 3]
+
+cs_2 = LibGEOS.createCoordSeq([5.0, 3.0])
+@fact LibGEOS.getSize(cs_2) --> 1
+@fact LibGEOS.getDimensions(cs_2) --> 2
+@fact LibGEOS.getCoordinates(cs_2) --> [5.0, 3.0]
+
+cs_3 = LibGEOS.createCoordSeq(Vector{Float64}[[5.0, 3.0], [1.0, 2.0], [1.0, 3.0]])
+@fact LibGEOS.getSize(cs_3) --> 3
+@fact LibGEOS.getDimensions(cs_3) --> 2
+@fact LibGEOS.getCoordinates(cs_3)[1] --> [5.0, 3.0]
+@fact LibGEOS.getCoordinates(cs_3)[2] --> [1.0, 2.0]
+@fact LibGEOS.getCoordinates(cs_3)[3] --> [1.0, 3.0]
 
 
 for i=1:5
@@ -103,7 +111,7 @@ for i=1:5
     @fact LibGEOS.getZ(cs_, i) --> roughly(z, 1e-5)
 end
 
-cs_ = LibGEOS.createCoordSeq(1, 3)
+cs_ = LibGEOS.createCoordSeq(1, ndim=3)
 @fact LibGEOS.getSize(cs_) --> 1
 @fact LibGEOS.getDimensions(cs_) --> 3
 x,y,z = 10.0, 11.0, 12.0
@@ -115,7 +123,7 @@ LibGEOS.setZ!(cs_, 1, z)
 @fact LibGEOS.getY(cs_, 1) --> roughly(y, 1e-5)
 @fact LibGEOS.getZ(cs_, 1) --> roughly(z, 1e-5)
 
-cs_ = LibGEOS.createCoordSeq(1, 3)
+cs_ = LibGEOS.createCoordSeq(1, ndim=3)
 @fact LibGEOS.getSize(cs_) --> 1
 @fact LibGEOS.getDimensions(cs_) --> 3
 x,y,z = 10.0, 11.0, 12.0
