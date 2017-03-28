@@ -4,7 +4,7 @@ pt = LibGEOS.Point(1.0,2.0)
 @fact GeoInterface.geotype(pt) --> :Point
 
 pt = LibGEOS.Point(LibGEOS.geomFromWKT("POINT EMPTY"))
-@fact GeoInterface.coordinates(pt) --> roughly([], 1e-5)
+@fact GeoInterface.coordinates(pt) --> roughly(Float64[], 1e-5)
 @fact GeoInterface.geotype(pt) --> :Point
 
 mpt = LibGEOS.MultiPoint(LibGEOS.geomFromWKT("MULTIPOINT(0 0, 10 0, 10 10, 11 10)"))

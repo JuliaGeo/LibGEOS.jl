@@ -289,7 +289,7 @@ geom1 = LibGEOS.geomFromWKT("LINESTRING(0 0, 5 5, 10 10)")
 @fact LibGEOS.isClosed(geom1) --> false
 @fact LibGEOS.geomTypeId(geom1) --> LibGEOS.GEOS_LINESTRING
 @fact LibGEOS.numPoints(geom1) --> 3
-@fact LibGEOS.getLength(geom1) --> roughly(sqrt(100 + 100), 1e-5)
+@fact LibGEOS.geomLength(geom1) --> roughly(sqrt(100 + 100), 1e-5)
 geom2 = LibGEOS.getPoint(geom1, 1)
 @fact LibGEOS.getGeomX(geom2) --> roughly(0.0, 1e-5)
 @fact LibGEOS.getGeomY(geom2) --> roughly(0.0, 1e-5)

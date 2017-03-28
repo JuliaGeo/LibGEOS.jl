@@ -126,7 +126,7 @@ g1 = parseWKT("LINESTRING(0 0, 5 5, 10 10)")
 @fact isClosed(g1) --> false
 @fact GeoInterface.geotype(g1) --> :LineString
 @fact numPoints(g1) --> 3
-@fact getLength(g1) --> roughly(sqrt(100 + 100), 1e-5)
+@fact geomLength(g1) --> roughly(sqrt(100 + 100), 1e-5)
 @fact GeoInterface.coordinates(startPoint(g1)) --> roughly([0,0], 1e-5)
 @fact GeoInterface.coordinates(endPoint(g1)) --> roughly([10,10], 1e-5)
 
