@@ -62,7 +62,7 @@ function GEOSContext_setErrorHandler_r(extHandle::GEOSContextHandle_t,ef::GEOSMe
     ccall((:GEOSContext_setErrorHandler_r,libgeos),GEOSMessageHandler,(GEOSContextHandle_t,GEOSMessageHandler),extHandle,ef)
 end
 
-function GEOSGeomFromWKT(wkt::Ptr{UInt8})
+function GEOSGeomFromWKT(wkt::Compat.String)
     ccall((:GEOSGeomFromWKT,libgeos),Ptr{GEOSGeometry},(Ptr{UInt8},),wkt)
 end
 
@@ -70,7 +70,7 @@ function GEOSGeomToWKT(g::Ptr{GEOSGeometry})
     ccall((:GEOSGeomToWKT,libgeos),Ptr{UInt8},(Ptr{GEOSGeometry},),g)
 end
 
-function GEOSGeomFromWKT_r(handle::GEOSContextHandle_t,wkt::Ptr{UInt8})
+function GEOSGeomFromWKT_r(handle::GEOSContextHandle_t,wkt::Compat.String)
     ccall((:GEOSGeomFromWKT_r,libgeos),Ptr{GEOSGeometry},(GEOSContextHandle_t,Ptr{UInt8}),handle,wkt)
 end
 

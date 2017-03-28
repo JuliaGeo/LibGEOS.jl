@@ -22,7 +22,7 @@ function geomFromGEOS(ptr::GEOSGeom)
         return GeometryCollection(ptr)
     end
 end
-parseWKT(geom::Compat.ASCIIString) = geomFromGEOS(geomFromWKT(geom))
+parseWKT(geom::Compat.String) = geomFromGEOS(geomFromWKT(geom))
 
 # -----
 # Linear referencing functions -- there are more, but these are probably sufficient for most purposes
