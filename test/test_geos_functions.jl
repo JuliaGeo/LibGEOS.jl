@@ -103,12 +103,12 @@ for i=1:5
     y = i*10.0+1.0
     z = i*10.0+2.0
 
-    LibGEOS.setX!(cs_, i, x)
-    LibGEOS.setY!(cs_, i, y)
-    LibGEOS.setZ!(cs_, i, z)
-    @fact LibGEOS.getX(cs_, i) --> roughly(x, 1e-5)
-    @fact LibGEOS.getY(cs_, i) --> roughly(y, 1e-5)
-    @fact LibGEOS.getZ(cs_, i) --> roughly(z, 1e-5)
+    LibGEOS.setX!(cs_, 1, x)
+    LibGEOS.setY!(cs_, 1, y)
+    LibGEOS.setZ!(cs_, 1, z)
+    @fact LibGEOS.getX(cs_, 1) --> roughly(x, 1e-5)
+    @fact LibGEOS.getY(cs_, 1) --> roughly(y, 1e-5)
+    @fact LibGEOS.getZ(cs_, 1) --> roughly(z, 1e-5)
 end
 
 cs_ = LibGEOS.createCoordSeq(1, ndim=3)
