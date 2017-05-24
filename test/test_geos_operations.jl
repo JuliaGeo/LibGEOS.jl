@@ -246,4 +246,3 @@ test_within("POLYGON((1 1,1 2,2 2,2 1,1 1))", "MULTIPOLYGON(((0 0,0 10,10 10,10 
 # Buffer should return Polygon or MultiPolygon
 @fact typeof(buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 0.1)) --> :MultiPolygon
 @fact typeof(buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 10)) --> :Polygon
-@fact 2 --> 3
