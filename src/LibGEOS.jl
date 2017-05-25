@@ -6,17 +6,8 @@ module LibGEOS
         error("LibGEOS not properly installed. Please run Pkg.build(\"LibGEOS\")")
     end
 
-    using Compat, GeoInterface
+    using GeoInterface
     import Base: contains
-
-    # normalize! was added in julia v0.5, for v0.4 extend Compat version
-    if isdefined(Base, :normalize!)
-        import Base: normalize!
-    else
-        import Compat: normalize!
-        export normalize!
-    end
-
 
     export  Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection,
             parseWKT, geomFromWKT, geomToWKT,

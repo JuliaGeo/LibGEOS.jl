@@ -1,4 +1,4 @@
-using BinDeps, Compat
+using BinDeps
 @BinDeps.setup
 
 libgeos = library_dependency("libgeos",aliases=["libgeos_c", "libgeos_c-1"], validate = function(path, handle)

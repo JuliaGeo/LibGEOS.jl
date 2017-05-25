@@ -15,7 +15,7 @@ GEOMTYPE = Dict( GEOS_POINT => :Point,
                  GEOS_GEOMETRYCOLLECTION => :GeometryCollection)
 
 
-function geomFromWKT(geom::Compat.String)
+function geomFromWKT(geom::String)
     result = GEOSGeomFromWKT(geom)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeomFromWKT")
@@ -108,7 +108,7 @@ function getZ!(ptr::GEOSCoordSeq, index::Integer, coord::Vector{Float64})
     result
 end
 
-let out = Array(UInt32, 1)
+let out = Array{UInt32}(1)
     global getSize
     function getSize(ptr::GEOSCoordSeq)
         # Get size info from a Coordinate Sequence (Return 0 on exception)
@@ -120,7 +120,7 @@ let out = Array(UInt32, 1)
     end
 end
 
-let out = Array(UInt32, 1)
+let out = Array{UInt32}(1)
     global getDimensions
     function getDimensions(ptr::GEOSCoordSeq)
         # Get dimensions info from a Coordinate Sequence (Return 0 on exception)
@@ -195,7 +195,7 @@ function createCoordSeq(coords::Vector{Vector{Float64}})
     coordinates
 end
 
-let out = Array(Float64, 1)
+let out = Array{Float64}(1)
     global getX
     function getX(ptr::GEOSCoordSeq, i::Integer)
         getX!(ptr, i, out)
@@ -205,7 +205,7 @@ end
 
 function getX(ptr::GEOSCoordSeq)
     ncoords = getSize(ptr)
-    xcoords = Array(Float64, ncoords)
+    xcoords = Array{Float64}(ncoords)
     start = pointer(xcoords)
     floatsize = sizeof(Float64)
     for i=0:ncoords-1
@@ -214,10 +214,10 @@ function getX(ptr::GEOSCoordSeq)
     xcoords
 end
 
-let out = Array(Float64, 1)
+let out = Array{Float64}(1)
     global getY
     function getY(ptr::GEOSCoordSeq, i::Integer)
-        out = Array(Float64, 1)
+        out = Array{Float64}(1)
         getY!(ptr, i, out)
         out[1]
     end
@@ -225,7 +225,7 @@ end
 
 function getY(ptr::GEOSCoordSeq)
     ncoords = getSize(ptr)
-    ycoords = Array(Float64, ncoords)
+    ycoords = Array{Float64}(ncoords)
     start = pointer(ycoords)
     floatsize = sizeof(Float64)
     for i=0:ncoords-1
@@ -234,7 +234,7 @@ function getY(ptr::GEOSCoordSeq)
     ycoords
 end
 
-let out = Array(Float64, 1)
+let out = Array{Float64}(1)
     global getZ
     function getZ(ptr::GEOSCoordSeq, i::Integer)
         getZ!(ptr, i, out)
@@ -244,7 +244,7 @@ end
 
 function getZ(ptr::GEOSCoordSeq)
     ncoords = getSize(ptr)
-    zcoords = Array(Float64, ncoords)
+    zcoords = Array{Float64}(ncoords)
     start = pointer(zcoords)
     floatsize = sizeof(Float64)
     for i=0:ncoords-1
@@ -255,7 +255,7 @@ end
 
 function getCoordinates(ptr::GEOSCoordSeq, i::Integer)
     ndim = getDimensions(ptr)
-    coord = Array(Float64, ndim)
+    coord = Array{Float64}(ndim)
     start = pointer(coord)
     floatsize = sizeof(Float64)
     GEOSCoordSeq_getX(ptr, i-1, start)
@@ -919,7 +919,7 @@ getGeometries(ptr::GEOSGeom) = GEOSGeom[getGeometry(ptr, i) for i=1:numGeometrie
 
 # Converts Geometry to normal form (or canonical form).
 # Return -1 on exception, 0 otherwise.
-function normalize!(ptr::GEOSGeom)
+function Base.normalize!(ptr::GEOSGeom)
     result = GEOSNormalize(ptr)
     if result == -1
         error("LibGEOS: Error in GEOSNormalize")
@@ -946,7 +946,7 @@ function numPoints(ptr::GEOSGeom)
 end
 
 # Return -1 on exception, Geometry must be a Point.
-let out = Array(Float64, 1)
+let out = Array{Float64}(1)
     global getGeomX
     function getGeomX(ptr::GEOSGeom)
         result = GEOSGeomGetX(ptr, pointer(out))
@@ -957,7 +957,7 @@ let out = Array(Float64, 1)
     end
 end
 
-let out = Array(Float64, 1)
+let out = Array{Float64}(1)
     global getGeomY
     function getGeomY(ptr::GEOSGeom)
         result = GEOSGeomGetY(ptr, pointer(out))
@@ -1052,7 +1052,7 @@ end
 # -----
 # Misc functions
 # -----
-let out = Array(Float64, 1)
+let out = Array{Float64}(1)
     global geomArea
     function geomArea(ptr::GEOSGeom)
         # Return 0 on exception, 1 otherwise
@@ -1064,7 +1064,7 @@ let out = Array(Float64, 1)
     end
 end
 
-let out = Array(Float64, 1)
+let out = Array{Float64}(1)
     global geomLength
     function geomLength(ptr::GEOSGeom)
         # Return 0 on exception, 1 otherwise
@@ -1076,7 +1076,7 @@ let out = Array(Float64, 1)
     end
 end
 
-let out = Array(Float64, 1)
+let out = Array{Float64}(1)
     global geomDistance
     function geomDistance(g1::GEOSGeom, g2::GEOSGeom)
         # Return 0 on exception, 1 otherwise
@@ -1088,7 +1088,7 @@ let out = Array(Float64, 1)
     end
 end
 
-let out = Array(Float64, 1)
+let out = Array{Float64}(1)
     global hausdorffdistance
     function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom)
         # Return 0 on exception, 1 otherwise
@@ -1100,7 +1100,7 @@ let out = Array(Float64, 1)
     end
 end
 
-let out = Array(Float64, 1)
+let out = Array{Float64}(1)
     global hausdorffdistance
     function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, densifyFrac::Real)
         # Return 0 on exception, 1 otherwise
