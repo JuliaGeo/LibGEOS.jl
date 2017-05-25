@@ -22,7 +22,7 @@ function geomFromGEOS(ptr::GEOSGeom)
         return GeometryCollection(ptr)
     end
 end
-parseWKT(geom::Compat.String) = geomFromGEOS(geomFromWKT(geom))
+parseWKT(geom::String) = geomFromGEOS(geomFromWKT(geom))
 
 # -----
 # Linear referencing functions -- there are more, but these are probably sufficient for most purposes
@@ -288,11 +288,11 @@ isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
 
 # Converts Geometry to normal form (or canonical form).
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
-    @eval normalize!(obj::$geom) = normalize!(obj.ptr)
+    @eval Base.normalize!(obj::$geom) = normalize!(obj.ptr)
 end
 
 # # Return -1 on exception, Geometry must be a Point.
-# let out = Array(Float64, 1)
+# let out = Array{Float64}(1)
 #     global getGeomX
 #     function getGeomX(ptr::GEOSGeom)
 #         result = GEOSGeomGetX(ptr, pointer(out))
@@ -303,7 +303,7 @@ end
 #     end
 # end
 
-# let out = Array(Float64, 1)
+# let out = Array{Float64}(1)
 #     global getGeomY
 #     function getGeomY(ptr::GEOSGeom)
 #         result = GEOSGeomGetY(ptr, pointer(out))

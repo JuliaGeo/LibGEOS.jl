@@ -1,22 +1,22 @@
 # Contents of this file is generated. Do not edit by hand!
 
-typealias GEOSMessageHandler Ptr{Void}
-typealias GEOSGeometry Ptr{Void}
-typealias GEOSPreparedGeometry Ptr{Void}
-typealias GEOSCoordSequence Ptr{Void}
-typealias GEOSSTRtree Ptr{Void}
-typealias GEOSBufferParams Ptr{Void}
-typealias GEOSContextHandle_t Ptr{Void}
-typealias GEOSQueryCallback Ptr{Void}
-typealias GEOSInterruptCallback Ptr{Void}
-typealias GEOSWKTReader Ptr{Void}
-typealias GEOSWKTWriter Ptr{Void}
-typealias GEOSWKBReader Ptr{Void}
-typealias GEOSWKBWriter Ptr{Void}
+const GEOSMessageHandler = Ptr{Void}
+const GEOSGeometry = Ptr{Void}
+const GEOSPreparedGeometry = Ptr{Void}
+const GEOSCoordSequence = Ptr{Void}
+const GEOSSTRtree = Ptr{Void}
+const GEOSBufferParams = Ptr{Void}
+const GEOSContextHandle_t = Ptr{Void}
+const GEOSQueryCallback = Ptr{Void}
+const GEOSInterruptCallback = Ptr{Void}
+const GEOSWKTReader = Ptr{Void}
+const GEOSWKTWriter = Ptr{Void}
+const GEOSWKBReader = Ptr{Void}
+const GEOSWKBWriter = Ptr{Void}
 
 
-typealias GEOSGeom Ptr{GEOSGeometry};
-typealias GEOSCoordSeq Ptr{GEOSCoordSequence};
+const GEOSGeom = Ptr{GEOSGeometry}
+const GEOSCoordSeq = Ptr{GEOSCoordSequence}
 
 
 
@@ -62,7 +62,7 @@ function GEOSContext_setErrorHandler_r(extHandle::GEOSContextHandle_t,ef::GEOSMe
     ccall((:GEOSContext_setErrorHandler_r,libgeos),GEOSMessageHandler,(GEOSContextHandle_t,GEOSMessageHandler),extHandle,ef)
 end
 
-function GEOSGeomFromWKT(wkt::Compat.String)
+function GEOSGeomFromWKT(wkt::String)
     ccall((:GEOSGeomFromWKT,libgeos),Ptr{GEOSGeometry},(Ptr{UInt8},),wkt)
 end
 
@@ -70,7 +70,7 @@ function GEOSGeomToWKT(g::Ptr{GEOSGeometry})
     ccall((:GEOSGeomToWKT,libgeos),Ptr{UInt8},(Ptr{GEOSGeometry},),g)
 end
 
-function GEOSGeomFromWKT_r(handle::GEOSContextHandle_t,wkt::Compat.String)
+function GEOSGeomFromWKT_r(handle::GEOSContextHandle_t,wkt::String)
     ccall((:GEOSGeomFromWKT_r,libgeos),Ptr{GEOSGeometry},(GEOSContextHandle_t,Ptr{UInt8}),handle,wkt)
 end
 

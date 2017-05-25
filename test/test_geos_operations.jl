@@ -1,23 +1,23 @@
-function equivalent_to_wkt(geom::GeoInterface.AbstractGeometry, wkt::Compat.ASCIIString)
+function equivalent_to_wkt(geom::GeoInterface.AbstractGeometry, wkt::String)
     test_geom = parseWKT(wkt)
     @fact geomToWKT(geom) --> geomToWKT(test_geom)
 end
 
-function factcheck(f::Function, geom::Compat.ASCIIString, expected::Compat.ASCIIString)
+function factcheck(f::Function, geom::String, expected::String)
     result = f(parseWKT(geom))
     equivalent_to_wkt(result, expected)
 end
 
-function factcheck(f::Function, geom::Compat.ASCIIString, expected::Bool)
+function factcheck(f::Function, geom::String, expected::Bool)
     @fact f(parseWKT(geom)) --> expected
 end
 
-function factcheck(f::Function, g1::Compat.ASCIIString, g2::Compat.ASCIIString, expected::Compat.ASCIIString)
+function factcheck(f::Function, g1::String, g2::String, expected::String)
     result = f(parseWKT(g1),parseWKT(g2))
     equivalent_to_wkt(result, expected)
 end
 
-function factcheck(f::Function, g1::Compat.ASCIIString, g2::Compat.ASCIIString, expected::Bool)
+function factcheck(f::Function, g1::String, g2::String, expected::Bool)
     @fact f(parseWKT(g1),parseWKT(g2)) --> expected
 end
 
@@ -98,14 +98,14 @@ g1 = parseWKT("GEOMETRYCOLLECTION(MULTIPOINT(0 0, 0 0, 1 1),LINESTRING(1 1, 2 2,
 @fact LibGEOS.equals(uniquePoints(g1), parseWKT("MULTIPOINT(0 0, 1 1, 2 2, 5 5, 0 2)")) --> true
 
 # GEOSGetCentroidTest
-test_centroid(geom::Compat.ASCIIString, expected::Compat.ASCIIString) = factcheck(centroid, geom, expected)
+test_centroid(geom::String, expected::String) = factcheck(centroid, geom, expected)
 test_centroid("POINT(10 0)", "POINT (10 0)")
 test_centroid("LINESTRING(0 0, 10 0)", "POINT (5 0)")
 test_centroid("POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))", "POINT (5 5)")
 test_centroid("LINESTRING EMPTY", "POINT EMPTY")
 
 # GEOSIntersectionTest
-test_intersection(g1::Compat.ASCIIString, g2::Compat.ASCIIString, expected::Compat.ASCIIString) = factcheck(intersection, g1, g2, expected)
+test_intersection(g1::String, g2::String, expected::String) = factcheck(intersection, g1, g2, expected)
 test_intersection("POLYGON EMPTY", "POLYGON EMPTY", "GEOMETRYCOLLECTION EMPTY")
 test_intersection("POLYGON((1 1,1 5,5 5,5 1,1 1))", "POINT(2 2)", "POINT(2 2)")
 test_intersection("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", "POLYGON((-1 1,-1 2,2 2,2 1,-1 1))", "POLYGON ((0 1, 0 2, 2 2, 2 1, 0 1))")
@@ -114,7 +114,7 @@ test_intersection("MULTIPOLYGON(((0 0,5 10,10 0,0 0),(1 1,1 2,2 2,2 1,1 1),(100 
                   "GEOMETRYCOLLECTION (LINESTRING (1 2, 2 2), LINESTRING (2 1, 1 1), POLYGON ((0.5 1, 1 2, 1 1, 0.5 1)), POLYGON ((9 2, 9.5 1, 2 1, 2 2, 9 2)))")
 
 # GEOSIntersectsTest
-test_intersects(g1::Compat.ASCIIString, g2::Compat.ASCIIString, expected::Bool) = factcheck(intersects, g1, g2, false)
+test_intersects(g1::String, g2::String, expected::Bool) = factcheck(intersects, g1, g2, false)
 test_intersects("POLYGON EMPTY", "POLYGON EMPTY", false)
 test_intersects("POLYGON((1 1,1 5,5 5,5 1,1 1))", "POINT(2 2)", true)
 test_intersects("POINT(2 2)", "POLYGON((1 1,1 5,5 5,5 1,1 1))", true)
@@ -156,7 +156,7 @@ normalize!(g1)
 equivalent_to_wkt(g1, "MULTILINESTRING ((2 0, 4 0), (0 0, 2 0))")
 
 # GEOSPointOnSurfaceTest
-test_pointonsurface(geom::Compat.ASCIIString, expected::Compat.ASCIIString) = factcheck(pointOnSurface, geom, expected)
+test_pointonsurface(geom::String, expected::String) = factcheck(pointOnSurface, geom, expected)
 test_pointonsurface("POINT(10 0)", "POINT (10 0)")
 test_pointonsurface("LINESTRING(0 0, 5 0, 10 0)", "POINT (5 0)")
 test_pointonsurface("POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))", "POINT (5 5)")
@@ -192,7 +192,7 @@ equivalent_to_wkt(simplify(g1, 0.0), "POLYGON EMPTY")
 @fact equals(g1, topologyPreserveSimplify(g1, 43.2)) --> true
 
 # GEOSSnapTest
-function test_snap(g1::Compat.ASCIIString, g2::Compat.ASCIIString, expected::Compat.ASCIIString, tol::Float64=0.0)
+function test_snap(g1::String, g2::String, expected::String, tol::Float64=0.0)
     equivalent_to_wkt(snap(parseWKT(g1), parseWKT(g2), tol), expected)
 end
 test_snap("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", "POINT(0.5 0)",
@@ -217,7 +217,7 @@ test_snap("LINESTRING(-71.1317 42.2511,-71.1317 42.2509)", "MULTIPOINT(-71.1261 
           "LINESTRING (-71.1257 42.2703, -71.1261 42.2703, -71.1261 42.2702, -71.1317 42.2509)", .5)
 
 # GEOSUnaryUnionTest
-test_unaryunion(geom::Compat.ASCIIString, expected::Compat.ASCIIString) = factcheck(unaryUnion, geom, expected)
+test_unaryunion(geom::String, expected::String) = factcheck(unaryUnion, geom, expected)
 test_unaryunion("POINT EMPTY", "GEOMETRYCOLLECTION EMPTY")
 test_unaryunion("POINT (6 3)", "POINT (6 3)")
 test_unaryunion("POINT (4 5 6)", "POINT Z (4 5 6)")
@@ -232,7 +232,7 @@ test_unaryunion("GEOMETRYCOLLECTION (MULTILINESTRING((5 7, 12 7), (4 5, 6 5), (5
                 "GEOMETRYCOLLECTION (POINT (6 6.5), POINT (12 2), LINESTRING (5 7, 7 7), LINESTRING (10 7, 12 7), LINESTRING (5.5 7.5, 6.5 7.5), POLYGON ((10 7, 10 0, 0 0, 0 10, 10 10, 10 7), (5 6, 7 6, 7 7, 7 8, 5 8, 5 7, 5 6)))")
 
 # GEOSWithinTest
-test_within(g1::Compat.ASCIIString, g2::Compat.ASCIIString, expected::Bool) = factcheck(within, g1, g2, expected)
+test_within(g1::String, g2::String, expected::Bool) = factcheck(within, g1, g2, expected)
 test_within("POLYGON EMPTY", "POLYGON EMPTY", false)
 test_within("POLYGON((1 1,1 5,5 5,5 1,1 1))", "POINT(2 2)", false)
 test_within("POINT(2 2)", "POLYGON((1 1,1 5,5 5,5 1,1 1))", true)
