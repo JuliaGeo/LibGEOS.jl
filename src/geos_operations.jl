@@ -36,7 +36,7 @@ interpolateNormalized(line::LineString, dist::Real) = Point(interpolateNormalize
 # # Topology operations
 # # -----
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
-    @eval buffer(obj::$geom, dist::Real, quadsegs::Integer=8) = Polygon(buffer(obj.ptr, dist, quadsegs))
+    @eval buffer(obj::$geom, dist::Real, quadsegs::Integer=8) = geomFromGEOS(buffer(obj.ptr, dist, quadsegs))
     @eval envelope(obj::$geom) = geomFromGEOS(envelope(obj.ptr))
     @eval convexhull(obj::$geom) = geomFromGEOS(convexhull(obj.ptr))
     @eval boundary(obj::$geom) = geomFromGEOS(boundary(obj.ptr))
