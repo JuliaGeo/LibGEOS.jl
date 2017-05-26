@@ -26,7 +26,7 @@ facts("Geo interface") do
     @fact GeoInterface.geotype(ls) --> :LineString
 
     mls = LibGEOS.MultiLineString(LibGEOS.geomFromWKT("MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))"))
-    @fact GeoInterface.coordinates(mls) --> Vector{Vector{Float64}}[Vector{Float64}[[5,0],[0,0],[5,0]]])
+    @fact GeoInterface.coordinates(mls) --> Vector{Vector{Float64}}[Vector{Float64}[[5,0],[0,0],[5,0]]]
     @fact GeoInterface.geotype(mls) --> :MultiLineString
 
     coords = Vector{Float64}[[8,1],[9,1],[9,2],[8,2],[8,1]]
@@ -46,7 +46,7 @@ facts("Geo interface") do
     @fact GeoInterface.geotype(polygon) --> :Polygon
 
     multipolygon = LibGEOS.MultiPolygon(LibGEOS.geomFromWKT("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))"))
-    @fact GeoInterface.coordinates(multipolygon) --> Vector{Vector{Vector{Float64}}}[Vector{Vector{Float64}}[Vector{Float64}[[0,0],[0,10],[10,10],[10,0],[0,0]]]])
+    @fact GeoInterface.coordinates(multipolygon) --> Vector{Vector{Vector{Float64}}}[Vector{Vector{Float64}}[Vector{Float64}[[0,0],[0,10],[10,10],[10,0],[0,0]]]]
     @fact GeoInterface.geotype(multipolygon) --> :MultiPolygon
 
     geomcollection = LibGEOS.GeometryCollection(LibGEOS.geomFromWKT("GEOMETRYCOLLECTION (POLYGON ((8 2, 10 10, 8.5 1, 8 2)), POLYGON ((7 8, 10 10, 8 2, 7 8)), POLYGON ((3 8, 10 10, 7 8, 3 8)), POLYGON ((2 2, 8 2, 8.5 1, 2 2)), POLYGON ((2 2, 7 8, 8 2, 2 2)), POLYGON ((2 2, 3 8, 7 8, 2 2)), POLYGON ((0.5 9, 10 10, 3 8, 0.5 9)), POLYGON ((0.5 9, 3 8, 2 2, 0.5 9)), POLYGON ((0 0, 2 2, 8.5 1, 0 0)), POLYGON ((0 0, 0.5 9, 2 2, 0 0)))"))
