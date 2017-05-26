@@ -115,7 +115,7 @@ facts("GEOS operations") do
                       "GEOMETRYCOLLECTION (LINESTRING (1 2, 2 2), LINESTRING (2 1, 1 1), POLYGON ((0.5 1, 1 2, 1 1, 0.5 1)), POLYGON ((9 2, 9.5 1, 2 1, 2 2, 9 2)))")
 
     # GEOSIntersectsTest
-    test_intersects(g1::String, g2::String, expected::Bool) = factcheck(intersects, g1, g2, false)
+    test_intersects(g1::String, g2::String, expected::Bool) = factcheck(intersects, g1, g2, expected)
     test_intersects("POLYGON EMPTY", "POLYGON EMPTY", false)
     test_intersects("POLYGON((1 1,1 5,5 5,5 1,1 1))", "POINT(2 2)", true)
     test_intersects("POINT(2 2)", "POLYGON((1 1,1 5,5 5,5 1,1 1))", true)
