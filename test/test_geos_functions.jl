@@ -1,13 +1,13 @@
 facts("GEOS functions") do
     a = LibGEOS.createCoordSeq(Vector{Float64}[[1,2,3],[4,5,6]])
     b = LibGEOS.cloneCoordSeq(a)
-    factcheck_equals(LibGEOS.getCoordinates(b), LibGEOS.getCoordinates(a))
+    @fact LibGEOS.getCoordinates(b) --> LibGEOS.getCoordinates(a)
     a = LibGEOS.createCoordSeq(Vector{Float64}[[1,2,3],[4,5,6],[7,8,9],[10,11,12]])
     b = LibGEOS.cloneCoordSeq(a)
-    factcheck_equals(LibGEOS.getCoordinates(b), LibGEOS.getCoordinates(a))
+    @fact LibGEOS.getCoordinates(b) --> LibGEOS.getCoordinates(a)
     LibGEOS.setCoordSeq!(b, 2, [3.0, 3.0, 3.0])
-    factcheck_equals(LibGEOS.getCoordinates(a), Vector{Float64}[[1,2,3],[4,5,6],[7,8,9],[10,11,12]])
-    factcheck_equals(LibGEOS.getCoordinates(b), Vector{Float64}[[1,2,3],[3,3,3],[7,8,9],[10,11,12]])
+    @fact LibGEOS.getCoordinates(a) --> Vector{Float64}[[1,2,3],[4,5,6],[7,8,9],[10,11,12]]
+    @fact LibGEOS.getCoordinates(b) --> Vector{Float64}[[1,2,3],[3,3,3],[7,8,9],[10,11,12]]
     c = LibGEOS.createPoint(LibGEOS.createCoordSeq(Vector{Float64}[[1,2]]))
     @fact LibGEOS.getCoordinates(LibGEOS.getCoordSeq(c))[1] --> roughly([1,2], 1e-5)
 
@@ -20,10 +20,10 @@ facts("GEOS functions") do
     @fact LibGEOS.geomTypeId(polygon) --> LibGEOS.GEOS_POLYGON
     @fact LibGEOS.geomArea(polygon) --> roughly(98.0, 1e-5)
     exterior = LibGEOS.exteriorRing(polygon)
-    factcheck_equals(LibGEOS.getCoordinates(LibGEOS.getCoordSeq(exterior)), Vector{Float64}[[0,0],[10,0],[10,10],[0,10],[0,0]])
+    @fact LibGEOS.getCoordinates(LibGEOS.getCoordSeq(exterior)) --> Vector{Float64}[[0,0],[10,0],[10,10],[0,10],[0,0]]
     interiors = LibGEOS.interiorRings(polygon)
-    factcheck_equals(LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[1])), Vector{Float64}[[1,8],[2,8],[2,9],[1,9],[1,8]])
-    factcheck_equals(LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[2])), Vector{Float64}[[8,1],[9,1],[9,2],[8,2],[8,1]])
+    @fact LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[1])) --> Vector{Float64}[[1,8],[2,8],[2,9],[1,9],[1,8]]
+    @fact LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[2])) --> Vector{Float64}[[8,1],[9,1],[9,2],[8,2],[8,1]]
 
     # Interpolation and Projection
     ls = LibGEOS.createLineString(Vector{Float64}[[8,1],[9,1],[9,2],[8,2]])
