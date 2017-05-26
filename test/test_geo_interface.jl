@@ -26,7 +26,7 @@ facts("Geo interface") do
     @fact GeoInterface.geotype(ls) --> :LineString
 
     mls = LibGEOS.MultiLineString(LibGEOS.geomFromWKT("MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))"))
-    @fact GeoInterface.coordinates(mls) --> Vector{Vector{Float64}}[Vector{Float64}[[5,0],[0,0],[5,0]]]
+    @fact GeoInterface.coordinates(mls) --> [[[5,0],[10,0]],[[0,0],[5,0]]]
     @fact GeoInterface.geotype(mls) --> :MultiLineString
 
     coords = Vector{Float64}[[8,1],[9,1],[9,2],[8,2],[8,1]]
