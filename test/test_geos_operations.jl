@@ -140,8 +140,8 @@ facts("GEOS operations") do
     g2 = parseWKT("POLYGON((8 8, 9 9, 9 10, 8 8))")
     points = nearestPoints(g1, g2)
     @fact length(points) --> 2
-    @fact GeoInterface.coordinates(points[1]) --> roughly([5.0,5.0], 1e-5)
-    @fact GeoInterface.coordinates(points[2]) --> roughly([8.0,8.0], 1e-5)
+    @fact GeoInterface.coordinates(points[1])[1:2] --> [5.0,5.0]
+    @fact GeoInterface.coordinates(points[2])[1:2] --> [8.0,8.0]
 
     # GEOSNodeTest
     g1 = node(parseWKT("LINESTRING(0 0, 10 10, 10 0, 0 10)"))
