@@ -1,5 +1,8 @@
 LibGEOS.jl
 ==========
+[![Build Status](https://travis-ci.org/JuliaGeo/LibGEOS.jl.svg)](https://travis-ci.org/JuliaGeo/LibGEOS.jl)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/JuliaGeo/LibGEOS.jl?svg=true&branch=master)](https://ci.appveyor.com/project/JuliaGeo/LibGEOS-jl/branch/master)
+[![Coverage Status](https://coveralls.io/repos/github/JuliaGeo/LibGEOS.jl/badge.svg)](https://coveralls.io/github/JuliaGeo/LibGEOS.jl)
 
 LibGEOS is a LGPL-licensed package for manipulation and analysis of planar geometric objects, based on the libraries [GEOS](https://trac.osgeo.org/geos/) (the engine of PostGIS) and JTS (from which GEOS is ported).
 
