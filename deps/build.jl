@@ -5,7 +5,7 @@ libgeos = library_dependency("libgeos",aliases=["libgeos_c", "libgeos_c-1"], val
     return Libdl.dlsym_e(handle,:initGEOS) != C_NULL && Libdl.dlsym_e(handle,:GEOSDelaunayTriangulation) != C_NULL
 end)
 
-version = "3.4.2"
+version = "3.4.3"
 
 provides(Sources, URI("http://download.osgeo.org/geos/geos-$(version).tar.bz2"), [libgeos], os = :Unix)
 provides(BuildProcess,Autotools(libtarget = "capi/.libs/libgeos_c."*BinDeps.shlib_ext),libgeos)
