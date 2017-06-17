@@ -1,9 +1,8 @@
 facts("LibGEOS regressions") do
 
     # https://github.com/JuliaGeo/LibGEOS.jl/issues/29
-    pts = [[0.,0.],[10.,0.], [10.,10.],[0.,10.], [0.0,0.]]
-    polygon = Polygon([pts])
-    @fact GeoInterface.geotype(polygon) --> :Polygon
+    pts = [[0.,0.],[10.,0.], [10.,10.],[0.,10.]]
+    @fact_throws polygon = Polygon([pts])
 
     # https://github.com/JuliaGeo/LibGEOS.jl/issues/24
     point = Point(2, 3)
