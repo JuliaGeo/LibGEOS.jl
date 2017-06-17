@@ -1,6 +1,6 @@
 LibGEOS.jl
 ==========
-[![Build Status](https://travis-ci.org/JuliaGeo/LibGEOS.jl.svg)](https://travis-ci.org/JuliaGeo/LibGEOS.jl)
+[![Build Status](https://travis-ci.org/JuliaGeo/LibGEOS.jl.svg?branch=master)](https://travis-ci.org/JuliaGeo/LibGEOS.jl)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/JuliaGeo/LibGEOS.jl?svg=true&branch=master)](https://ci.appveyor.com/project/JuliaGeo/LibGEOS-jl/branch/master)
 [![Coverage Status](https://coveralls.io/repos/github/JuliaGeo/LibGEOS.jl/badge.svg)](https://coveralls.io/github/JuliaGeo/LibGEOS.jl)
 
