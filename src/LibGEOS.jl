@@ -1,3 +1,5 @@
+__precompile__()
+
 module LibGEOS
 
     if isfile(joinpath(dirname(@__FILE__),"..","deps","deps.jl"))
@@ -57,7 +59,9 @@ module LibGEOS
         finishGEOS()
     end
 
-    _connection = GEOSconnection()
+    function __init__()
+        global const _connection = GEOSconnection()
+    end
 
     include("geos_functions.jl")
     include("geos_types.jl")
