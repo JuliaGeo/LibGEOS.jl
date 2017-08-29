@@ -16,4 +16,14 @@ facts("LibGEOS regressions") do
     mp = LibGEOS.MultiPoint(Vector{Float64}[[0,0],[10,0],[10,10],[11,10]])
     @fact GeoInterface.geotype(mp) --> :MultiPoint
 
+    # https://github.com/JuliaGeo/LibGEOS.jl/issues/20
+    # LibGEOS doesn't support Extended WKT
+    ewkt = "SRID=32756; POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))"
+    # ParseException: Unknown type: 'SRID=32756;'
+    @fact_throws LibGEOS.GEOSError parseWKT(ewkt)
+
+    # https://github.com/JuliaGeo/LibGEOS.jl/issues/40
+    # IllegalArgumentException: Points of LinearRing do not form a closed linestring
+    @fact_throws LibGEOS.GEOSError parseWKT("POLYGON((-1. 1., 1. 3., 0. 2., -1. 1.5))")
+
 end
