@@ -165,10 +165,10 @@ facts("GEOS operations") do
     test_pointonsurface("LINESTRING(0 0, 0 0)", "POINT (0 0)")
 
     g1 = parseWKT(
-    """POLYGON(( \
-    56.528666666700 25.2101666667, \
-    56.529000000000 25.2105000000, \
-    56.528833333300 25.2103333333, \
+    """POLYGON((
+    56.528666666700 25.2101666667,
+    56.529000000000 25.2105000000,
+    56.528833333300 25.2103333333,
     56.528666666700 25.2101666667))""")
     @fact GeoInterface.coordinates(pointOnSurface(g1)) --> roughly([56.528917,25.210417], 1e-5)
 
@@ -184,10 +184,10 @@ facts("GEOS operations") do
     g2 = simplify(g1, 43.2)
     @fact isEmpty(g2) --> true
     g1 = parseWKT(
-    """POLYGON(( \
-    56.528666666700 25.2101666667, \
-    56.529000000000 25.2105000000, \
-    56.528833333300 25.2103333333, \
+    """POLYGON((
+    56.528666666700 25.2101666667,
+    56.529000000000 25.2105000000,
+    56.528833333300 25.2103333333,
     56.528666666700 25.2101666667))""")
     equivalent_to_wkt(simplify(g1, 0.0), "POLYGON EMPTY")
     @fact equals(g1, topologyPreserveSimplify(g1, 43.2)) --> true

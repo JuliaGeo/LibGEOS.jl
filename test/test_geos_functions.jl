@@ -391,10 +391,10 @@ facts("GEOS functions") do
     LibGEOS.destroyGeom(geom3_)
 
     geom1_ = LibGEOS.geomFromWKT(
-    """POLYGON(( \
-    56.528666666700 25.2101666667, \
-    56.529000000000 25.2105000000, \
-    56.528833333300 25.2103333333, \
+    """POLYGON((
+    56.528666666700 25.2101666667,
+    56.529000000000 25.2105000000,
+    56.528833333300 25.2103333333,
     56.528666666700 25.2101666667))""")
     geom2_ = LibGEOS.pointOnSurface(geom1_)
     @fact LibGEOS.getCoordinates(LibGEOS.getCoordSeq(geom2_))[1] --> roughly([56.528917,25.210417], 1e-5)
