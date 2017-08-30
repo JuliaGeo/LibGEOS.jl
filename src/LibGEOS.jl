@@ -1,3 +1,5 @@
+__precompile__()
+
 module LibGEOS
 
     if isfile(joinpath(dirname(@__FILE__),"..","deps","deps.jl"))
@@ -24,22 +26,42 @@ module LibGEOS
 
     include("geos_c.jl")
 
-    #  --- GEOSconnection ---
+    type GEOSError <: Exception
+        msg::String
+    end
+    Base.showerror(io::IO, err::GEOSError) = print(io, "GEOSError\n\t$(err.msg)")
+
+    function geosjl_errorhandler(message::Ptr{UInt8}, userdata)
+        if unsafe_string(message) == "%s"
+            throw(GEOSError(unsafe_string(Cstring(userdata))))
+        else
+            throw(GEOSError(unsafe_string(message)))
+        end
+    end
+
     type GEOSconnection
         status::Symbol
 
         function GEOSconnection()
-            geos_status = new(:Initialized)
-            initializeGEOS()
-            finalizer(geos_status, finalizeGEOS)
-            geos_status
+            connection = new(:Initialized)
+            initializeGEOS(
+                C_NULL,
+                cfunction(geosjl_errorhandler,Ptr{Void},(Ptr{UInt8},Ptr{Void}))
+            )
+            finalizer(connection, finalizeGEOS)
+            connection
         end
     end
-    initializeGEOS() = initGEOS(C_NULL, C_NULL)
-    finalizeGEOS(status::GEOSconnection) = finishGEOS()
 
-    _connection = GEOSconnection()
-    # --- END GEOSconnection ---
+    initializeGEOS(notice_f, error_f) = initGEOS(notice_f, error_f)
+    function finalizeGEOS(connection::GEOSconnection)
+        connection.status = :Finished
+        finishGEOS()
+    end
+
+    function __init__()
+        global const _connection = GEOSconnection()
+    end
 
     include("geos_functions.jl")
     include("geos_types.jl")
