@@ -1,10 +1,10 @@
 import GeoInterface
-using FactCheck, LibGEOS
+using Base.Test, LibGEOS
 
-include("test_geos_functions.jl")
-include("test_geos_operations.jl")
-include("test_geo_interface.jl")
-include("test_regressions.jl")
-include("test_invalid_geometry.jl")
-
-FactCheck.exitstatus()
+@testset "LibGEOS" begin
+    include("test_geos_functions.jl")
+    include("test_geos_operations.jl")
+    include("test_geo_interface.jl")
+    include("test_regressions.jl")
+    include("test_invalid_geometry.jl")
+end

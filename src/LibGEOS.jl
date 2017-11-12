@@ -26,7 +26,7 @@ module LibGEOS
 
     include("geos_c.jl")
 
-    type GEOSError <: Exception
+    mutable struct GEOSError <: Exception
         msg::String
     end
     Base.showerror(io::IO, err::GEOSError) = print(io, "GEOSError\n\t$(err.msg)")
@@ -39,7 +39,7 @@ module LibGEOS
         end
     end
 
-    type GEOSconnection
+    mutable struct GEOSconnection
         status::Symbol
 
         function GEOSconnection()

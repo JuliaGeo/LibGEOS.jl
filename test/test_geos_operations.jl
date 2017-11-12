@@ -1,6 +1,6 @@
 function equivalent_to_wkt(geom::GeoInterface.AbstractGeometry, wkt::String)
     test_geom = parseWKT(wkt)
-    @fact geomToWKT(geom) --> geomToWKT(test_geom)
+    @test geomToWKT(geom) == geomToWKT(test_geom)
 end
 
 function factcheck(f::Function, geom::String, expected::String)
@@ -9,7 +9,7 @@ function factcheck(f::Function, geom::String, expected::String)
 end
 
 function factcheck(f::Function, geom::String, expected::Bool)
-    @fact f(parseWKT(geom)) --> expected
+    @test f(parseWKT(geom)) == expected
 end
 
 function factcheck(f::Function, g1::String, g2::String, expected::String)
@@ -18,62 +18,62 @@ function factcheck(f::Function, g1::String, g2::String, expected::String)
 end
 
 function factcheck(f::Function, g1::String, g2::String, expected::Bool)
-    @fact f(parseWKT(g1),parseWKT(g2)) --> expected
+    @test f(parseWKT(g1),parseWKT(g2)) == expected
 end
 
-facts("GEOS operations") do
+@testset "GEOS operations" begin
     ls = LineString(Vector{Float64}[[8,1],[9,1],[9,2],[8,2]])
     pt = interpolate(ls, 2.5)
-    @fact GeoInterface.coordinates(pt) --> roughly([8.5, 2.0], 1e-5)
+    @test GeoInterface.coordinates(pt) ≈ [8.5, 2.0] atol=1e-5
     for (pt,dist,dest) in [(Point(10.0,1.0), 1.0, Point(9.0,1.0)),
                            (Point( 9.0,1.0), 1.0, Point(9.0,1.0)),
                            (Point(10.0,0.0), 1.0, Point(9.0,1.0)),
                            (Point( 9.0,2.0), 2.0, Point(9.0,2.0)),
                            (Point( 8.7,1.5), 1.5, Point(9.0,1.5))]
         test_dist = project(ls, pt)
-        @fact test_dist --> roughly(dist, 1e-5)
-        @fact equals(interpolate(ls, test_dist), dest) --> true
+        @test test_dist ≈ dist atol=1e-5
+        @test equals(interpolate(ls, test_dist), dest)
     end
 
     g1 = parseWKT("POLYGON EMPTY")
     g2 = parseWKT("POLYGON EMPTY")
-    @fact LibGEOS.contains(g1, g2) --> false
-    @fact LibGEOS.contains(g2, g1) --> false
+    @test !LibGEOS.contains(g1, g2)
+    @test !LibGEOS.contains(g2, g1)
 
     g1 = parseWKT("POLYGON((1 1,1 5,5 5,5 1,1 1))")
     g2 = parseWKT("POINT(2 2)")
-    @fact LibGEOS.contains(g1, g2) --> true
-    @fact LibGEOS.contains(g2, g1) --> false
+    @test LibGEOS.contains(g1, g2)
+    @test !LibGEOS.contains(g2, g1)
 
     g1 = parseWKT("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
     g2 = parseWKT("POLYGON((1 1,1 2,2 2,2 1,1 1))")
-    @fact LibGEOS.contains(g1, g2) --> true
-    @fact LibGEOS.contains(g2, g1) --> false
+    @test LibGEOS.contains(g1, g2)
+    @test !LibGEOS.contains(g2, g1)
 
 
     # GEOSConvexHullTest
     input = parseWKT("MULTIPOINT (130 240, 130 240, 130 240, 570 240, 570 240, 570 240, 650 240)")
     expected = parseWKT("LINESTRING (130 240, 650 240)")
     output = convexhull(input)
-    @fact isEmpty(output) --> false
-    @fact geomToWKT(output) --> geomToWKT(expected)
+    @test !isEmpty(output)
+    @test geomToWKT(output) == geomToWKT(expected)
 
     # LibGEOS.delaunayTriangulationTest
     g1 = parseWKT("POLYGON EMPTY")
     g2 = delaunayTriangulationEdges(g1)
-    @fact isEmpty(g1) --> true
-    @fact isEmpty(g2) --> true
-    @fact GeoInterface.geotype(g2) --> :MultiLineString
+    @test isEmpty(g1)
+    @test isEmpty(g2)
+    @test GeoInterface.geotype(g2) == :MultiLineString
 
     g1 = parseWKT("POINT(0 0)")
     g2 = delaunayTriangulation(g1)
-    @fact isEmpty(g2) --> true
-    @fact GeoInterface.geotype(g2) --> :GeometryCollection
+    @test isEmpty(g2)
+    @test GeoInterface.geotype(g2) == :GeometryCollection
 
     g1 = parseWKT("MULTIPOINT(0 0, 5 0, 10 0)")
     g2 = delaunayTriangulation(g1, 0.0)
-    @fact isEmpty(g2) --> true
-    @fact GeoInterface.geotype(g2) --> :GeometryCollection
+    @test isEmpty(g2)
+    @test GeoInterface.geotype(g2) == :GeometryCollection
     g2 = delaunayTriangulationEdges(g1, 0.0)
     equivalent_to_wkt(g2, "MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))")
 
@@ -84,19 +84,19 @@ facts("GEOS operations") do
     # GEOSDistanceTest
     g1 = parseWKT("POINT(10 10)")
     g2 = parseWKT("POINT(3 6)")
-    @fact distance(g1, g2) --> roughly(8.06225774829855, 1e-12)
+    @test distance(g1, g2) ≈ 8.06225774829855 atol=1e-12
 
     # GEOSGeom_extractUniquePointsTest
     g1 = parseWKT("POLYGON EMPTY")
     g2 = uniquePoints(g1)
-    @fact isEmpty(g2) --> true
+    @test isEmpty(g2)
 
     g1 = parseWKT("MULTIPOINT(0 0, 0 0, 1 1)")
     g2 = uniquePoints(g1)
-    @fact equals(g2, parseWKT("MULTIPOINT(0 0, 1 1)")) --> true
+    @test equals(g2, parseWKT("MULTIPOINT(0 0, 1 1)"))
 
     g1 = parseWKT("GEOMETRYCOLLECTION(MULTIPOINT(0 0, 0 0, 1 1),LINESTRING(1 1, 2 2, 2 2, 0 0),POLYGON((5 5, 0 0, 0 2, 2 2, 5 5)))")
-    @fact LibGEOS.equals(uniquePoints(g1), parseWKT("MULTIPOINT(0 0, 1 1, 2 2, 5 5, 0 2)")) --> true
+    @test LibGEOS.equals(uniquePoints(g1), parseWKT("MULTIPOINT(0 0, 1 1, 2 2, 5 5, 0 2)"))
 
     # GEOSGetCentroidTest
     test_centroid(geom::String, expected::String) = factcheck(centroid, geom, expected)
@@ -124,24 +124,24 @@ facts("GEOS operations") do
 
     # LineString_PointTest
     g1 = parseWKT("LINESTRING(0 0, 5 5, 10 10)")
-    @fact isClosed(g1) --> false
-    @fact GeoInterface.geotype(g1) --> :LineString
-    @fact numPoints(g1) --> 3
-    @fact geomLength(g1) --> roughly(sqrt(100 + 100), 1e-5)
-    @fact GeoInterface.coordinates(startPoint(g1)) --> roughly([0,0], 1e-5)
-    @fact GeoInterface.coordinates(endPoint(g1)) --> roughly([10,10], 1e-5)
+    @test !isClosed(g1)
+    @test GeoInterface.geotype(g1) == :LineString
+    @test numPoints(g1) == 3
+    @test geomLength(g1) ≈ sqrt(100 + 100) atol=1e-5
+    @test GeoInterface.coordinates(startPoint(g1)) ≈ [0,0] atol=1e-5
+    @test GeoInterface.coordinates(endPoint(g1)) ≈ [10,10] atol=1e-5
 
     # GEOSNearestPointsTest
     g1 = parseWKT("POLYGON EMPTY")
     g2 = parseWKT("POLYGON EMPTY")
-    @fact length(nearestPoints(g1, g2)) --> 0
+    @test length(nearestPoints(g1, g2)) == 0
 
     g1 = parseWKT("POLYGON((1 1,1 5,5 5,5 1,1 1))")
     g2 = parseWKT("POLYGON((8 8, 9 9, 9 10, 8 8))")
     points = nearestPoints(g1, g2)
-    @fact length(points) --> 2
-    @fact GeoInterface.coordinates(points[1])[1:2] --> [5.0,5.0]
-    @fact GeoInterface.coordinates(points[2])[1:2] --> [8.0,8.0]
+    @test length(points) == 2
+    @test GeoInterface.coordinates(points[1])[1:2] == [5.0,5.0]
+    @test GeoInterface.coordinates(points[2])[1:2] == [8.0,8.0]
 
     # GEOSNodeTest
     g1 = node(parseWKT("LINESTRING(0 0, 10 10, 10 0, 0 10)"))
@@ -170,7 +170,7 @@ facts("GEOS operations") do
     56.529000000000 25.2105000000,
     56.528833333300 25.2103333333,
     56.528666666700 25.2101666667))""")
-    @fact GeoInterface.coordinates(pointOnSurface(g1)) --> roughly([56.528917,25.210417], 1e-5)
+    @test GeoInterface.coordinates(pointOnSurface(g1)) ≈ [56.528917,25.210417] atol=1e-5
 
     # GEOSSharedPathsTest
     factcheck(sharedPaths,
@@ -180,9 +180,9 @@ facts("GEOS operations") do
 
     # GEOSSimplifyTest
     g1 = parseWKT("POLYGON EMPTY")
-    @fact isEmpty(g1) --> true
+    @test isEmpty(g1)
     g2 = simplify(g1, 43.2)
-    @fact isEmpty(g2) --> true
+    @test isEmpty(g2)
     g1 = parseWKT(
     """POLYGON((
     56.528666666700 25.2101666667,
@@ -190,7 +190,7 @@ facts("GEOS operations") do
     56.528833333300 25.2103333333,
     56.528666666700 25.2101666667))""")
     equivalent_to_wkt(simplify(g1, 0.0), "POLYGON EMPTY")
-    @fact equals(g1, topologyPreserveSimplify(g1, 43.2)) --> true
+    @test equals(g1, topologyPreserveSimplify(g1, 43.2))
 
     # GEOSSnapTest
     function test_snap(g1::String, g2::String, expected::String, tol::Float64=0.0)
@@ -241,10 +241,10 @@ facts("GEOS operations") do
     test_within("POLYGON((1 1,1 2,2 2,2 1,1 1))", "MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", true)
 
     # GEOSisClosedTest
-    @fact isClosed(parseWKT("LINESTRING(0 0, 1 0, 1 1)")) --> false
-    @fact isClosed(parseWKT("LINESTRING(0 0, 0 1, 1 1, 0 0)")) --> true
+    @test !isClosed(parseWKT("LINESTRING(0 0, 1 0, 1 1)"))
+    @test isClosed(parseWKT("LINESTRING(0 0, 0 1, 1 1, 0 0)"))
 
     # Buffer should return Polygon or MultiPolygon
-    @fact typeof(buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 0.1)) --> LibGEOS.MultiPolygon
-    @fact typeof(buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 10)) --> LibGEOS.Polygon
+    @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 0.1) isa LibGEOS.MultiPolygon
+    @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 10) isa LibGEOS.Polygon
 end

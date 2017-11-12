@@ -1,53 +1,53 @@
-facts("Geo interface") do
+@testset "Geo interface" begin
     pt = LibGEOS.Point(1.0,2.0)
-    @fact GeoInterface.coordinates(pt) --> roughly([1,2], 1e-5)
-    @fact GeoInterface.geotype(pt) --> :Point
+    @test GeoInterface.coordinates(pt) ≈ [1,2] atol=1e-5
+    @test GeoInterface.geotype(pt) == :Point
 
     pt = LibGEOS.Point(1, 2)
-    @fact GeoInterface.coordinates(pt) --> roughly([1,2], 1e-5)
-    @fact GeoInterface.geotype(pt) --> :Point
+    @test GeoInterface.coordinates(pt) ≈ [1,2] atol=1e-5
+    @test GeoInterface.geotype(pt) == :Point
 
 
     pt = LibGEOS.Point(LibGEOS.geomFromWKT("POINT EMPTY"))
-    @fact GeoInterface.coordinates(pt) --> roughly(Float64[], 1e-5)
-    @fact GeoInterface.geotype(pt) --> :Point
+    @test GeoInterface.coordinates(pt) ≈ Float64[] atol=1e-5
+    @test GeoInterface.geotype(pt) == :Point
 
     mpt = LibGEOS.MultiPoint(LibGEOS.geomFromWKT("MULTIPOINT(0 0, 10 0, 10 10, 11 10)"))
-    @fact GeoInterface.coordinates(mpt) --> Vector{Float64}[[0,0],[10,0],[10,10],[11,10]]
-    @fact GeoInterface.geotype(mpt) --> :MultiPoint
+    @test GeoInterface.coordinates(mpt) == Vector{Float64}[[0,0],[10,0],[10,10],[11,10]]
+    @test GeoInterface.geotype(mpt) == :MultiPoint
 
     coords = Vector{Float64}[[8,1],[9,1],[9,2],[8,2]]
     ls = LibGEOS.LineString(coords)
-    @fact GeoInterface.coordinates(ls) --> coords
-    @fact GeoInterface.geotype(ls) --> :LineString
+    @test GeoInterface.coordinates(ls) == coords
+    @test GeoInterface.geotype(ls) == :LineString
 
     ls = LibGEOS.LineString(LibGEOS.geomFromWKT("LINESTRING EMPTY"))
-    @fact GeoInterface.coordinates(ls) --> []
-    @fact GeoInterface.geotype(ls) --> :LineString
+    @test GeoInterface.coordinates(ls) == []
+    @test GeoInterface.geotype(ls) == :LineString
 
     mls = LibGEOS.MultiLineString(LibGEOS.geomFromWKT("MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))"))
-    @fact GeoInterface.coordinates(mls) --> [[[5,0],[10,0]],[[0,0],[5,0]]]
-    @fact GeoInterface.geotype(mls) --> :MultiLineString
+    @test GeoInterface.coordinates(mls) == [[[5,0],[10,0]],[[0,0],[5,0]]]
+    @test GeoInterface.geotype(mls) == :MultiLineString
 
     coords = Vector{Float64}[[8,1],[9,1],[9,2],[8,2],[8,1]]
     lr = LibGEOS.LinearRing(coords)
-    @fact GeoInterface.coordinates(lr) --> coords
-    @fact GeoInterface.geotype(lr) --> :LineString
+    @test GeoInterface.coordinates(lr) == coords
+    @test GeoInterface.geotype(lr) == :LineString
 
     coords = Vector{Vector{Float64}}[Vector{Float64}[[0,0],[10,0],[10,10],[0,10],[0,0]],
                                      Vector{Float64}[[1,8],[2,8],[2,9],[1,9],[1,8]],
                                      Vector{Float64}[[8,1],[9,1],[9,2],[8,2],[8,1]]]
     polygon = LibGEOS.Polygon(coords)
-    @fact GeoInterface.coordinates(polygon) --> coords
-    @fact GeoInterface.geotype(polygon) --> :Polygon
+    @test GeoInterface.coordinates(polygon) == coords
+    @test GeoInterface.geotype(polygon) == :Polygon
 
     polygon = LibGEOS.Polygon(LibGEOS.geomFromWKT("POLYGON EMPTY"))
-    @fact GeoInterface.coordinates(polygon) --> [[]]
-    @fact GeoInterface.geotype(polygon) --> :Polygon
+    @test GeoInterface.coordinates(polygon) == [[]]
+    @test GeoInterface.geotype(polygon) == :Polygon
 
     multipolygon = LibGEOS.MultiPolygon(LibGEOS.geomFromWKT("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))"))
-    @fact GeoInterface.coordinates(multipolygon) --> Vector{Vector{Vector{Float64}}}[Vector{Vector{Float64}}[Vector{Float64}[[0,0],[0,10],[10,10],[10,0],[0,0]]]]
-    @fact GeoInterface.geotype(multipolygon) --> :MultiPolygon
+    @test GeoInterface.coordinates(multipolygon) == Vector{Vector{Vector{Float64}}}[Vector{Vector{Float64}}[Vector{Float64}[[0,0],[0,10],[10,10],[10,0],[0,0]]]]
+    @test GeoInterface.geotype(multipolygon) == :MultiPolygon
 
     geomcollection = LibGEOS.GeometryCollection(LibGEOS.geomFromWKT("GEOMETRYCOLLECTION (POLYGON ((8 2, 10 10, 8.5 1, 8 2)), POLYGON ((7 8, 10 10, 8 2, 7 8)), POLYGON ((3 8, 10 10, 7 8, 3 8)), POLYGON ((2 2, 8 2, 8.5 1, 2 2)), POLYGON ((2 2, 7 8, 8 2, 2 2)), POLYGON ((2 2, 3 8, 7 8, 2 2)), POLYGON ((0.5 9, 10 10, 3 8, 0.5 9)), POLYGON ((0.5 9, 3 8, 2 2, 0.5 9)), POLYGON ((0 0, 2 2, 8.5 1, 0 0)), POLYGON ((0 0, 0.5 9, 2 2, 0 0)))"))
     collection = GeoInterface.geometries(geomcollection)
@@ -61,8 +61,8 @@ facts("Geo interface") do
                                              Vector{Vector{Float64}}[Vector{Float64}[[0.5,9.0],[ 3.0, 8.0],[2.0,2.0],[0.5,9.0]]],
                                              Vector{Vector{Float64}}[Vector{Float64}[[0.0,0.0],[ 2.0, 2.0],[8.5,1.0],[0.0,0.0]]],
                                              Vector{Vector{Float64}}[Vector{Float64}[[0.0,0.0],[ 0.5, 9.0],[2.0,2.0],[0.0,0.0]]]]
-    @fact map(GeoInterface.coordinates,collection) --> coords
-    @fact GeoInterface.geotype(geomcollection) --> :GeometryCollection
+    @test map(GeoInterface.coordinates,collection) == coords
+    @test GeoInterface.geotype(geomcollection) == :GeometryCollection
 
     geomcollection = LibGEOS.GeometryCollection(LibGEOS.geomFromWKT("GEOMETRYCOLLECTION(MULTIPOINT(0 0, 0 0, 1 1),LINESTRING(1 1, 2 2, 2 2, 0 0),POLYGON((5 5, 0 0, 0 2, 2 2, 5 5)))"))
     collection = GeoInterface.geometries(geomcollection)
@@ -71,13 +71,13 @@ facts("Geo interface") do
                     Vector{Vector{Float64}}[Vector{Float64}[[5.0,5.0],[0.0,0.0],[0.0,2.0],[2.0,2.0],[5.0,5.0]]]]
     geotypes = [:MultiPoint,:LineString,:Polygon]
     for (i,item) in enumerate(collection)
-        @fact GeoInterface.coordinates(item) --> coords[i]
-        @fact GeoInterface.geotype(item) --> geotypes[i]
+        @test GeoInterface.coordinates(item) == coords[i]
+        @test GeoInterface.geotype(item) == geotypes[i]
     end
-    @fact GeoInterface.geotype(geomcollection) --> :GeometryCollection
+    @test GeoInterface.geotype(geomcollection) == :GeometryCollection
 
     geomcollection = LibGEOS.GeometryCollection(LibGEOS.geomFromWKT("GEOMETRYCOLLECTION EMPTY"))
     collection = GeoInterface.geometries(geomcollection)
-    @fact length(collection) --> 0
-    @fact GeoInterface.geotype(geomcollection) --> :GeometryCollection
+    @test length(collection) == 0
+    @test GeoInterface.geotype(geomcollection) == :GeometryCollection
 end
