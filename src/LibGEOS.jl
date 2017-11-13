@@ -39,28 +39,22 @@ module LibGEOS
         end
     end
 
-    mutable struct GEOSconnection
-        status::Symbol
+    mutable struct GEOScontext
+        ptr::GEOSContextHandle_t
 
-        function GEOSconnection()
-            connection = new(:Initialized)
-            initializeGEOS(
-                C_NULL,
+        function GEOScontext()
+            context = new(GEOS_init_r())
+            GEOSContext_setNoticeHandler_r(context.ptr, C_NULL)
+            GEOSContext_setErrorHandler_r(context.ptr,
                 cfunction(geosjl_errorhandler,Ptr{Void},(Ptr{UInt8},Ptr{Void}))
             )
-            finalizer(connection, finalizeGEOS)
-            connection
+            finalizer(context, context -> (GEOS_finish_r(context.ptr); context.ptr = C_NULL))
+            context
         end
     end
 
-    initializeGEOS(notice_f, error_f) = initGEOS(notice_f, error_f)
-    function finalizeGEOS(connection::GEOSconnection)
-        connection.status = :Finished
-        finishGEOS()
-    end
-
     function __init__()
-        global const _connection = GEOSconnection()
+        global const _context = GEOScontext()
     end
 
     include("geos_functions.jl")
