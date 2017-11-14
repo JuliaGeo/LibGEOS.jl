@@ -1,19 +1,23 @@
 
-function _readgeom(wktstring::String, wktreader::WKTReader = _wktreader, context::GEOScontext = _context)
+function _readgeom(wktstring::String, wktreader::WKTReader, context::GEOScontext = _context)
     result = GEOSWKTReader_read_r(context.ptr, wktreader.ptr, pointer(wktstring))
     if result == C_NULL
         error("LibGEOS: Error in GEOSWKTReader_read_r while reading $wktstring")
     end
     result
 end
+_readgeom(wktstring::String, context::GEOScontext = _context) =
+    _readgeom(wktstring, WKTReader(context), context)
 
-function _readgeom(wkbbuffer::Vector{Cuchar}, wkbreader::WKBReader = _wkbreader, context::GEOScontext = _context)
+function _readgeom(wkbbuffer::Vector{Cuchar}, wkbreader::WKBReader, context::GEOScontext = _context)
     result = GEOSWKBReader_read_r(context.ptr, wkbreader.ptr, pointer(wkbbuffer), length(wkbbuffer))
     if result == C_NULL
         error("LibGEOS: Error in GEOSWKBReader_read_r")
     end
     result
 end
+_readgeom(wkbbuffer::Vector{Cuchar}, context::GEOScontext = _context) =
+    _readgeom(wkbbuffer, WKBReader(context), context)
 
 function _writegeom(geom::GEOSGeom, wktwriter::WKTWriter, context::GEOScontext = _context)
     unsafe_string(GEOSWKTWriter_write_r(context.ptr, wktwriter.ptr, geom))
@@ -26,7 +30,7 @@ function _writegeom(geom::GEOSGeom, wkbwriter::WKBWriter, context::GEOScontext =
 end
 
 _writegeom(geom::GEOSGeom, context::GEOScontext = _context) =
-    _writegeom(geom, _wktwriter, context)
+    _writegeom(geom, WKTWriter(context), context)
 
 # -----
 # Coordinate Sequence functions

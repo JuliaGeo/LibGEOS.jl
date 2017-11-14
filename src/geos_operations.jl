@@ -34,10 +34,15 @@ function geomFromGEOS(ptr::GEOSGeom)
     end
 end
 
-readgeom(wktstring::String, wktreader::WKTReader=_wktreader, context::GEOScontext=_context) =
+readgeom(wktstring::String, wktreader::WKTReader, context::GEOScontext=_context) =
     geomFromGEOS(_readgeom(wktstring, wktreader, context))
-readgeom(wkbbuffer::Vector{Cuchar}, wkbreader::WKBReader=_wkbreader, context::GEOScontext=_context) =
+readgeom(wktstring::String, context::GEOScontext=_context) =
+    readgeom(wktstring, WKTReader(context), context)
+
+readgeom(wkbbuffer::Vector{Cuchar}, wkbreader::WKBReader, context::GEOScontext=_context) =
     geomFromGEOS(_readgeom(wkbbuffer, wkbreader, context))
+readgeom(wkbbuffer::Vector{Cuchar}, context::GEOScontext=_context) =
+    readgeom(wkbbuffer, WKBReader(context), context)
 
 # -----
 # Linear referencing functions -- there are more, but these are probably sufficient for most purposes

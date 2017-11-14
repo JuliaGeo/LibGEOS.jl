@@ -109,10 +109,6 @@ module LibGEOS
 
     function __init__()
         global const _context = GEOScontext()
-        global const _wktreader = WKTReader(_context)
-        global const _wktwriter = WKTWriter(_context)
-        global const _wkbreader = WKBReader(_context)
-        global const _wkbwriter = WKBWriter(_context)
     end
 
     include("geos_functions.jl")
