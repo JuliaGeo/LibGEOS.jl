@@ -59,7 +59,7 @@ function GEOS_init_r()
 end
 
 function GEOS_finish_r(handle::GEOSContextHandle_t)
-    ccall((:GEOS_init_r,libgeos),Void,(GEOSContextHandle_t,),handle)
+    ccall((:GEOS_finish_r,libgeos),Void,(GEOSContextHandle_t,),handle)
 end
 
 function GEOSContext_setNoticeHandler_r(extHandle::GEOSContextHandle_t,nf::GEOSMessageHandler)
