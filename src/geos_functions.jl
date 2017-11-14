@@ -1,29 +1,32 @@
-# GENERAL NOTES:
-# - Remember to call initGEOS() before any use of this library's
-#   functions, and call finishGEOS() when done.
-# - Currently you have to explicitly GEOSGeom_destroy() all
-#   GEOSGeom objects to avoid memory leaks, and to GEOSFree()
-#   all returned char * (unless const).
 
-GEOMTYPE = Dict( GEOS_POINT => :Point,
-                 GEOS_LINESTRING => :LineString,
-                 GEOS_LINEARRING => :LinearRing,
-                 GEOS_POLYGON => :Polygon,
-                 GEOS_MULTIPOINT => :MultiPoint,
-                 GEOS_MULTILINESTRING => :MultiLineString,
-                 GEOS_MULTIPOLYGON => :MultiPolygon,
-                 GEOS_GEOMETRYCOLLECTION => :GeometryCollection)
-
-
-function geomFromWKT(geom::String, context::GEOScontext = _context)
-    result = GEOSGeomFromWKT_r(context.ptr, geom)
+function _readgeom(wktstring::String, wktreader::WKTReader = _wktreader, context::GEOScontext = _context)
+    result = GEOSWKTReader_read_r(context.ptr, wktreader.ptr, pointer(wktstring))
     if result == C_NULL
-        error("LibGEOS: Error in GEOSGeomFromWKT")
+        error("LibGEOS: Error in GEOSWKTReader_read_r while reading $wktstring")
     end
     result
 end
-geomToWKT(geom::Ptr{GEOSGeometry}, context::GEOScontext = _context) =
-    unsafe_string(GEOSGeomToWKT_r(context.ptr, geom))
+
+function _readgeom(wkbbuffer::Vector{Cuchar}, wkbreader::WKBReader = _wkbreader, context::GEOScontext = _context)
+    result = GEOSWKBReader_read_r(context.ptr, wkbreader.ptr, pointer(wkbbuffer), length(wkbbuffer))
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSWKBReader_read_r")
+    end
+    result
+end
+
+function _writegeom(geom::GEOSGeom, wktwriter::WKTWriter, context::GEOScontext = _context)
+    unsafe_string(GEOSWKTWriter_write_r(context.ptr, wktwriter.ptr, geom))
+end
+
+function _writegeom(geom::GEOSGeom, wkbwriter::WKBWriter, context::GEOScontext = _context)
+    wkbsize = Ref{Csize_t}()
+    result = GEOSWKBWriter_write_r(context.ptr, wkbwriter.ptr, geom, wkbsize)
+    unsafe_wrap(Array, result, wkbsize[], true)
+end
+
+_writegeom(geom::GEOSGeom, context::GEOScontext = _context) =
+    _writegeom(geom, _wktwriter, context)
 
 # -----
 # Coordinate Sequence functions

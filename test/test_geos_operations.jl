@@ -1,24 +1,24 @@
 function equivalent_to_wkt(geom::GeoInterface.AbstractGeometry, wkt::String)
-    test_geom = parseWKT(wkt)
-    @test geomToWKT(geom) == geomToWKT(test_geom)
+    test_geom = readgeom(wkt)
+    @test writegeom(geom) == writegeom(test_geom)
 end
 
 function factcheck(f::Function, geom::String, expected::String)
-    result = f(parseWKT(geom))
+    result = f(readgeom(geom))
     equivalent_to_wkt(result, expected)
 end
 
 function factcheck(f::Function, geom::String, expected::Bool)
-    @test f(parseWKT(geom)) == expected
+    @test f(readgeom(geom)) == expected
 end
 
 function factcheck(f::Function, g1::String, g2::String, expected::String)
-    result = f(parseWKT(g1),parseWKT(g2))
+    result = f(readgeom(g1),readgeom(g2))
     equivalent_to_wkt(result, expected)
 end
 
 function factcheck(f::Function, g1::String, g2::String, expected::Bool)
-    @test f(parseWKT(g1),parseWKT(g2)) == expected
+    @test f(readgeom(g1),readgeom(g2)) == expected
 end
 
 @testset "GEOS operations" begin
@@ -35,68 +35,68 @@ end
         @test equals(interpolate(ls, test_dist), dest)
     end
 
-    g1 = parseWKT("POLYGON EMPTY")
-    g2 = parseWKT("POLYGON EMPTY")
+    g1 = readgeom("POLYGON EMPTY")
+    g2 = readgeom("POLYGON EMPTY")
     @test !LibGEOS.contains(g1, g2)
     @test !LibGEOS.contains(g2, g1)
 
-    g1 = parseWKT("POLYGON((1 1,1 5,5 5,5 1,1 1))")
-    g2 = parseWKT("POINT(2 2)")
+    g1 = readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
+    g2 = readgeom("POINT(2 2)")
     @test LibGEOS.contains(g1, g2)
     @test !LibGEOS.contains(g2, g1)
 
-    g1 = parseWKT("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
-    g2 = parseWKT("POLYGON((1 1,1 2,2 2,2 1,1 1))")
+    g1 = readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
+    g2 = readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))")
     @test LibGEOS.contains(g1, g2)
     @test !LibGEOS.contains(g2, g1)
 
 
     # GEOSConvexHullTest
-    input = parseWKT("MULTIPOINT (130 240, 130 240, 130 240, 570 240, 570 240, 570 240, 650 240)")
-    expected = parseWKT("LINESTRING (130 240, 650 240)")
+    input = readgeom("MULTIPOINT (130 240, 130 240, 130 240, 570 240, 570 240, 570 240, 650 240)")
+    expected = readgeom("LINESTRING (130 240, 650 240)")
     output = convexhull(input)
     @test !isEmpty(output)
-    @test geomToWKT(output) == geomToWKT(expected)
+    @test writegeom(output) == writegeom(expected)
 
     # LibGEOS.delaunayTriangulationTest
-    g1 = parseWKT("POLYGON EMPTY")
+    g1 = readgeom("POLYGON EMPTY")
     g2 = delaunayTriangulationEdges(g1)
     @test isEmpty(g1)
     @test isEmpty(g2)
     @test GeoInterface.geotype(g2) == :MultiLineString
 
-    g1 = parseWKT("POINT(0 0)")
+    g1 = readgeom("POINT(0 0)")
     g2 = delaunayTriangulation(g1)
     @test isEmpty(g2)
     @test GeoInterface.geotype(g2) == :GeometryCollection
 
-    g1 = parseWKT("MULTIPOINT(0 0, 5 0, 10 0)")
+    g1 = readgeom("MULTIPOINT(0 0, 5 0, 10 0)")
     g2 = delaunayTriangulation(g1, 0.0)
     @test isEmpty(g2)
     @test GeoInterface.geotype(g2) == :GeometryCollection
     g2 = delaunayTriangulationEdges(g1, 0.0)
     equivalent_to_wkt(g2, "MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))")
 
-    g1 = parseWKT("MULTIPOINT(0 0, 10 0, 10 10, 11 10)")
+    g1 = readgeom("MULTIPOINT(0 0, 10 0, 10 10, 11 10)")
     g2 = delaunayTriangulationEdges(g1, 2.0)
     equivalent_to_wkt(g2, "MULTILINESTRING ((0 0, 10 10), (0 0, 10 0), (10 0, 10 10))")
 
     # GEOSDistanceTest
-    g1 = parseWKT("POINT(10 10)")
-    g2 = parseWKT("POINT(3 6)")
+    g1 = readgeom("POINT(10 10)")
+    g2 = readgeom("POINT(3 6)")
     @test distance(g1, g2) ≈ 8.06225774829855 atol=1e-12
 
     # GEOSGeom_extractUniquePointsTest
-    g1 = parseWKT("POLYGON EMPTY")
+    g1 = readgeom("POLYGON EMPTY")
     g2 = uniquePoints(g1)
     @test isEmpty(g2)
 
-    g1 = parseWKT("MULTIPOINT(0 0, 0 0, 1 1)")
+    g1 = readgeom("MULTIPOINT(0 0, 0 0, 1 1)")
     g2 = uniquePoints(g1)
-    @test equals(g2, parseWKT("MULTIPOINT(0 0, 1 1)"))
+    @test equals(g2, readgeom("MULTIPOINT(0 0, 1 1)"))
 
-    g1 = parseWKT("GEOMETRYCOLLECTION(MULTIPOINT(0 0, 0 0, 1 1),LINESTRING(1 1, 2 2, 2 2, 0 0),POLYGON((5 5, 0 0, 0 2, 2 2, 5 5)))")
-    @test LibGEOS.equals(uniquePoints(g1), parseWKT("MULTIPOINT(0 0, 1 1, 2 2, 5 5, 0 2)"))
+    g1 = readgeom("GEOMETRYCOLLECTION(MULTIPOINT(0 0, 0 0, 1 1),LINESTRING(1 1, 2 2, 2 2, 0 0),POLYGON((5 5, 0 0, 0 2, 2 2, 5 5)))")
+    @test LibGEOS.equals(uniquePoints(g1), readgeom("MULTIPOINT(0 0, 1 1, 2 2, 5 5, 0 2)"))
 
     # GEOSGetCentroidTest
     test_centroid(geom::String, expected::String) = factcheck(centroid, geom, expected)
@@ -123,7 +123,7 @@ end
     test_intersects("POLYGON((1 1,1 2,2 2,2 1,1 1))", "MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", true)
 
     # LineString_PointTest
-    g1 = parseWKT("LINESTRING(0 0, 5 5, 10 10)")
+    g1 = readgeom("LINESTRING(0 0, 5 5, 10 10)")
     @test !isClosed(g1)
     @test GeoInterface.geotype(g1) == :LineString
     @test numPoints(g1) == 3
@@ -132,27 +132,27 @@ end
     @test GeoInterface.coordinates(endPoint(g1)) ≈ [10,10] atol=1e-5
 
     # GEOSNearestPointsTest
-    g1 = parseWKT("POLYGON EMPTY")
-    g2 = parseWKT("POLYGON EMPTY")
+    g1 = readgeom("POLYGON EMPTY")
+    g2 = readgeom("POLYGON EMPTY")
     @test length(nearestPoints(g1, g2)) == 0
 
-    g1 = parseWKT("POLYGON((1 1,1 5,5 5,5 1,1 1))")
-    g2 = parseWKT("POLYGON((8 8, 9 9, 9 10, 8 8))")
+    g1 = readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
+    g2 = readgeom("POLYGON((8 8, 9 9, 9 10, 8 8))")
     points = nearestPoints(g1, g2)
     @test length(points) == 2
     @test GeoInterface.coordinates(points[1])[1:2] == [5.0,5.0]
     @test GeoInterface.coordinates(points[2])[1:2] == [8.0,8.0]
 
     # GEOSNodeTest
-    g1 = node(parseWKT("LINESTRING(0 0, 10 10, 10 0, 0 10)"))
+    g1 = node(readgeom("LINESTRING(0 0, 10 10, 10 0, 0 10)"))
     normalize!(g1)
     equivalent_to_wkt(g1, "MULTILINESTRING ((5 5, 10 0, 10 10, 5 5), (0 10, 5 5), (0 0, 5 5))")
 
-    g1 = node(parseWKT("MULTILINESTRING((0 0, 2 0, 4 0),(5 0, 3 0, 1 0))"))
+    g1 = node(readgeom("MULTILINESTRING((0 0, 2 0, 4 0),(5 0, 3 0, 1 0))"))
     normalize!(g1)
     equivalent_to_wkt(g1, "MULTILINESTRING ((4 0, 5 0), (3 0, 4 0), (2 0, 3 0), (1 0, 2 0), (0 0, 1 0))")
 
-    g1 = node(parseWKT("MULTILINESTRING((0 0, 2 0, 4 0),(0 0, 2 0, 4 0))"))
+    g1 = node(readgeom("MULTILINESTRING((0 0, 2 0, 4 0),(0 0, 2 0, 4 0))"))
     normalize!(g1)
     equivalent_to_wkt(g1, "MULTILINESTRING ((2 0, 4 0), (0 0, 2 0))")
 
@@ -164,7 +164,7 @@ end
     test_pointonsurface("LINESTRING EMPTY", "POINT EMPTY")
     test_pointonsurface("LINESTRING(0 0, 0 0)", "POINT (0 0)")
 
-    g1 = parseWKT(
+    g1 = readgeom(
     """POLYGON((
     56.528666666700 25.2101666667,
     56.529000000000 25.2105000000,
@@ -179,11 +179,11 @@ end
               "GEOMETRYCOLLECTION (MULTILINESTRING ((50 60, 50 70)), MULTILINESTRING EMPTY)")
 
     # GEOSSimplifyTest
-    g1 = parseWKT("POLYGON EMPTY")
+    g1 = readgeom("POLYGON EMPTY")
     @test isEmpty(g1)
     g2 = simplify(g1, 43.2)
     @test isEmpty(g2)
-    g1 = parseWKT(
+    g1 = readgeom(
     """POLYGON((
     56.528666666700 25.2101666667,
     56.529000000000 25.2105000000,
@@ -194,7 +194,7 @@ end
 
     # GEOSSnapTest
     function test_snap(g1::String, g2::String, expected::String, tol::Float64=0.0)
-        equivalent_to_wkt(snap(parseWKT(g1), parseWKT(g2), tol), expected)
+        equivalent_to_wkt(snap(readgeom(g1), readgeom(g2), tol), expected)
     end
     test_snap("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", "POINT(0.5 0)",
               "POLYGON ((0.5 0, 10 0, 10 10, 0 10, 0.5 0))", 1.0)
@@ -241,8 +241,8 @@ end
     test_within("POLYGON((1 1,1 2,2 2,2 1,1 1))", "MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", true)
 
     # GEOSisClosedTest
-    @test !isClosed(parseWKT("LINESTRING(0 0, 1 0, 1 1)"))
-    @test isClosed(parseWKT("LINESTRING(0 0, 0 1, 1 1, 0 0)"))
+    @test !isClosed(readgeom("LINESTRING(0 0, 1 0, 1 1)"))
+    @test isClosed(readgeom("LINESTRING(0 0, 0 1, 1 1, 0 0)"))
 
     # Buffer should return Polygon or MultiPolygon
     @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 0.1) isa LibGEOS.MultiPolygon

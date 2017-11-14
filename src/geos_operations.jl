@@ -1,6 +1,17 @@
 
+GEOMTYPE = Dict( GEOS_POINT => :Point,
+                 GEOS_LINESTRING => :LineString,
+                 GEOS_LINEARRING => :LinearRing,
+                 GEOS_POLYGON => :Polygon,
+                 GEOS_MULTIPOINT => :MultiPoint,
+                 GEOS_MULTILINESTRING => :MultiLineString,
+                 GEOS_MULTIPOLYGON => :MultiPolygon,
+                 GEOS_GEOMETRYCOLLECTION => :GeometryCollection)
+
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
-    @eval geomToWKT(obj::$geom) = geomToWKT(obj.ptr)
+    @eval writegeom(obj::$geom, wktwriter::WKTWriter, context::GEOScontext = _context) = _writegeom(obj.ptr, wktwriter, context)
+    @eval writegeom(obj::$geom, wkbwriter::WKBWriter, context::GEOScontext = _context) = _writegeom(obj.ptr, wkbwriter, context)
+    @eval writegeom(obj::$geom, context::GEOScontext = _context) = _writegeom(obj.ptr, context)
 end
 
 function geomFromGEOS(ptr::GEOSGeom)
@@ -22,7 +33,11 @@ function geomFromGEOS(ptr::GEOSGeom)
         return GeometryCollection(ptr)
     end
 end
-parseWKT(geom::String) = geomFromGEOS(geomFromWKT(geom))
+
+readgeom(wktstring::String, wktreader::WKTReader=_wktreader, context::GEOScontext=_context) =
+    geomFromGEOS(_readgeom(wktstring, wktreader, context))
+readgeom(wkbbuffer::Vector{Cuchar}, wkbreader::WKBReader=_wkbreader, context::GEOScontext=_context) =
+    geomFromGEOS(_readgeom(wkbbuffer, wkbreader, context))
 
 # -----
 # Linear referencing functions -- there are more, but these are probably sufficient for most purposes
