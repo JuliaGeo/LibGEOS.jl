@@ -1,9 +1,0 @@
-*.jl.cov
-*.jl.*.cov
-*.jl.mem
-
-builds
-deps.jl
-downloads
-src
-usr
