@@ -120,4 +120,5 @@ module LibGEOS
     include("geos_types.jl")
     include("geos_operations.jl")
     include("geo_interface.jl")
+    include("deprecated.jl")
 end
