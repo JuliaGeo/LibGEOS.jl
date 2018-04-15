@@ -9,9 +9,9 @@ GEOMTYPE = Dict( GEOS_POINT => :Point,
                  GEOS_GEOMETRYCOLLECTION => :GeometryCollection)
 
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
-    @eval writegeom(obj::$geom, wktwriter::WKTWriter, context::GEOScontext = _context) = _writegeom(obj.ptr, wktwriter, context)
-    @eval writegeom(obj::$geom, wkbwriter::WKBWriter, context::GEOScontext = _context) = _writegeom(obj.ptr, wkbwriter, context)
-    @eval writegeom(obj::$geom, context::GEOScontext = _context) = _writegeom(obj.ptr, context)
+    @eval writegeom(obj::$geom, wktwriter::WKTWriter, context::GEOSContext = _context) = _writegeom(obj.ptr, wktwriter, context)
+    @eval writegeom(obj::$geom, wkbwriter::WKBWriter, context::GEOSContext = _context) = _writegeom(obj.ptr, wkbwriter, context)
+    @eval writegeom(obj::$geom, context::GEOSContext = _context) = _writegeom(obj.ptr, context)
 end
 
 function geomFromGEOS(ptr::GEOSGeom)
@@ -34,14 +34,14 @@ function geomFromGEOS(ptr::GEOSGeom)
     end
 end
 
-readgeom(wktstring::String, wktreader::WKTReader, context::GEOScontext=_context) =
+readgeom(wktstring::String, wktreader::WKTReader, context::GEOSContext=_context) =
     geomFromGEOS(_readgeom(wktstring, wktreader, context))
-readgeom(wktstring::String, context::GEOScontext=_context) =
+readgeom(wktstring::String, context::GEOSContext=_context) =
     readgeom(wktstring, WKTReader(context), context)
 
-readgeom(wkbbuffer::Vector{Cuchar}, wkbreader::WKBReader, context::GEOScontext=_context) =
+readgeom(wkbbuffer::Vector{Cuchar}, wkbreader::WKBReader, context::GEOSContext=_context) =
     geomFromGEOS(_readgeom(wkbbuffer, wkbreader, context))
-readgeom(wkbbuffer::Vector{Cuchar}, context::GEOScontext=_context) =
+readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext=_context) =
     readgeom(wkbbuffer, WKBReader(context), context)
 
 # -----

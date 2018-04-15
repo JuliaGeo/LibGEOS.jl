@@ -40,10 +40,10 @@ module LibGEOS
         end
     end
 
-    mutable struct GEOScontext
+    mutable struct GEOSContext
         ptr::GEOSContextHandle_t
 
-        function GEOScontext()
+        function GEOSContext()
             context = new(GEOS_init_r())
             GEOSContext_setNoticeHandler_r(context.ptr, C_NULL)
             GEOSContext_setErrorHandler_r(context.ptr,
@@ -57,7 +57,7 @@ module LibGEOS
     mutable struct WKTReader
         ptr::Ptr{GEOSWKTReader}
 
-        function WKTReader(context::GEOScontext)
+        function WKTReader(context::GEOSContext)
             reader = new(GEOSWKTReader_create_r(context.ptr))
             finalizer(reader, function(reader)
                 GEOSWKTReader_destroy_r(context.ptr, reader.ptr)
@@ -70,7 +70,7 @@ module LibGEOS
     mutable struct WKTWriter
         ptr::Ptr{GEOSWKTWriter}
 
-        function WKTWriter(context::GEOScontext; trim::Bool=true, outputdim::Int=3, roundingprecision::Int=-1)
+        function WKTWriter(context::GEOSContext; trim::Bool=true, outputdim::Int=3, roundingprecision::Int=-1)
             writer = new(GEOSWKTWriter_create_r(context.ptr))
             finalizer(writer, function(writer)
                 GEOSWKTWriter_destroy_r(context.ptr, writer.ptr)
@@ -86,7 +86,7 @@ module LibGEOS
     mutable struct WKBReader
         ptr::Ptr{GEOSWKBReader}
 
-        function WKBReader(context::GEOScontext)
+        function WKBReader(context::GEOSContext)
             reader = new(GEOSWKBReader_create_r(context.ptr))
             finalizer(reader, function(reader)
                 GEOSWKBReader_destroy_r(context.ptr, reader.ptr)
@@ -99,7 +99,7 @@ module LibGEOS
     mutable struct WKBWriter
         ptr::Ptr{GEOSWKBWriter}
 
-        function WKBWriter(context::GEOScontext)
+        function WKBWriter(context::GEOSContext)
             writer = new(GEOSWKBWriter_create_r(context.ptr))
             finalizer(writer, function(writer)
                 GEOSWKBWriter_destroy_r(context.ptr, writer.ptr)
@@ -113,7 +113,7 @@ module LibGEOS
         # Always check your dependencies from `deps.jl`
         check_deps()
 
-        global const _context = GEOScontext()
+        global const _context = GEOSContext()
     end
 
     include("geos_functions.jl")
