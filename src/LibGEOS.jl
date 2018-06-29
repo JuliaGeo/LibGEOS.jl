@@ -10,6 +10,7 @@ module LibGEOS
     include(depsjl_path)
 
     using GeoInterface
+    using LinearAlgebra
     import Base: contains
 
     export  Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection,
