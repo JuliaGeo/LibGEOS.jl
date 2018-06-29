@@ -10,7 +10,8 @@ module LibGEOS
     include(depsjl_path)
 
     using GeoInterface
-    using LinearAlgebra
+    import LinearAlgebra: normalize!
+    using Libdl
     import Base: contains
 
     export  Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection,
@@ -48,9 +49,9 @@ module LibGEOS
             context = new(GEOS_init_r())
             GEOSContext_setNoticeHandler_r(context.ptr, C_NULL)
             GEOSContext_setErrorHandler_r(context.ptr,
-                cfunction(geosjl_errorhandler,Ptr{Cvoid},(Ptr{UInt8},Ptr{Cvoid}))
+                @cfunction(geosjl_errorhandler,Ptr{Cvoid},(Ptr{UInt8},Ptr{Cvoid}))
             )
-            finalizer(context, context -> (GEOS_finish_r(context.ptr); context.ptr = C_NULL))
+            finalizer(context -> (GEOS_finish_r(context.ptr); context.ptr = C_NULL), context)
             context
         end
     end
@@ -60,10 +61,10 @@ module LibGEOS
 
         function WKTReader(context::GEOSContext)
             reader = new(GEOSWKTReader_create_r(context.ptr))
-            finalizer(reader, function(reader)
+            finalizer( function(reader)
                 GEOSWKTReader_destroy_r(context.ptr, reader.ptr)
                 reader.ptr = C_NULL
-            end)
+            end, reader)
             reader
         end
     end
@@ -73,13 +74,13 @@ module LibGEOS
 
         function WKTWriter(context::GEOSContext; trim::Bool=true, outputdim::Int=3, roundingprecision::Int=-1)
             writer = new(GEOSWKTWriter_create_r(context.ptr))
-            finalizer(writer, function(writer)
+            finalizer(function(writer)
                 GEOSWKTWriter_destroy_r(context.ptr, writer.ptr)
                 GEOSWKTWriter_setTrim_r(context.ptr, writer.ptr, UInt8(trim))
                 GEOSWKTWriter_setOutputDimension_r(context.ptr, writer.ptr, outputdim)
                 GEOSWKTWriter_setRoundingPrecision_r(context.ptr, writer.ptr, roundingprecision)
                 writer.ptr = C_NULL
-            end)
+            end, writer)
             writer
         end
     end
@@ -89,10 +90,10 @@ module LibGEOS
 
         function WKBReader(context::GEOSContext)
             reader = new(GEOSWKBReader_create_r(context.ptr))
-            finalizer(reader, function(reader)
+            finalizer(function(reader)
                 GEOSWKBReader_destroy_r(context.ptr, reader.ptr)
                 reader.ptr = C_NULL
-            end)
+            end, reader)
             reader
         end
     end
@@ -102,10 +103,10 @@ module LibGEOS
 
         function WKBWriter(context::GEOSContext)
             writer = new(GEOSWKBWriter_create_r(context.ptr))
-            finalizer(writer, function(writer)
+            finalizer( function(writer)
                 GEOSWKBWriter_destroy_r(context.ptr, writer.ptr)
                 writer.ptr = C_NULL
-            end)
+            end, writer)
             writer
         end
     end

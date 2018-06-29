@@ -1,4 +1,4 @@
-
+using LinearAlgebra
 function _readgeom(wktstring::String, wktreader::WKTReader, context::GEOSContext = _context)
     result = GEOSWKTReader_read_r(context.ptr, wktreader.ptr, pointer(wktstring))
     if result == C_NULL
@@ -263,7 +263,7 @@ end
 
 function getCoordinates(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
     ndim = getDimensions(ptr, context)
-    coord = Array{Float64}(ndim)
+    coord = Array{Float64}(undef, ndim)
     start = pointer(coord)
     floatsize = sizeof(Float64)
     GEOSCoordSeq_getX_r(context.ptr, ptr, i-1, start)
@@ -941,7 +941,7 @@ getGeometries(ptr::GEOSGeom, context::GEOSContext = _context) =
 
 # Converts Geometry to normal form (or canonical form).
 # Return -1 on exception, 0 otherwise.
-function Base.normalize!(ptr::GEOSGeom, context::GEOSContext = _context)
+function LinearAlgebra.normalize!(ptr::GEOSGeom, context::GEOSContext = _context)
     result = GEOSNormalize_r(context.ptr, ptr)
     if result == -1
         error("LibGEOS: Error in GEOSNormalize")

@@ -308,7 +308,7 @@ isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
 
 # Converts Geometry to normal form (or canonical form).
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
-    @eval Base.normalize!(obj::$geom) = normalize!(obj.ptr)
+    @eval LinearAlgebra.normalize!(obj::$geom) = normalize!(obj.ptr)
 end
 
 # # Return -1 on exception, Geometry must be a Point.
