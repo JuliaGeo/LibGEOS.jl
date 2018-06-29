@@ -47,7 +47,7 @@ module LibGEOS
             context = new(GEOS_init_r())
             GEOSContext_setNoticeHandler_r(context.ptr, C_NULL)
             GEOSContext_setErrorHandler_r(context.ptr,
-                cfunction(geosjl_errorhandler,Ptr{Void},(Ptr{UInt8},Ptr{Void}))
+                cfunction(geosjl_errorhandler,Ptr{Cvoid},(Ptr{UInt8},Ptr{Cvoid}))
             )
             finalizer(context, context -> (GEOS_finish_r(context.ptr); context.ptr = C_NULL))
             context
@@ -113,7 +113,7 @@ module LibGEOS
         # Always check your dependencies from `deps.jl`
         check_deps()
 
-        global const _context = GEOSContext()
+        global _context = GEOSContext()
     end
 
     include("geos_functions.jl")

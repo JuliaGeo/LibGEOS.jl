@@ -26,7 +26,7 @@ end
 function _writegeom(geom::GEOSGeom, wkbwriter::WKBWriter, context::GEOSContext = _context)
     wkbsize = Ref{Csize_t}()
     result = GEOSWKBWriter_write_r(context.ptr, wkbwriter.ptr, geom, wkbsize)
-    unsafe_wrap(Array, result, wkbsize[], true)
+    unsafe_wrap(Array, result, wkbsize[], own=true)
 end
 
 _writegeom(geom::GEOSGeom, context::GEOSContext = _context) =
@@ -116,7 +116,7 @@ function getZ!(ptr::GEOSCoordSeq, index::Integer, coord::Vector{Float64}, contex
     result
 end
 
-let out = Array{UInt32}(1)
+let out = Array{UInt32}(undef, 1)
     global getSize
     function getSize(ptr::GEOSCoordSeq, context::GEOSContext = _context)
         # Get size info from a Coordinate Sequence (Return 0 on exception)
@@ -128,7 +128,7 @@ let out = Array{UInt32}(1)
     end
 end
 
-let out = Array{UInt32}(1)
+let out = Array{UInt32}(undef, 1)
     global getDimensions
     function getDimensions(ptr::GEOSCoordSeq, context::GEOSContext = _context)
         # Get dimensions info from a Coordinate Sequence (Return 0 on exception)
@@ -203,7 +203,7 @@ function createCoordSeq(coords::Vector{Vector{Float64}}, context::GEOSContext = 
     coordinates
 end
 
-let out = Array{Float64}(1)
+let out = Array{Float64}(undef, 1)
     global getX
     function getX(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
         getX!(ptr, i, out, context)
@@ -222,10 +222,10 @@ function getX(ptr::GEOSCoordSeq, context::GEOSContext = _context)
     xcoords
 end
 
-let out = Array{Float64}(1)
+let out = Array{Float64}(undef, 1)
     global getY
     function getY(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
-        out = Array{Float64}(1)
+        out = Array{Float64}(undef, 1)
         getY!(ptr, i, out, context)
         out[1]
     end
@@ -242,7 +242,7 @@ function getY(ptr::GEOSCoordSeq, context::GEOSContext = _context)
     ycoords
 end
 
-let out = Array{Float64}(1)
+let out = Array{Float64}(undef, 1)
     global getZ
     function getZ(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
         getZ!(ptr, i, out, context)
@@ -968,7 +968,7 @@ function numPoints(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 # Return -1 on exception, Geometry must be a Point.
-let out = Array{Float64}(1)
+let out = Array{Float64}(undef, 1)
     global getGeomX
     function getGeomX(ptr::GEOSGeom, context::GEOSContext = _context)
         result = GEOSGeomGetX_r(context.ptr, ptr, pointer(out))
@@ -979,7 +979,7 @@ let out = Array{Float64}(1)
     end
 end
 
-let out = Array{Float64}(1)
+let out = Array{Float64}(undef, 1)
     global getGeomY
     function getGeomY(ptr::GEOSGeom, context::GEOSContext = _context)
         result = GEOSGeomGetY_r(context.ptr, ptr, pointer(out))
@@ -1076,7 +1076,7 @@ end
 # -----
 # Misc functions
 # -----
-let out = Array{Float64}(1)
+let out = Array{Float64}(undef, 1)
     global geomArea
     function geomArea(ptr::GEOSGeom, context::GEOSContext = _context)
         # Return 0 on exception, 1 otherwise
@@ -1088,7 +1088,7 @@ let out = Array{Float64}(1)
     end
 end
 
-let out = Array{Float64}(1)
+let out = Array{Float64}(undef, 1)
     global geomLength
     function geomLength(ptr::GEOSGeom, context::GEOSContext = _context)
         # Return 0 on exception, 1 otherwise
@@ -1100,7 +1100,7 @@ let out = Array{Float64}(1)
     end
 end
 
-let out = Array{Float64}(1)
+let out = Array{Float64}(undef, 1)
     global geomDistance
     function geomDistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
         # Return 0 on exception, 1 otherwise
@@ -1112,7 +1112,7 @@ let out = Array{Float64}(1)
     end
 end
 
-let out = Array{Float64}(1)
+let out = Array{Float64}(undef, 1)
     global hausdorffdistance
     function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
         # Return 0 on exception, 1 otherwise
@@ -1124,7 +1124,7 @@ let out = Array{Float64}(1)
     end
 end
 
-let out = Array{Float64}(1)
+let out = Array{Float64}(undef, 1)
     global hausdorffdistance
     function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, densifyFrac::Real, context::GEOSContext = _context)
         # Return 0 on exception, 1 otherwise
