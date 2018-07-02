@@ -340,7 +340,7 @@
     # GEOSNodeTest
     geom1_ = LibGEOS._readgeom("LINESTRING(0 0, 10 10, 10 0, 0 10)")
     geom2_ = LibGEOS.node(geom1_)
-    normalize!(geom2_)
+    LibGEOS.normalize!(geom2_)
     geom3_ = LibGEOS._readgeom("MULTILINESTRING ((5 5, 10 0, 10 10, 5 5), (0 10, 5 5), (0 0, 5 5))")
     @test LibGEOS._writegeom(geom2_) == LibGEOS._writegeom(geom3_)
     LibGEOS.destroyGeom(geom1_)
@@ -349,7 +349,7 @@
 
     geom1_ = LibGEOS._readgeom("MULTILINESTRING((0 0, 2 0, 4 0),(5 0, 3 0, 1 0))")
     geom2_ = LibGEOS.node(geom1_)
-    normalize!(geom2_)
+    LibGEOS.normalize!(geom2_)
     geom3_ = LibGEOS._readgeom("MULTILINESTRING ((4 0, 5 0), (3 0, 4 0), (2 0, 3 0), (1 0, 2 0), (0 0, 1 0))")
     @test LibGEOS._writegeom(geom2_) == LibGEOS._writegeom(geom3_)
     LibGEOS.destroyGeom(geom1_)
@@ -358,7 +358,7 @@
 
     geom1_ = LibGEOS._readgeom("MULTILINESTRING((0 0, 2 0, 4 0),(0 0, 2 0, 4 0))")
     geom2_ = LibGEOS.node(geom1_)
-    normalize!(geom2_)
+    LibGEOS.normalize!(geom2_)
     geom3_ = LibGEOS._readgeom("MULTILINESTRING ((2 0, 4 0), (0 0, 2 0))")
     @test LibGEOS._writegeom(geom2_) == LibGEOS._writegeom(geom3_)
     LibGEOS.destroyGeom(geom1_)

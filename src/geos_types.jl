@@ -3,7 +3,7 @@ mutable struct Point <: GeoInterface.AbstractPoint
 
     function Point(ptr::GEOSGeom)
         point = new(ptr)
-        finalizer(point, destroyGeom)
+        finalizer(destroyGeom, point)
         point
     end
     Point(coords::Vector{Float64}) = Point(createPoint(coords))
@@ -17,7 +17,7 @@ mutable struct MultiPoint <: GeoInterface.AbstractMultiPoint
 
     function MultiPoint(ptr::GEOSGeom)
         multipoint = new(ptr)
-        finalizer(multipoint, destroyGeom)
+        finalizer(destroyGeom, multipoint)
         multipoint
     end
     MultiPoint(multipoint::Vector{Vector{Float64}}) = MultiPoint(createCollection(GEOS_MULTIPOINT, GEOSGeom[createPoint(coords) for coords in multipoint]))
@@ -29,7 +29,7 @@ mutable struct LineString <: GeoInterface.AbstractLineString
 
     function LineString(ptr::GEOSGeom)
         line = new(ptr)
-        finalizer(line, destroyGeom)
+        finalizer(destroyGeom, line)
         line
     end
     LineString(line::Vector{Vector{Float64}}) = LineString(createLineString(line))
@@ -41,7 +41,7 @@ mutable struct MultiLineString <: GeoInterface.AbstractMultiLineString
 
     function MultiLineString(ptr::GEOSGeom)
         multiline = new(ptr)
-        finalizer(multiline, destroyGeom)
+        finalizer(destroyGeom, multiline)
         multiline
     end
     MultiLineString(multiline::Vector{Vector{Vector{Float64}}}) = MultiLineString(createCollection(GEOS_MULTILINESTRING, GEOSGeom[createLineString(coords) for coords in multiline]))
@@ -53,7 +53,7 @@ mutable struct LinearRing <: GeoInterface.AbstractLineString
 
     function LinearRing(ptr::GEOSGeom)
         ring = new(ptr)
-        finalizer(ring, destroyGeom)
+        finalizer(destroyGeom, ring)
         ring
     end
     LinearRing(ring::Vector{Vector{Float64}}) = LinearRing(createLinearRing(ring))
@@ -65,14 +65,14 @@ mutable struct Polygon <: GeoInterface.AbstractPolygon
 
     function Polygon(ptr::GEOSGeom)
         polygon = new(ptr)
-        finalizer(polygon, destroyGeom)
+        finalizer(destroyGeom, polygon)
         polygon
     end
     function Polygon(coords::Vector{Vector{Vector{Float64}}})
         exterior = createLinearRing(coords[1])
         interiors = GEOSGeom[createLinearRing(lr) for lr in coords[2:end]]
         polygon = new(createPolygon(exterior,interiors))
-        finalizer(polygon, destroyGeom)
+        finalizer(destroyGeom, polygon)
         polygon
     end
     Polygon(obj::T) where {T<:GeoInterface.AbstractPolygon} = Polygon(GeoInterface.coordinates(obj))
@@ -83,7 +83,7 @@ mutable struct MultiPolygon <: GeoInterface.AbstractMultiPolygon
 
     function MultiPolygon(ptr::GEOSGeom)
         multipolygon = new(ptr)
-        finalizer(multipolygon, destroyGeom)
+        finalizer(destroyGeom, multipolygon)
         multipolygon
     end
     MultiPolygon(multipolygon::Vector{Vector{Vector{Vector{Float64}}}}) =
@@ -99,7 +99,7 @@ mutable struct GeometryCollection <: GeoInterface.AbstractGeometryCollection
 
     function GeometryCollection(ptr::GEOSGeom)
         geometrycollection = new(ptr)
-        finalizer(geometrycollection, destroyGeom)
+        finalizer(destroyGeom, geometrycollection)
         geometrycollection
     end
     GeometryCollection(collection::Vector{GEOSGeom}) = GeometryCollection(createCollection(GEOS_GEOMETRYCOLLECTION, collection))

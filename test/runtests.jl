@@ -1,5 +1,5 @@
 import GeoInterface
-using Base.Test, LibGEOS
+using Test, LibGEOS
 
 @testset "LibGEOS" begin
     include("test_geos_functions.jl")
