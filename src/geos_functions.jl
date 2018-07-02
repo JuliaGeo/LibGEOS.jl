@@ -1,4 +1,3 @@
-using LinearAlgebra
 function _readgeom(wktstring::String, wktreader::WKTReader, context::GEOSContext = _context)
     result = GEOSWKTReader_read_r(context.ptr, wktreader.ptr, pointer(wktstring))
     if result == C_NULL
@@ -941,7 +940,7 @@ getGeometries(ptr::GEOSGeom, context::GEOSContext = _context) =
 
 # Converts Geometry to normal form (or canonical form).
 # Return -1 on exception, 0 otherwise.
-function LinearAlgebra.normalize!(ptr::GEOSGeom, context::GEOSContext = _context)
+function normalize!(ptr::GEOSGeom, context::GEOSContext = _context)
     result = GEOSNormalize_r(context.ptr, ptr)
     if result == -1
         error("LibGEOS: Error in GEOSNormalize")

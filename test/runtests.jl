@@ -1,5 +1,4 @@
 import GeoInterface
-using LinearAlgebra
 using Test, LibGEOS
 
 @testset "LibGEOS" begin

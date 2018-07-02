@@ -10,7 +10,6 @@ module LibGEOS
     include(depsjl_path)
 
     using GeoInterface
-    import LinearAlgebra: normalize!
     using Libdl
     import Base: contains
 
