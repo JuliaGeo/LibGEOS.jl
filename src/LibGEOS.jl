@@ -1,5 +1,3 @@
-__precompile__()
-
 module LibGEOS
 
     # Load in `deps.jl`, complaining if it does not exist
@@ -11,7 +9,6 @@ module LibGEOS
 
     using GeoInterface
     using Libdl
-    import Base: contains
 
     export  Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection,
             parseWKT, geomFromWKT, geomToWKT, readgeom, writegeom,
