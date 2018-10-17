@@ -324,6 +324,9 @@ end
 buffer(ptr::GEOSGeom, width::Real, quadsegs::Integer=8, context::GEOSContext = _context) =
     GEOSBuffer_r(context.ptr, ptr, width, Int32(quadsegs))
 
+bufferWithStyle(ptr::GEOSGeom, width::Real, quadsegs::Integer=8, endCapStyle::Integer=1, joinStyle::Integer=1, mitreLimit::Real=5.0, context::GEOSContext = _context) =
+    GEOSBufferWithStyle_r(context.ptr, ptr, width, Int32(quadsegs), Int32(endCapStyle), Int32(joinStyle), mitreLimit)
+
 # enum GEOSBufCapStyles
 # enum GEOSBufJoinStyles
 
@@ -335,7 +338,6 @@ buffer(ptr::GEOSGeom, width::Real, quadsegs::Integer=8, context::GEOSContext = _
 # GEOSBufferParams_setQuadrantSegments
 # GEOSBufferParams_setSingleSided
 # GEOSBufferWithParams
-# GEOSBufferWithStyle
 # GEOSOffsetCurve
 
 # -----
