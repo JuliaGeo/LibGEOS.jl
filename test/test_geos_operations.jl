@@ -247,4 +247,17 @@ end
     # Buffer should return Polygon or MultiPolygon
     @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 0.1) isa LibGEOS.MultiPolygon
     @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 10) isa LibGEOS.Polygon
+    
+    # bufferWithStyle
+    g1 = bufferWithStyle(readgeom("LINESTRING(0 0,0 1,1 1)"), 0.1, endCapStyle=LibGEOS.CAP_FLAT, joinStyle=LibGEOS.JOIN_BEVEL)
+    g2 = readgeom("POLYGON((-0.1 0.0,-0.1 1.0,0.0 1.1,1.0 1.1,1.0 0.9,0.1 0.9,0.1 0.0,-0.1 0.0))")
+    @test equals(g1, g2)
+    
+    g1 = bufferWithStyle(readgeom("LINESTRING(0 0,0 1,1 1)"), 0.1, endCapStyle=LibGEOS.CAP_SQUARE, joinStyle=LibGEOS.JOIN_MITRE)
+    g2 = readgeom("POLYGON((-0.1 -0.1,-0.1 1.1,1.1 1.1,1.1 0.9,0.1 0.9,0.1 -0.1,-0.1 -0.1))")
+    @test equals(g1, g2)
+
+    g1 = bufferWithStyle(readgeom("POLYGON((-1 -1,1 -1,1 1,-1 1,-1 -1))"), 0.2, joinStyle=LibGEOS.JOIN_MITRE)
+    g2 = readgeom("POLYGON((-1.2 1.2,1.2 1.2,1.2 -1.2,-1.2 -1.2,-1.2 1.2))")
+    @test equals(g1, g2)
 end

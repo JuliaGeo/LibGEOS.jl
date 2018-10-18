@@ -13,7 +13,7 @@ module LibGEOS
     export  Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection,
             parseWKT, geomFromWKT, geomToWKT, readgeom, writegeom,
             project, projectNormalized, interpolate, interpolateNormalized,
-            buffer, envelope, intersection, convexhull, difference, symmetricDifference,
+            buffer, bufferWithStyle, envelope, intersection, convexhull, difference, symmetricDifference,
             boundary, union, unaryUnion, pointOnSurface, centroid, node,
             polygonize, lineMerge, simplify, topologyPreserveSimplify, uniquePoints, sharedPaths,
             snap, delaunayTriangulation, delaunayTriangulationEdges,
