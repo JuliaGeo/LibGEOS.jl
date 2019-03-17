@@ -19,6 +19,7 @@ end
 
 function factcheck(f::Function, g1::String, g2::String, expected::Bool)
     @test f(readgeom(g1),readgeom(g2)) == expected
+    @test f(prepareGeom(readgeom(g1)),readgeom(g2)) == expected
 end
 
 @testset "GEOS operations" begin
@@ -97,14 +98,6 @@ end
     test_intersection("MULTIPOLYGON(((0 0,5 10,10 0,0 0),(1 1,1 2,2 2,2 1,1 1),(100 100,100 102,102 102,102 100,100 100)))",
                       "POLYGON((0 1,0 2,10 2,10 1,0 1))",
                       "GEOMETRYCOLLECTION (LINESTRING (1 2, 2 2), LINESTRING (2 1, 1 1), POLYGON ((0.5 1, 1 2, 1 1, 0.5 1)), POLYGON ((9 2, 9.5 1, 2 1, 2 2, 9 2)))")
-
-    # GEOSIntersectsTest
-    test_intersects(g1::String, g2::String, expected::Bool) = factcheck(intersects, g1, g2, expected)
-    test_intersects("POLYGON EMPTY", "POLYGON EMPTY", false)
-    test_intersects("POLYGON((1 1,1 5,5 5,5 1,1 1))", "POINT(2 2)", true)
-    test_intersects("POINT(2 2)", "POLYGON((1 1,1 5,5 5,5 1,1 1))", true)
-    test_intersects("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", "POLYGON((1 1,1 2,2 2,2 1,1 1))", true)
-    test_intersects("POLYGON((1 1,1 2,2 2,2 1,1 1))", "MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", true)
 
     # LineString_PointTest
     g1 = readgeom("LINESTRING(0 0, 5 5, 10 10)")
@@ -216,21 +209,36 @@ end
     test_unaryunion("GEOMETRYCOLLECTION (MULTILINESTRING((5 7, 12 7), (4 5, 6 5), (5.5 7.5, 6.5 7.5)), POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),(5 6, 7 6, 7 8, 5 8, 5 6)), MULTIPOINT(6 6.5, 6 1, 12 2, 6 1))",
                     "GEOMETRYCOLLECTION (POINT (6 6.5), POINT (12 2), LINESTRING (5 7, 7 7), LINESTRING (10 7, 12 7), LINESTRING (5.5 7.5, 6.5 7.5), POLYGON ((10 7, 10 0, 0 0, 0 10, 10 10, 10 7), (5 6, 7 6, 7 7, 7 8, 5 8, 5 7, 5 6)))")
 
-    # GEOSWithinTest
-    test_predicate(f::Function, g1::String, g2::String, expected::Bool) = factcheck(f, g1, g2, expected)
     for (g1, g2, testvalue) in (
             ("POLYGON EMPTY", "POLYGON EMPTY", false),
             ("POLYGON((1 1,1 5,5 5,5 1,1 1))", "POINT(2 2)", false),
             ("POINT(2 2)", "POLYGON((1 1,1 5,5 5,5 1,1 1))", true),
             ("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", "POLYGON((1 1,1 2,2 2,2 1,1 1))", false),
-            ("POLYGON((1 1,1 2,2 2,2 1,1 1))", "MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", true)
+            ("POLYGON((1 1,1 2,2 2,2 1,1 1))", "MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", true),
+            ("LINESTRING (100 200, 300 200)", "LINESTRING (100 300, 200 201, 300 300)", false),
+            ("LINESTRING (100 200, 300 200)", "LINESTRING (100 300, 200 200, 300 300)", false),
+            ("LINESTRING (100 200, 300 200)", "LINESTRING (100 300, 300 100)", false)
         )
         for f in (within, coveredby)
-            test_predicate(f, g1, g2, testvalue)
+            factcheck(f, g1, g2, testvalue)
         end
         for f in (contains, covers)
-            test_predicate(f, g2, g1, testvalue)
+            factcheck(f, g2, g1, testvalue)
         end
+    end
+
+    for (g1, g2, testvalue) in (
+            ("POLYGON EMPTY", "POLYGON EMPTY", false),
+            ("POLYGON((1 1,1 5,5 5,5 1,1 1))", "POINT(2 2)", true),
+            ("POINT(2 2)", "POLYGON((1 1,1 5,5 5,5 1,1 1))", true),
+            ("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", "POLYGON((1 1,1 2,2 2,2 1,1 1))", true),
+            ("POLYGON((1 1,1 2,2 2,2 1,1 1))", "MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", true),
+            ("LINESTRING (100 200, 300 200)", "LINESTRING (100 300, 200 201, 300 300)", false),
+            ("LINESTRING (100 200, 300 200)", "LINESTRING (100 300, 200 200, 300 300)", true),
+            ("LINESTRING (100 200, 300 200)", "LINESTRING (100 300, 300 100)", true)
+        )
+        factcheck(intersects, g1, g2, testvalue)
+        factcheck(disjoint, g1, g2, !testvalue)
     end
 
     # GEOSisClosedTest
