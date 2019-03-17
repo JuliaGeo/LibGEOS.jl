@@ -131,99 +131,22 @@ for g1 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Pol
 end
 
 # # -----
-# # Prepared Geometry Binary predicates - return 2 on exception, 1 on true, 0 on false
+# # Prepared Geometry Binary predicates
 # # -----
 
-# # GEOSGeometry ownership is retained by caller
-# function prepareGeom(ptr::GEOSGeom)
-#     result = GEOSPrepare(ptr)
-#     if result == C_NULL
-#         error("LibGEOS: Error in GEOSPrepare")
-#     end
-#     result
-# end
-
-# destroyPreparedGeom(ptr::Ptr{GEOSPreparedGeometry}) = GEOSPreparedGeom_destroy(ptr)
-
-# function prepcontains(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
-#     result = GEOSPreparedContains(g1, g2)
-#     if result == 0x02
-#         error("LibGEOS: Error in GEOSPreparedContains")
-#     end
-#     bool(result)
-# end
-
-# function prepcontainsproperly(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
-#     result = GEOSPreparedContainsProperly(g1, g2)
-#     if result == 0x02
-#         error("LibGEOS: Error in GEOSPreparedContainsProperly")
-#     end
-#     bool(result)
-# end
-
-# function prepcoveredby(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
-#     result = GEOSPreparedCoveredBy(g1, g2)
-#     if result == 0x02
-#         error("LibGEOS: Error in GEOSPreparedCoveredBy")
-#     end
-#     bool(result)
-# end
-
-# function prepcovers(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
-#     result = GEOSPreparedCovers(g1, g2)
-#     if result == 0x02
-#         error("LibGEOS: Error in GEOSPreparedCovers")
-#     end
-#     bool(result)
-# end
-
-# function prepcrosses(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
-#     result = GEOSPreparedCrosses(g1, g2)
-#     if result == 0x02
-#         error("LibGEOS: Error in GEOSPreparedCrosses")
-#     end
-#     bool(result)
-# end
-
-# function prepdisjoint(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
-#     result = GEOSPreparedDisjoint(g1, g2)
-#     if result == 0x02
-#         error("LibGEOS: Error in GEOSPreparedDisjoint")
-#     end
-#     bool(result)
-# end
-
-# function prepintersects(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
-#     result = GEOSPreparedIntersects(g1, g2)
-#     if result == 0x02
-#         error("LibGEOS: Error in GEOSPreparedIntersects")
-#     end
-#     bool(result)
-# end
-
-# function prepoverlaps(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
-#     result = GEOSPreparedOverlaps(g1, g2)
-#     if result == 0x02
-#         error("LibGEOS: Error in GEOSPreparedOverlaps")
-#     end
-#     bool(result)
-# end
-
-# function preptouches(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
-#     result = GEOSPreparedTouches(g1, g2)
-#     if result == 0x02
-#         error("LibGEOS: Error in GEOSPreparedTouches")
-#     end
-#     bool(result)
-# end
-
-# function prepwithin(g1::Ptr{GEOSPreparedGeometry}, g2::GEOSGeom)
-#     result = GEOSPreparedWithin(g1, g2)
-#     if result == 0x02
-#         error("LibGEOS: Error in GEOSPreparedWithin")
-#     end
-#     bool(result)
-# end
+for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
+    @eval prepareGeom(obj::$geom, context::GEOSContext = _context) = PreparedGeometry(prepareGeom(obj.ptr, context), obj)
+    @eval contains(obj1::PreparedGeometry, obj2::$geom) = prepcontains(obj1.ptr, obj2.ptr)
+    @eval containsproperly(obj1::PreparedGeometry, obj2::$geom) = prepcontainsproperly(obj1.ptr, obj2.ptr)
+    @eval coveredby(obj1::PreparedGeometry, obj2::$geom) = prepcoveredby(obj1.ptr, obj2.ptr)
+    @eval covers(obj1::PreparedGeometry, obj2::$geom) = prepcovers(obj1.ptr, obj2.ptr)
+    @eval crosses(obj1::PreparedGeometry, obj2::$geom) = prepcrosses(obj1.ptr, obj2.ptr)
+    @eval disjoint(obj1::PreparedGeometry, obj2::$geom) = prepdisjoint(obj1.ptr, obj2.ptr)
+    @eval intersects(obj1::PreparedGeometry, obj2::$geom) = prepintersects(obj1.ptr, obj2.ptr)
+    @eval overlaps(obj1::PreparedGeometry, obj2::$geom) = prepoverlaps(obj1.ptr, obj2.ptr)
+    @eval touches(obj1::PreparedGeometry, obj2::$geom) = preptouches(obj1.ptr, obj2.ptr)
+    @eval within(obj1::PreparedGeometry, obj2::$geom) = prepwithin(obj1.ptr, obj2.ptr)
+end
 
 # # -----
 # # STRtree functions

@@ -107,9 +107,19 @@ end
 
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
     @eval begin
-        function destroyGeom(obj::$geom)
-            destroyGeom(obj.ptr)
+        function destroyGeom(obj::$geom, context::GEOSContext = _context)
+            destroyGeom(obj.ptr, context)
             obj.ptr = C_NULL
         end
     end
+end
+
+mutable struct PreparedGeometry{G <: GeoInterface.AbstractGeometry} <: GeoInterface.AbstractGeometry
+    ptr::Ptr{GEOSPreparedGeometry}
+    ownedby::G
+end
+
+function destroyGeom(obj::PreparedGeometry, context::GEOSContext = _context)
+    destroyPreparedGeom(obj.ptr, context)
+    obj.ptr = C_NULL
 end
