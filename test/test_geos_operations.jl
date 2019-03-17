@@ -35,22 +35,6 @@ end
         @test equals(interpolate(ls, test_dist), dest)
     end
 
-    g1 = readgeom("POLYGON EMPTY")
-    g2 = readgeom("POLYGON EMPTY")
-    @test !LibGEOS.contains(g1, g2)
-    @test !LibGEOS.contains(g2, g1)
-
-    g1 = readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
-    g2 = readgeom("POINT(2 2)")
-    @test LibGEOS.contains(g1, g2)
-    @test !LibGEOS.contains(g2, g1)
-
-    g1 = readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
-    g2 = readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))")
-    @test LibGEOS.contains(g1, g2)
-    @test !LibGEOS.contains(g2, g1)
-
-
     # GEOSConvexHullTest
     input = readgeom("MULTIPOINT (130 240, 130 240, 130 240, 570 240, 570 240, 570 240, 650 240)")
     expected = readgeom("LINESTRING (130 240, 650 240)")
@@ -233,12 +217,21 @@ end
                     "GEOMETRYCOLLECTION (POINT (6 6.5), POINT (12 2), LINESTRING (5 7, 7 7), LINESTRING (10 7, 12 7), LINESTRING (5.5 7.5, 6.5 7.5), POLYGON ((10 7, 10 0, 0 0, 0 10, 10 10, 10 7), (5 6, 7 6, 7 7, 7 8, 5 8, 5 7, 5 6)))")
 
     # GEOSWithinTest
-    test_within(g1::String, g2::String, expected::Bool) = factcheck(within, g1, g2, expected)
-    test_within("POLYGON EMPTY", "POLYGON EMPTY", false)
-    test_within("POLYGON((1 1,1 5,5 5,5 1,1 1))", "POINT(2 2)", false)
-    test_within("POINT(2 2)", "POLYGON((1 1,1 5,5 5,5 1,1 1))", true)
-    test_within("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", "POLYGON((1 1,1 2,2 2,2 1,1 1))", false)
-    test_within("POLYGON((1 1,1 2,2 2,2 1,1 1))", "MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", true)
+    test_predicate(f::Function, g1::String, g2::String, expected::Bool) = factcheck(f, g1, g2, expected)
+    for (g1, g2, testvalue) in (
+            ("POLYGON EMPTY", "POLYGON EMPTY", false),
+            ("POLYGON((1 1,1 5,5 5,5 1,1 1))", "POINT(2 2)", false),
+            ("POINT(2 2)", "POLYGON((1 1,1 5,5 5,5 1,1 1))", true),
+            ("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", "POLYGON((1 1,1 2,2 2,2 1,1 1))", false),
+            ("POLYGON((1 1,1 2,2 2,2 1,1 1))", "MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))", true)
+        )
+        for f in (within, coveredby)
+            test_predicate(f, g1, g2, testvalue)
+        end
+        for f in (contains, covers)
+            test_predicate(f, g2, g1, testvalue)
+        end
+    end
 
     # GEOSisClosedTest
     @test !isClosed(readgeom("LINESTRING(0 0, 1 0, 1 1)"))
