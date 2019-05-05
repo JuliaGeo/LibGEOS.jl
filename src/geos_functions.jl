@@ -324,10 +324,7 @@ end
 buffer(ptr::GEOSGeom, width::Real, quadsegs::Integer=8, context::GEOSContext = _context) =
     GEOSBuffer_r(context.ptr, ptr, width, Int32(quadsegs))
 
-@enum GEOSBufCapStyles::Int32 CAP_ROUND=1 CAP_FLAT=2 CAP_SQUARE=3
-@enum GEOSBufJoinStyles::Int32 JOIN_ROUND=1 JOIN_MITRE=2 JOIN_BEVEL=3
-
-bufferWithStyle(ptr::GEOSGeom, width::Real, quadsegs::Integer=8, endCapStyle::GEOSBufCapStyles=CAP_ROUND, joinStyle::GEOSBufJoinStyles=JOIN_ROUND, mitreLimit::Real=5.0, context::GEOSContext = _context) =
+bufferWithStyle(ptr::GEOSGeom, width::Real, quadsegs::Integer=8, endCapStyle::GEOSBufCapStyles=GEOSBUF_CAP_ROUND, joinStyle::GEOSBufJoinStyles=GEOSBUF_JOIN_ROUND, mitreLimit::Real=5.0, context::GEOSContext = _context) =
     GEOSBufferWithStyle_r(context.ptr, ptr, width, Int32(quadsegs), Int32(endCapStyle), Int32(joinStyle), mitreLimit)
 
 # GEOSBufferParams_create
@@ -392,7 +389,7 @@ function createPolygon(shell::GEOSGeom, holes::Vector{GEOSGeom}, context::GEOSCo
     result
 end
 
-function createCollection(geomtype::Integer, geoms::Vector{GEOSGeom}, context::GEOSContext = _context)
+function createCollection(geomtype::GEOSGeomTypes, geoms::Vector{GEOSGeom}, context::GEOSContext = _context)
     result = GEOSGeom_createCollection_r(context.ptr, geomtype, pointer(geoms), length(geoms))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_createCollection")
@@ -400,7 +397,7 @@ function createCollection(geomtype::Integer, geoms::Vector{GEOSGeom}, context::G
     result
 end
 
-function createEmptyCollection(geomtype::Integer, context::GEOSContext = _context)
+function createEmptyCollection(geomtype::GEOSGeomTypes, context::GEOSContext = _context)
     result = GEOSGeom_createEmptyCollection_r(context.ptr, geomtype)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_createEmptyCollection")

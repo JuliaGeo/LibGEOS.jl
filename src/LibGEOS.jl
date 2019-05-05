@@ -9,6 +9,7 @@ module LibGEOS
 
     using GeoInterface
     using Libdl
+    using CEnum
 
     export  Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection,
             parseWKT, geomFromWKT, geomToWKT, readgeom, writegeom,
@@ -23,6 +24,7 @@ module LibGEOS
             isEmpty, isSimple, isRing, hasZ, isClosed, isValid, interiorRings, exteriorRing,
             numPoints, startPoint, endPoint, area, geomLength, distance, hausdorffdistance, nearestPoints
 
+    include("geos_common.jl")
     include("geos_c.jl")
 
     mutable struct GEOSError <: Exception
