@@ -56,7 +56,7 @@ interpolateNormalized(line::LineString, dist::Real) = Point(interpolateNormalize
 # # -----
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
     @eval buffer(obj::$geom, dist::Real, quadsegs::Integer=8) = geomFromGEOS(buffer(obj.ptr, dist, quadsegs))
-    @eval bufferWithStyle(obj::$geom, dist::Real; quadsegs::Integer=8, endCapStyle::GEOSBufCapStyles=CAP_ROUND, joinStyle::GEOSBufJoinStyles=JOIN_ROUND, mitreLimit::Real=5.0) = geomFromGEOS(bufferWithStyle(obj.ptr, dist, quadsegs, endCapStyle, joinStyle, mitreLimit))
+    @eval bufferWithStyle(obj::$geom, dist::Real; quadsegs::Integer=8, endCapStyle::GEOSBufCapStyles=GEOSBUF_CAP_ROUND, joinStyle::GEOSBufJoinStyles=GEOSBUF_JOIN_ROUND, mitreLimit::Real=5.0) = geomFromGEOS(bufferWithStyle(obj.ptr, dist, quadsegs, endCapStyle, joinStyle, mitreLimit))
     @eval envelope(obj::$geom) = geomFromGEOS(envelope(obj.ptr))
     @eval convexhull(obj::$geom) = geomFromGEOS(convexhull(obj.ptr))
     @eval boundary(obj::$geom) = geomFromGEOS(boundary(obj.ptr))
