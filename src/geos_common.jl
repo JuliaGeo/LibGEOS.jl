@@ -31,45 +31,51 @@ const GEOSBufferParams = GEOSBufParams_t
 const GEOSGeom = Ptr{GEOSGeometry}
 const GEOSCoordSeq = Ptr{GEOSCoordSequence}
 
-@cenum(GEOSGeomTypes,
-    GEOS_POINT = 0,
-    GEOS_LINESTRING = 1,
-    GEOS_LINEARRING = 2,
-    GEOS_POLYGON = 3,
-    GEOS_MULTIPOINT = 4,
-    GEOS_MULTILINESTRING = 5,
-    GEOS_MULTIPOLYGON = 6,
-    GEOS_GEOMETRYCOLLECTION = 7,
-)
-@cenum(GEOSByteOrders,
-    GEOS_WKB_XDR = 0,
-    GEOS_WKB_NDR = 1,
-)
+@cenum GEOSGeomTypes::UInt32 begin
+    GEOS_POINT = 0
+    GEOS_LINESTRING = 1
+    GEOS_LINEARRING = 2
+    GEOS_POLYGON = 3
+    GEOS_MULTIPOINT = 4
+    GEOS_MULTILINESTRING = 5
+    GEOS_MULTIPOLYGON = 6
+    GEOS_GEOMETRYCOLLECTION = 7
+end
+
+@cenum GEOSByteOrders::UInt32 begin
+    GEOS_WKB_XDR = 0
+    GEOS_WKB_NDR = 1
+end
+
 
 const GEOSQueryCallback = Ptr{Cvoid}
 const GEOSDistanceCallback = Ptr{Cvoid}
 const GEOSInterruptCallback = Cvoid
 
-@cenum(GEOSBufCapStyles,
-    GEOSBUF_CAP_ROUND = 1,
-    GEOSBUF_CAP_FLAT = 2,
-    GEOSBUF_CAP_SQUARE = 3,
-)
-@cenum(GEOSBufJoinStyles,
-    GEOSBUF_JOIN_ROUND = 1,
-    GEOSBUF_JOIN_MITRE = 2,
-    GEOSBUF_JOIN_BEVEL = 3,
-)
-@cenum(GEOSRelateBoundaryNodeRules,
-    GEOSRELATE_BNR_MOD2 = 1,
-    GEOSRELATE_BNR_OGC = 1,
-    GEOSRELATE_BNR_ENDPOINT = 2,
-    GEOSRELATE_BNR_MULTIVALENT_ENDPOINT = 3,
-    GEOSRELATE_BNR_MONOVALENT_ENDPOINT = 4,
-)
-@cenum(GEOSValidFlags,
-    GEOSVALID_ALLOW_SELFTOUCHING_RING_FORMING_HOLE = 1,
-)
+@cenum GEOSBufCapStyles::UInt32 begin
+    GEOSBUF_CAP_ROUND = 1
+    GEOSBUF_CAP_FLAT = 2
+    GEOSBUF_CAP_SQUARE = 3
+end
+
+@cenum GEOSBufJoinStyles::UInt32 begin
+    GEOSBUF_JOIN_ROUND = 1
+    GEOSBUF_JOIN_MITRE = 2
+    GEOSBUF_JOIN_BEVEL = 3
+end
+
+@cenum GEOSRelateBoundaryNodeRules::UInt32 begin
+    GEOSRELATE_BNR_MOD2 = 1
+    GEOSRELATE_BNR_OGC = 1
+    GEOSRELATE_BNR_ENDPOINT = 2
+    GEOSRELATE_BNR_MULTIVALENT_ENDPOINT = 3
+    GEOSRELATE_BNR_MONOVALENT_ENDPOINT = 4
+end
+
+@cenum GEOSValidFlags::UInt32 begin
+    GEOSVALID_ALLOW_SELFTOUCHING_RING_FORMING_HOLE = 1
+end
+
 
 const GEOSWKTReader_t = Cvoid
 const GEOSWKTReader = GEOSWKTReader_t
