@@ -4,7 +4,7 @@ LibGEOS.jl
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/JuliaGeo/LibGEOS.jl?svg=true&branch=master)](https://ci.appveyor.com/project/JuliaGeo/LibGEOS-jl/branch/master)
 [![Coverage Status](https://coveralls.io/repos/github/JuliaGeo/LibGEOS.jl/badge.svg)](https://coveralls.io/github/JuliaGeo/LibGEOS.jl)
 
-LibGEOS is a LGPL-licensed package for manipulation and analysis of planar geometric objects, based on the libraries [GEOS](https://trac.osgeo.org/geos/) (the engine of PostGIS) and JTS (from which GEOS is ported).
+LibGEOS is a package for manipulation and analysis of planar geometric objects, based on the libraries [GEOS](https://trac.osgeo.org/geos/) (the engine of PostGIS) and JTS (from which GEOS is ported).
 
 Among other things, it allows you to parse [Well-known Text (WKT)](https://en.wikipedia.org/wiki/Well-known_text)
 
@@ -35,11 +35,11 @@ Installation
 ------------
 1. At the Julia prompt, run 
   ```julia
-  julia> Pkg.add("LibGEOS")
+  pkg> add LibGEOS
   ```
-  This will install both the Julia package and GEOS shared libraries together. To just reinstall the GEOS shared libraries, run `Pkg.build("LibGEOS")`.
+  This will install both the Julia package and GEOS shared libraries together. To just reinstall the GEOS shared libraries, run `pkg> build LibGEOS`.
 
 2. Test that `LibGEOS` works by runnning
   ```julia
-  julia> Pkg.test("LibGEOS")
+  pkg> test LibGEOS
   ```
