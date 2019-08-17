@@ -47,7 +47,7 @@ function GEOSContext_setErrorMessageHandler_r(extHandle, ef, userData)
 end
 
 function GEOSversion()
-    ccall((:GEOSversion, libgeos), Cstring, ())
+    unsafe_string(ccall((:GEOSversion, libgeos), Cstring, ()))
 end
 
 function GEOSGeomFromWKT_r(handle, wkt)
@@ -55,7 +55,7 @@ function GEOSGeomFromWKT_r(handle, wkt)
 end
 
 function GEOSGeomToWKT_r(handle, g)
-    ccall((:GEOSGeomToWKT_r, libgeos), Cstring, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g)
+    unsafe_string(ccall((:GEOSGeomToWKT_r, libgeos), Cstring, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g))
 end
 
 function GEOS_getWKBOutputDims_r(handle)
@@ -523,7 +523,7 @@ function GEOSRelatePattern_r(handle, g1, g2, pat)
 end
 
 function GEOSRelate_r(handle, g1, g2)
-    ccall((:GEOSRelate_r, libgeos), Cstring, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), handle, g1, g2)
+    unsafe_string(ccall((:GEOSRelate_r, libgeos), Cstring, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), handle, g1, g2))
 end
 
 function GEOSRelatePatternMatch_r(handle, mat, pat)
@@ -531,7 +531,7 @@ function GEOSRelatePatternMatch_r(handle, mat, pat)
 end
 
 function GEOSRelateBoundaryNodeRule_r(handle, g1, g2, bnr)
-    ccall((:GEOSRelateBoundaryNodeRule_r, libgeos), Cstring, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cint), handle, g1, g2, bnr)
+    unsafe_string(ccall((:GEOSRelateBoundaryNodeRule_r, libgeos), Cstring, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cint), handle, g1, g2, bnr))
 end
 
 function GEOSisValid_r(handle, g)
@@ -539,7 +539,7 @@ function GEOSisValid_r(handle, g)
 end
 
 function GEOSisValidReason_r(handle, g)
-    ccall((:GEOSisValidReason_r, libgeos), Cstring, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g)
+    unsafe_string(ccall((:GEOSisValidReason_r, libgeos), Cstring, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g))
 end
 
 function GEOSisValidDetail_r(handle, g, flags, reason, location)
@@ -547,7 +547,7 @@ function GEOSisValidDetail_r(handle, g, flags, reason, location)
 end
 
 function GEOSGeomType_r(handle, g)
-    ccall((:GEOSGeomType_r, libgeos), Cstring, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g)
+    unsafe_string(ccall((:GEOSGeomType_r, libgeos), Cstring, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g))
 end
 
 function GEOSGeomTypeId_r(handle, g)
@@ -727,7 +727,7 @@ function GEOSWKTWriter_destroy_r(handle, writer)
 end
 
 function GEOSWKTWriter_write_r(handle, writer, g)
-    ccall((:GEOSWKTWriter_write_r, libgeos), Cstring, (GEOSContextHandle_t, Ptr{GEOSWKTWriter}, Ptr{GEOSGeometry}), handle, writer, g)
+    unsafe_string(ccall((:GEOSWKTWriter_write_r, libgeos), Cstring, (GEOSContextHandle_t, Ptr{GEOSWKTWriter}, Ptr{GEOSGeometry}), handle, writer, g))
 end
 
 function GEOSWKTWriter_setTrim_r(handle, writer, trim)
@@ -823,7 +823,7 @@ function GEOSGeomFromWKT(wkt)
 end
 
 function GEOSGeomToWKT(g)
-    ccall((:GEOSGeomToWKT, libgeos), Cstring, (Ptr{GEOSGeometry},), g)
+    unsafe_string(ccall((:GEOSGeomToWKT, libgeos), Cstring, (Ptr{GEOSGeometry},), g))
 end
 
 function GEOS_getWKBOutputDims()
@@ -1291,7 +1291,7 @@ function GEOSRelatePattern(g1, g2, pat)
 end
 
 function GEOSRelate(g1, g2)
-    ccall((:GEOSRelate, libgeos), Cstring, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), g1, g2)
+    unsafe_string(ccall((:GEOSRelate, libgeos), Cstring, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), g1, g2))
 end
 
 function GEOSRelatePatternMatch(mat, pat)
@@ -1299,7 +1299,7 @@ function GEOSRelatePatternMatch(mat, pat)
 end
 
 function GEOSRelateBoundaryNodeRule(g1, g2, bnr)
-    ccall((:GEOSRelateBoundaryNodeRule, libgeos), Cstring, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cint), g1, g2, bnr)
+    unsafe_string(ccall((:GEOSRelateBoundaryNodeRule, libgeos), Cstring, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cint), g1, g2, bnr))
 end
 
 function GEOSisValid(g)
@@ -1307,7 +1307,7 @@ function GEOSisValid(g)
 end
 
 function GEOSisValidReason(g)
-    ccall((:GEOSisValidReason, libgeos), Cstring, (Ptr{GEOSGeometry},), g)
+    unsafe_string(ccall((:GEOSisValidReason, libgeos), Cstring, (Ptr{GEOSGeometry},), g))
 end
 
 function GEOSisValidDetail(g, flags, reason, location)
@@ -1315,7 +1315,7 @@ function GEOSisValidDetail(g, flags, reason, location)
 end
 
 function GEOSGeomType(g)
-    ccall((:GEOSGeomType, libgeos), Cstring, (Ptr{GEOSGeometry},), g)
+    unsafe_string(ccall((:GEOSGeomType, libgeos), Cstring, (Ptr{GEOSGeometry},), g))
 end
 
 function GEOSGeomTypeId(g)
@@ -1495,7 +1495,7 @@ function GEOSWKTWriter_destroy(writer)
 end
 
 function GEOSWKTWriter_write(writer, g)
-    ccall((:GEOSWKTWriter_write, libgeos), Cstring, (Ptr{GEOSWKTWriter}, Ptr{GEOSGeometry}), writer, g)
+    unsafe_string(ccall((:GEOSWKTWriter_write, libgeos), Cstring, (Ptr{GEOSWKTWriter}, Ptr{GEOSGeometry}), writer, g))
 end
 
 function GEOSWKTWriter_setTrim(writer, trim)

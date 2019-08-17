@@ -19,7 +19,7 @@ _readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = _context) =
     _readgeom(wkbbuffer, WKBReader(context), context)
 
 function _writegeom(geom::GEOSGeom, wktwriter::WKTWriter, context::GEOSContext = _context)
-    unsafe_string(GEOSWKTWriter_write_r(context.ptr, wktwriter.ptr, geom))
+    GEOSWKTWriter_write_r(context.ptr, wktwriter.ptr, geom)
 end
 
 function _writegeom(geom::GEOSGeom, wkbwriter::WKBWriter, context::GEOSContext = _context)
