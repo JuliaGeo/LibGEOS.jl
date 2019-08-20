@@ -1,5 +1,6 @@
 name = "LibGEOS"
 uuid = "a90b1aa1-3769-5649-ba7e-abc5a9d163eb"
+version = "v0.5.0"
 
 [deps]
 BinaryProvider = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
@@ -11,5 +12,5 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 [compat]
 BinaryProvider = "≥ 0.5.3"
 GeoInterface = "≥ 0.4.0"
-julia = "≥ 0.7.0"
+julia = "≥ 1.0.0"
 CEnum = "≥ 0.2.0"
