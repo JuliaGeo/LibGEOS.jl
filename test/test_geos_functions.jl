@@ -16,7 +16,7 @@
     hole1 = LibGEOS.createLinearRing(Vector{Float64}[[1,8],[2,8],[2,9],[1,9],[1,8]])
     hole2 = LibGEOS.createLinearRing(Vector{Float64}[[8,1],[9,1],[9,2],[8,2],[8,1]])
     polygon = LibGEOS.createPolygon(shell,LibGEOS.GEOSGeom[hole1,hole2])
-    @test LibGEOS.getDimensions(polygon) == 2
+    @test LibGEOS.getGeomDimensions(polygon) == 2
     @test LibGEOS.geomTypeId(polygon) == LibGEOS.GEOS_POLYGON
     @test LibGEOS.geomArea(polygon) ≈ 98.0 atol=1e-5
     exterior = LibGEOS.exteriorRing(polygon)
@@ -397,7 +397,7 @@
     56.528833333300 25.2103333333,
     56.528666666700 25.2101666667))""")
     geom2_ = LibGEOS.pointOnSurface(geom1_)
-    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(geom2_))[1] ≈ [56.528917,25.210417] atol=1e-5
+    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(geom2_))[1] ≈ [56.5286666667, 25.2101666667] atol=1e-5
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
@@ -596,7 +596,7 @@
     # GEOSUnaryUnionTest
     geom1_ = LibGEOS._readgeom("POINT EMPTY")
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    @test LibGEOS._writegeom(geom2_) == "GEOMETRYCOLLECTION EMPTY"
+    @test LibGEOS._writegeom(geom2_) == "POINT EMPTY"
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
@@ -626,7 +626,7 @@
 
     geom1_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (POINT(4 5), MULTIPOINT(6 7, 6 5, 6 7), LINESTRING(0 5, 10 5), LINESTRING(4 -10, 4 10))")
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (POINT (6 7), LINESTRING (4 -10, 4 5), LINESTRING (4 5, 4 10), LINESTRING (0 5, 4 5), LINESTRING (4 5, 10 5))")
+    geom3_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (POINT (6 7), LINESTRING (0 5, 4 5), LINESTRING (4 5, 10 5), LINESTRING (4 -10, 4 5), LINESTRING (4 5, 4 10))")
     @test LibGEOS._writegeom(geom2_) == LibGEOS._writegeom(geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
