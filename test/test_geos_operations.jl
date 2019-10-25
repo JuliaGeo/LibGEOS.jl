@@ -147,7 +147,7 @@ end
     56.529000000000 25.2105000000,
     56.528833333300 25.2103333333,
     56.528666666700 25.2101666667))""")
-    @test GeoInterface.coordinates(pointOnSurface(g1)) ≈ [56.528917,25.210417] atol=1e-5
+    @test GeoInterface.coordinates(pointOnSurface(g1)) ≈ [56.5286666667, 25.2101666667] atol=1e-5
 
     # GEOSSharedPathsTest
     factcheck(sharedPaths,
@@ -196,12 +196,12 @@ end
 
     # GEOSUnaryUnionTest
     test_unaryunion(geom::String, expected::String) = factcheck(unaryUnion, geom, expected)
-    test_unaryunion("POINT EMPTY", "GEOMETRYCOLLECTION EMPTY")
+    test_unaryunion("POINT EMPTY", "POINT EMPTY")
     test_unaryunion("POINT (6 3)", "POINT (6 3)")
     test_unaryunion("POINT (4 5 6)", "POINT Z (4 5 6)")
     test_unaryunion("MULTIPOINT (4 5, 6 7, 4 5, 6 5, 6 7)", "MULTIPOINT (4 5, 6 5, 6 7)")
     test_unaryunion("GEOMETRYCOLLECTION (POINT(4 5), MULTIPOINT(6 7, 6 5, 6 7), LINESTRING(0 5, 10 5), LINESTRING(4 -10, 4 10))",
-                    "GEOMETRYCOLLECTION (POINT (6 7), LINESTRING (4 -10, 4 5), LINESTRING (4 5, 4 10), LINESTRING (0 5, 4 5), LINESTRING (4 5, 10 5))")
+                    "GEOMETRYCOLLECTION (POINT (6 7), LINESTRING (0 5, 4 5), LINESTRING (4 5, 10 5), LINESTRING (4 -10, 4 5), LINESTRING (4 5, 4 10))")
     test_unaryunion("GEOMETRYCOLLECTION (POINT(4 5), MULTIPOINT(6 7, 6 5, 6 7), POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),(5 6, 7 6, 7 8, 5 8, 5 6)))",
                     "GEOMETRYCOLLECTION (POINT (6 7), POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0), (5 6, 7 6, 7 8, 5 8, 5 6)))")
     test_unaryunion("GEOMETRYCOLLECTION (MULTILINESTRING((5 7, 12 7), (4 5, 6 5), (5.5 7.5, 6.5 7.5)), POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),(5 6, 7 6, 7 8, 5 8, 5 6)))",

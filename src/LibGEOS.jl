@@ -1,12 +1,6 @@
 module LibGEOS
 
-    # Load in `deps.jl`, complaining if it does not exist
-    const depsjl_path = joinpath(@__DIR__, "..", "deps", "deps.jl")
-    if !isfile(depsjl_path)
-        error("LibGEOS not installed properly, run Pkg.build(\"LibGEOS\"), restart Julia and try again")
-    end
-    include(depsjl_path)
-
+    using GEOS_jll
     using GeoInterface
     using Libdl
     using CEnum
@@ -111,9 +105,6 @@ module LibGEOS
     end
 
     function __init__()
-        # Always check your dependencies from `deps.jl`
-        check_deps()
-
         global _context = GEOSContext()
     end
 
