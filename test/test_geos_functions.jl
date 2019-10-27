@@ -685,4 +685,50 @@
     geom_ = LibGEOS._readgeom("LINESTRING(0 0, 0 1, 1 1, 0 0)")
     @test LibGEOS.isClosed(geom_)
     LibGEOS.destroyGeom(geom_)
+    
+    # setPrecision, getPrecision
+    # Taken from https://git.osgeo.org/gitea/geos/geos/src/branch/master/tests/unit/capi/GEOSGeom_setPrecisionTest.cpp
+
+    geom1_ = readgeom("LINESTRING(2 10, 4 30)")
+    geom2_ = readgeom("LINESTRING(4 10, 2 30)")
+    geom3_ = intersection(geom1_, geom2_)
+    @test equals(geom3_, readgeom("POINT(3 20)"))
+
+    g = LineString(setPrecision(geom1_, 2.0, 0))
+    LibGEOS.destroyGeom(geom1_)
+    geom1_ = g
+    g = LineString(setPrecision(geom2_, 2.0, 0))
+    LibGEOS.destroyGeom(geom2_)
+    geom2_ = g
+    geom3_ = intersection(geom1_, geom2_)
+    @test equals(geom3_, readgeom("POINT(4 20)"))
+
+    g = LineString(setPrecision(geom1_, 0.5, 0))
+    LibGEOS.destroyGeom(geom1_)
+    geom1_ = g
+    geom3_ = intersection(geom1_, geom2_)
+    @test equals(geom3_, readgeom("POINT(3 20)"))
+    @test getPrecision(geom1_) == 0.5
+    @test getPrecision(geom2_) == 2.0
+
+    geom1_ = readgeom("POLYGON((10 10,20 10,16 15,20 20, 10 20, 14 15, 10 10))")
+    geom2_ = LibGEOS.MultiPolygon(setPrecision(geom1_, 5.0, 0))
+    @test equals(geom2_, readgeom(
+        "MULTIPOLYGON (((10 10, 15 15, 20 10, 10 10)), ((15 15, 10 20, 20 20, 15 15)))"))
+    geom3_ = LibGEOS.MultiPolygon(setPrecision(geom1_, 5.0, LibGEOS.GEOS_PREC_NO_TOPO))
+    @test equals(geom3_, readgeom(
+        "POLYGON ((10 10, 20 10, 15 15, 20 20, 10 20, 15 15, 10 10))"))
+
+    geom1_ = readgeom("LINESTRING(1 0, 2 0)")
+    geom2_ = LineString(setPrecision(geom1_, 5.0, 0))
+    @test equals(geom2_, readgeom("LINESTRING EMPTY"))
+    geom3_ = LineString(setPrecision(geom1_, 5.0, LibGEOS.GEOS_PREC_KEEP_COLLAPSED))
+    # @test equals(geom3_, readgeom("LINESTRING (0 0, 0 0)")) # false ??
+    @test writegeom(geom3_) == "LINESTRING (0 0, 0 0)"
+
+    LibGEOS.destroyGeom(geom1_)
+    LibGEOS.destroyGeom(geom2_)
+    LibGEOS.destroyGeom(geom3_)
+    LibGEOS.destroyGeom(g)
+    
 end
