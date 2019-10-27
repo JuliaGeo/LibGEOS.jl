@@ -22,7 +22,8 @@ module LibGEOS
             prepareGeom, prepcontains, prepcontainsproperly, prepcoveredby, prepcovers, prepcrosses,
             prepdisjoint, prepintersects, prepoverlaps, preptouches, prepwithin,
             isEmpty, isSimple, isRing, hasZ, isClosed, isValid, interiorRings, exteriorRing,
-            numPoints, startPoint, endPoint, area, geomLength, distance, hausdorffdistance, nearestPoints
+            numPoints, startPoint, endPoint, area, geomLength, distance, hausdorffdistance, nearestPoints,
+            getPrecision, setPrecision
 
     include("geos_common.jl")
     include("geos_c.jl")
