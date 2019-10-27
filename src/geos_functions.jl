@@ -1097,3 +1097,23 @@ end
 # The first point comes from g1 geometry and the second point comes from g2.
 nearestPoints(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context) =
     GEOSNearestPoints_r(context.ptr, g1, g2)
+
+# -----
+# Precision functions
+# -----
+
+function getPrecision(geom::GEOSGeom, context::GEOSContext = _context)
+    result = GEOSGeom_getPrecision_r(context.ptr, geom)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_getPrecision_r")
+    end
+    result
+end
+
+function setPrecision(geom::GEOSGeom, gridSize::Real, flags::Int, context::GEOSContext = _context)
+    result = GEOSGeom_setPrecision_r(context.ptr, geom, gridSize, flags)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_setPrecision_r")
+    end
+    result
+end
