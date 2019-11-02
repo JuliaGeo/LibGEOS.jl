@@ -90,53 +90,24 @@ function setZ!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext 
     result
 end
 
-# Get ordinate values from a Coordinate Sequence (Return 0 on exception)
-function getX!(ptr::GEOSCoordSeq, index::Integer, coord::Vector{Float64}, context::GEOSContext = _context)
-    result = GEOSCoordSeq_getX_r(context.ptr, ptr, index-1, pointer(coord))
+"Get size info from a Coordinate Sequence (Return 0 on exception)"
+function getSize(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+    out = Ref{UInt32}()
+    result = GEOSCoordSeq_getSize_r(context.ptr, ptr, out)
     if result == 0
-        error("LibGEOS: Error in GEOSCoordSeq_getX")
+        error("LibGEOS: Error in GEOSCoordSeq_getSize")
     end
-    result
+    Int(out[])
 end
 
-function getY!(ptr::GEOSCoordSeq, index::Integer, coord::Vector{Float64}, context::GEOSContext = _context)
-    result = GEOSCoordSeq_getY_r(context.ptr, ptr, index-1, pointer(coord))
+"Get dimensions info from a Coordinate Sequence (Return 0 on exception)"
+function getDimensions(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+    out = Ref{UInt32}()
+    result = GEOSCoordSeq_getDimensions_r(context.ptr, ptr, out)
     if result == 0
-        error("LibGEOS: Error in GEOSCoordSeq_getY")
+        error("LibGEOS: Error in GEOSCoordSeq_getDimensions")
     end
-    result
-end
-
-function getZ!(ptr::GEOSCoordSeq, index::Integer, coord::Vector{Float64}, context::GEOSContext = _context)
-    result = GEOSCoordSeq_getZ_r(context.ptr, ptr, index-1, pointer(coord))
-    if result == 0
-        error("LibGEOS: Error in GEOSCoordSeq_getZ")
-    end
-    result
-end
-
-let out = Array{UInt32}(undef, 1)
-    global getSize
-    function getSize(ptr::GEOSCoordSeq, context::GEOSContext = _context)
-        # Get size info from a Coordinate Sequence (Return 0 on exception)
-        result = GEOSCoordSeq_getSize_r(context.ptr, ptr, pointer(out))
-        if result == 0
-            error("LibGEOS: Error in GEOSCoordSeq_getSize")
-        end
-        Int(out[1])
-    end
-end
-
-let out = Array{UInt32}(undef, 1)
-    global getDimensions
-    function getDimensions(ptr::GEOSCoordSeq, context::GEOSContext = _context)
-        # Get dimensions info from a Coordinate Sequence (Return 0 on exception)
-        result = GEOSCoordSeq_getDimensions_r(context.ptr, ptr, pointer(out))
-        if result == 0
-            error("LibGEOS: Error in GEOSCoordSeq_getDimensions")
-        end
-        Int(out[1])
-    end
+    Int(out[])
 end
 
 # convenience functions
@@ -202,12 +173,13 @@ function createCoordSeq(coords::Vector{Vector{Float64}}, context::GEOSContext = 
     coordinates
 end
 
-let out = Array{Float64}(undef, 1)
-    global getX
-    function getX(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
-        getX!(ptr, i, out, context)
-        out[1]
+function getX(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    result = GEOSCoordSeq_getX_r(context.ptr, ptr, i-1, out)
+    if result == 0
+        error("LibGEOS: Error in GEOSCoordSeq_getX")
     end
+    out[]
 end
 
 function getX(ptr::GEOSCoordSeq, context::GEOSContext = _context)
@@ -221,13 +193,13 @@ function getX(ptr::GEOSCoordSeq, context::GEOSContext = _context)
     xcoords
 end
 
-let out = Array{Float64}(undef, 1)
-    global getY
-    function getY(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
-        out = Array{Float64}(undef, 1)
-        getY!(ptr, i, out, context)
-        out[1]
+function getY(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    result = GEOSCoordSeq_getY_r(context.ptr, ptr, i-1, out)
+    if result == 0
+        error("LibGEOS: Error in GEOSCoordSeq_getY")
     end
+    out[]
 end
 
 function getY(ptr::GEOSCoordSeq, context::GEOSContext = _context)
@@ -241,12 +213,13 @@ function getY(ptr::GEOSCoordSeq, context::GEOSContext = _context)
     ycoords
 end
 
-let out = Array{Float64}(undef, 1)
-    global getZ
-    function getZ(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
-        getZ!(ptr, i, out, context)
-        out[1]
+function getZ(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    result = GEOSCoordSeq_getZ_r(context.ptr, ptr, i-1, out)
+    if result == 0
+        error("LibGEOS: Error in GEOSCoordSeq_getZ")
     end
+    out[]
 end
 
 function getZ(ptr::GEOSCoordSeq, context::GEOSContext = _context)
@@ -966,26 +939,22 @@ function numPoints(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 # Return -1 on exception, Geometry must be a Point.
-let out = Array{Float64}(undef, 1)
-    global getGeomX
-    function getGeomX(ptr::GEOSGeom, context::GEOSContext = _context)
-        result = GEOSGeomGetX_r(context.ptr, ptr, pointer(out))
-        if result == -1
-            error("LibGEOS: Error in GEOSGeomGetX")
-        end
-        out[1]
+function getGeomX(ptr::GEOSGeom, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    result = GEOSGeomGetX_r(context.ptr, ptr, out)
+    if result == -1
+        error("LibGEOS: Error in GEOSGeomGetX")
     end
+    out[]
 end
 
-let out = Array{Float64}(undef, 1)
-    global getGeomY
-    function getGeomY(ptr::GEOSGeom, context::GEOSContext = _context)
-        result = GEOSGeomGetY_r(context.ptr, ptr, pointer(out))
-        if result == -1
-            error("LibGEOS: Error in GEOSGeomGetY")
-        end
-        out[1]
+function getGeomY(ptr::GEOSGeom, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    result = GEOSGeomGetY_r(context.ptr, ptr, out)
+    if result == -1
+        error("LibGEOS: Error in GEOSGeomGetY")
     end
+    out[]
 end
 
 # Return NULL on exception, Geometry must be a Polygon.
@@ -1074,64 +1043,54 @@ end
 # -----
 # Misc functions
 # -----
-let out = Array{Float64}(undef, 1)
-    global geomArea
-    function geomArea(ptr::GEOSGeom, context::GEOSContext = _context)
-        # Return 0 on exception, 1 otherwise
-        result = GEOSArea_r(context.ptr, ptr, pointer(out))
-        if result == 0
-            error("LibGEOS: Error in GEOSArea")
-        end
-        out[1]
+function geomArea(ptr::GEOSGeom, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    # Return 0 on exception, 1 otherwise
+    result = GEOSArea_r(context.ptr, ptr, out)
+    if result == 0
+        error("LibGEOS: Error in GEOSArea")
     end
+    out[]
 end
 
-let out = Array{Float64}(undef, 1)
-    global geomLength
-    function geomLength(ptr::GEOSGeom, context::GEOSContext = _context)
-        # Return 0 on exception, 1 otherwise
-        result = GEOSLength_r(context.ptr, ptr, pointer(out))
-        if result == 0
-            error("LibGEOS: Error in GEOSLength")
-        end
-        out[1]
+function geomLength(ptr::GEOSGeom, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    # Return 0 on exception, 1 otherwise
+    result = GEOSLength_r(context.ptr, ptr, out)
+    if result == 0
+        error("LibGEOS: Error in GEOSLength")
     end
+    out[]
 end
 
-let out = Array{Float64}(undef, 1)
-    global geomDistance
-    function geomDistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
-        # Return 0 on exception, 1 otherwise
-        result = GEOSDistance_r(context.ptr, g1, g2, pointer(out))
-        if result == 0
-            error("LibGEOS: Error in GEOSDistance")
-        end
-        out[1]
+function geomDistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    # Return 0 on exception, 1 otherwise
+    result = GEOSDistance_r(context.ptr, g1, g2, out)
+    if result == 0
+        error("LibGEOS: Error in GEOSDistance")
     end
+    out[]
 end
 
-let out = Array{Float64}(undef, 1)
-    global hausdorffdistance
-    function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
-        # Return 0 on exception, 1 otherwise
-        result = GEOSHausdorffDistance_r(context.ptr, g1, g2, pointer(out))
-        if result == 0
-            error("LibGEOS: Error in GEOSHausdorffDistance")
-        end
-        out[1]
+function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    # Return 0 on exception, 1 otherwise
+    result = GEOSHausdorffDistance_r(context.ptr, g1, g2, out)
+    if result == 0
+        error("LibGEOS: Error in GEOSHausdorffDistance")
     end
+    out[]
 end
 
-let out = Array{Float64}(undef, 1)
-    global hausdorffdistance
-    function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, densifyFrac::Real, context::GEOSContext = _context)
-        # Return 0 on exception, 1 otherwise
-        result = GEOSHausdorffDistanceDensify_r(context.ptr, g1, g2, densifyFrac, pointer(out))
-        if result == 0
-            error("LibGEOS: Error in GEOSHausdorffDistanceDensify")
-        end
-        out[1]
+function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, densifyFrac::Real, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    # Return 0 on exception, 1 otherwise
+    result = GEOSHausdorffDistanceDensify_r(context.ptr, g1, g2, densifyFrac, out)
+    if result == 0
+        error("LibGEOS: Error in GEOSHausdorffDistanceDensify")
     end
+    out[]
 end
 
 # Return 0 on exception, the closest points of the two geometries otherwise.
