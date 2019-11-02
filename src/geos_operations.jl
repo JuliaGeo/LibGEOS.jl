@@ -234,40 +234,8 @@ for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :P
     @eval normalize!(obj::$geom) = normalize!(obj.ptr)
 end
 
-# # Return -1 on exception, Geometry must be a Point.
-# let out = Array{Float64}(1)
-#     global getGeomX
-#     function getGeomX(ptr::GEOSGeom)
-#         result = GEOSGeomGetX(ptr, pointer(out))
-#         if result == -1
-#             error("LibGEOS: Error in GEOSGeomGetX")
-#         end
-#         out[1]
-#     end
-# end
-
-# let out = Array{Float64}(1)
-#     global getGeomY
-#     function getGeomY(ptr::GEOSGeom)
-#         result = GEOSGeomGetY(ptr, pointer(out))
-#         if result == -1
-#             error("LibGEOS: Error in GEOSGeomGetY")
-#         end
-#         out[1]
-#     end
-# end
-
 interiorRings(obj::Polygon) = map(LinearRing, interiorRings(obj.ptr))
 exteriorRing(obj::Polygon) = LinearRing(exteriorRing(obj.ptr))
-
-# # Return -1 on exception
-# function numCoordinates(ptr::GEOSGeom)
-#     result = GEOSGetNumCoordinates(ptr)
-#     if result == -1
-#         error("LibGEOS: Error in GEOSGetNumCoordinates")
-#     end
-#     result
-# end
 
 # # Geometry must be a LineString, LinearRing or Point (Return NULL on exception)
 # function getCoordSeq(ptr::GEOSGeom)
