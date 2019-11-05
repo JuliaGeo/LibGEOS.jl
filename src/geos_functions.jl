@@ -1102,6 +1102,11 @@ nearestPoints(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context) =
 # Precision functions
 # -----
 
+"""
+    getPrecision(geom)
+
+Return the size of the geometry's precision grid, 0 for FLOATING precision.
+"""
 function getPrecision(geom::GEOSGeom, context::GEOSContext = _context)
     result = GEOSGeom_getPrecision_r(context.ptr, geom)
     if result == C_NULL
@@ -1110,8 +1115,23 @@ function getPrecision(geom::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
+"""
+    setPrecision(geom, gridSize; flags = 0)
+
+Set the geometry's precision, optionally rounding all its coordinates to the
+precision grid (if it changes).
+
+Note that operations will always be performed in the precision
+of the geometry with higher precision (smaller `gridSize`).
+That same precision will be attached to the operation outputs.
+
+* `gridSize` size of the precision grid, or 0 for FLOATING precision.
+* `flags` The bitwise OR of one of more of the "precision options"
+  * `LibGEOS.GEOS_PREC_KEEP_COLLAPSED` retain collapsed elements
+  * `LibGEOS.GEOS_PREC_NO_TOPO` do not attempt at preserving the topology
+"""
 function setPrecision(geom::GEOSGeom, gridSize::Real, flags::Int, context::GEOSContext = _context)
-    result = GEOSGeom_setPrecision_r(context.ptr, geom, gridSize, flags)
+    result = geomFromGEOS(GEOSGeom_setPrecision_r(context.ptr, geom, gridSize, flags))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_setPrecision_r")
     end
