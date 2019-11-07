@@ -1108,11 +1108,7 @@ nearestPoints(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context) =
 Return the size of the geometry's precision grid, 0 for FLOATING precision.
 """
 function getPrecision(geom::GEOSGeom, context::GEOSContext = _context)
-    result = GEOSGeom_getPrecision_r(context.ptr, geom)
-    if result == C_NULL
-        error("LibGEOS: Error in GEOSGeom_getPrecision_r")
-    end
-    result
+    GEOSGeom_getPrecision_r(context.ptr, geom)
 end
 
 """
