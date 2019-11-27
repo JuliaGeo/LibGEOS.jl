@@ -114,6 +114,14 @@ function GEOSCoordSeq_setZ_r(handle, s, idx, val)
     ccall((:GEOSCoordSeq_setZ_r, libgeos), Cint, (GEOSContextHandle_t, Ptr{GEOSCoordSequence}, UInt32, Cdouble), handle, s, idx, val)
 end
 
+function GEOSCoordSeq_setXY_r(handle, s, idx, x, y)
+    ccall((:GEOSCoordSeq_setXY_r, libgeos), Cint, (GEOSContextHandle_t, Ptr{GEOSCoordSequence}, UInt32, Cdouble, Cdouble), handle, s, idx, x, y)
+end
+
+function GEOSCoordSeq_setXYZ_r(handle, s, idx, x, y, z)
+    ccall((:GEOSCoordSeq_setXYZ_r, libgeos), Cint, (GEOSContextHandle_t, Ptr{GEOSCoordSequence}, UInt32, Cdouble, Cdouble, Cdouble), handle, s, idx, x, y, z)
+end
+
 function GEOSCoordSeq_setOrdinate_r(handle, s, idx, dim, val)
     ccall((:GEOSCoordSeq_setOrdinate_r, libgeos), Cint, (GEOSContextHandle_t, Ptr{GEOSCoordSequence}, UInt32, UInt32, Cdouble), handle, s, idx, dim, val)
 end
@@ -128,6 +136,14 @@ end
 
 function GEOSCoordSeq_getZ_r(handle, s, idx, val)
     ccall((:GEOSCoordSeq_getZ_r, libgeos), Cint, (GEOSContextHandle_t, Ptr{GEOSCoordSequence}, UInt32, Ptr{Cdouble}), handle, s, idx, val)
+end
+
+function GEOSCoordSeq_getXY_r(handle, s, idx, x, y)
+    ccall((:GEOSCoordSeq_getXY_r, libgeos), Cint, (GEOSContextHandle_t, Ptr{GEOSCoordSequence}, UInt32, Ptr{Cdouble}, Ptr{Cdouble}), handle, s, idx, x, y)
+end
+
+function GEOSCoordSeq_getXYZ_r(handle, s, idx, x, y, z)
+    ccall((:GEOSCoordSeq_getXYZ_r, libgeos), Cint, (GEOSContextHandle_t, Ptr{GEOSCoordSequence}, UInt32, Ptr{Cdouble}, Ptr{Cdouble}, Ptr{Cdouble}), handle, s, idx, x, y, z)
 end
 
 function GEOSCoordSeq_getOrdinate_r(handle, s, idx, dim, val)
@@ -212,6 +228,10 @@ end
 
 function GEOSGeom_createPoint_r(handle, s)
     ccall((:GEOSGeom_createPoint_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSCoordSequence}), handle, s)
+end
+
+function GEOSGeom_createPointFromXY_r(handle, x, y)
+    ccall((:GEOSGeom_createPointFromXY_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Cdouble, Cdouble), handle, x, y)
 end
 
 function GEOSGeom_createEmptyPoint_r(handle)
@@ -302,6 +322,10 @@ function GEOSUnaryUnion_r(handle, g)
     ccall((:GEOSUnaryUnion_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g)
 end
 
+function GEOSCoverageUnion_r(handle, g)
+    ccall((:GEOSCoverageUnion_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g)
+end
+
 function GEOSUnionCascaded_r(handle, g)
     ccall((:GEOSUnionCascaded_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g)
 end
@@ -312,6 +336,10 @@ end
 
 function GEOSGetCentroid_r(handle, g)
     ccall((:GEOSGetCentroid_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g)
+end
+
+function GEOSMinimumBoundingCircle_r(handle, g, radius, center)
+    ccall((:GEOSMinimumBoundingCircle_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{Cdouble}, Ptr{Ptr{GEOSGeometry}}), handle, g, radius, center)
 end
 
 function GEOSNode_r(handle, g)
@@ -326,12 +354,20 @@ function GEOSPolygonize_r(handle, geoms, ngeoms)
     ccall((:GEOSPolygonize_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{Ptr{GEOSGeometry}}, UInt32), handle, geoms, ngeoms)
 end
 
+function GEOSPolygonize_valid_r(handle, geoms, ngems)
+    ccall((:GEOSPolygonize_valid_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{Ptr{GEOSGeometry}}, UInt32), handle, geoms, ngems)
+end
+
 function GEOSPolygonizer_getCutEdges_r(handle, geoms, ngeoms)
     ccall((:GEOSPolygonizer_getCutEdges_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{Ptr{GEOSGeometry}}, UInt32), handle, geoms, ngeoms)
 end
 
 function GEOSPolygonize_full_r(handle, input, cuts, dangles, invalidRings)
     ccall((:GEOSPolygonize_full_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{Ptr{GEOSGeometry}}, Ptr{Ptr{GEOSGeometry}}, Ptr{Ptr{GEOSGeometry}}), handle, input, cuts, dangles, invalidRings)
+end
+
+function GEOSBuildArea_r(handle, g)
+    ccall((:GEOSBuildArea_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g)
 end
 
 function GEOSLineMerge_r(handle, g)
@@ -544,6 +580,10 @@ end
 
 function GEOSisValidDetail_r(handle, g, flags, reason, location)
     ccall((:GEOSisValidDetail_r, libgeos), UInt8, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Cint, Ptr{Cstring}, Ptr{Ptr{GEOSGeometry}}), handle, g, flags, reason, location)
+end
+
+function GEOSMakeValid_r(handle, g)
+    ccall((:GEOSMakeValid_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g)
 end
 
 function GEOSGeomType_r(handle, g)
@@ -882,6 +922,14 @@ function GEOSCoordSeq_setZ(s, idx, val)
     ccall((:GEOSCoordSeq_setZ, libgeos), Cint, (Ptr{GEOSCoordSequence}, UInt32, Cdouble), s, idx, val)
 end
 
+function GEOSCoordSeq_setXY(s, idx, x, y)
+    ccall((:GEOSCoordSeq_setXY, libgeos), Cint, (Ptr{GEOSCoordSequence}, UInt32, Cdouble, Cdouble), s, idx, x, y)
+end
+
+function GEOSCoordSeq_setXYZ(s, idx, x, y, z)
+    ccall((:GEOSCoordSeq_setXYZ, libgeos), Cint, (Ptr{GEOSCoordSequence}, UInt32, Cdouble, Cdouble, Cdouble), s, idx, x, y, z)
+end
+
 function GEOSCoordSeq_setOrdinate(s, idx, dim, val)
     ccall((:GEOSCoordSeq_setOrdinate, libgeos), Cint, (Ptr{GEOSCoordSequence}, UInt32, UInt32, Cdouble), s, idx, dim, val)
 end
@@ -896,6 +944,14 @@ end
 
 function GEOSCoordSeq_getZ(s, idx, val)
     ccall((:GEOSCoordSeq_getZ, libgeos), Cint, (Ptr{GEOSCoordSequence}, UInt32, Ptr{Cdouble}), s, idx, val)
+end
+
+function GEOSCoordSeq_getXY(s, idx, x, y)
+    ccall((:GEOSCoordSeq_getXY, libgeos), Cint, (Ptr{GEOSCoordSequence}, UInt32, Ptr{Cdouble}, Ptr{Cdouble}), s, idx, x, y)
+end
+
+function GEOSCoordSeq_getXYZ(s, idx, x, y, z)
+    ccall((:GEOSCoordSeq_getXYZ, libgeos), Cint, (Ptr{GEOSCoordSequence}, UInt32, Ptr{Cdouble}, Ptr{Cdouble}, Ptr{Cdouble}), s, idx, x, y, z)
 end
 
 function GEOSCoordSeq_getOrdinate(s, idx, dim, val)
@@ -980,6 +1036,10 @@ end
 
 function GEOSGeom_createPoint(s)
     ccall((:GEOSGeom_createPoint, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSCoordSequence},), s)
+end
+
+function GEOSGeom_createPointFromXY(x, y)
+    ccall((:GEOSGeom_createPointFromXY, libgeos), Ptr{GEOSGeometry}, (Cdouble, Cdouble), x, y)
 end
 
 function GEOSGeom_createEmptyPoint()
@@ -1070,6 +1130,10 @@ function GEOSUnaryUnion(g)
     ccall((:GEOSUnaryUnion, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry},), g)
 end
 
+function GEOSCoverageUnion(g)
+    ccall((:GEOSCoverageUnion, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry},), g)
+end
+
 function GEOSUnionCascaded(g)
     ccall((:GEOSUnionCascaded, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry},), g)
 end
@@ -1080,6 +1144,10 @@ end
 
 function GEOSGetCentroid(g)
     ccall((:GEOSGetCentroid, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry},), g)
+end
+
+function GEOSMinimumBoundingCircle(g, radius, center)
+    ccall((:GEOSMinimumBoundingCircle, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Ptr{Cdouble}, Ptr{Ptr{GEOSGeometry}}), g, radius, center)
 end
 
 function GEOSNode(g)
@@ -1094,12 +1162,20 @@ function GEOSPolygonize(geoms, ngeoms)
     ccall((:GEOSPolygonize, libgeos), Ptr{GEOSGeometry}, (Ptr{Ptr{GEOSGeometry}}, UInt32), geoms, ngeoms)
 end
 
+function GEOSPolygonize_valid(geoms, ngeoms)
+    ccall((:GEOSPolygonize_valid, libgeos), Ptr{GEOSGeometry}, (Ptr{Ptr{GEOSGeometry}}, UInt32), geoms, ngeoms)
+end
+
 function GEOSPolygonizer_getCutEdges(geoms, ngeoms)
     ccall((:GEOSPolygonizer_getCutEdges, libgeos), Ptr{GEOSGeometry}, (Ptr{Ptr{GEOSGeometry}}, UInt32), geoms, ngeoms)
 end
 
 function GEOSPolygonize_full(input, cuts, dangles, invalid)
     ccall((:GEOSPolygonize_full, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Ptr{Ptr{GEOSGeometry}}, Ptr{Ptr{GEOSGeometry}}, Ptr{Ptr{GEOSGeometry}}), input, cuts, dangles, invalid)
+end
+
+function GEOSBuildArea(g)
+    ccall((:GEOSBuildArea, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry},), g)
 end
 
 function GEOSLineMerge(g)
@@ -1174,16 +1250,16 @@ function GEOSEquals(g1, g2)
     ccall((:GEOSEquals, libgeos), UInt8, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), g1, g2)
 end
 
-function GEOSEqualsExact(g1, g2, tolerance)
-    ccall((:GEOSEqualsExact, libgeos), UInt8, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cdouble), g1, g2, tolerance)
-end
-
 function GEOSCovers(g1, g2)
     ccall((:GEOSCovers, libgeos), UInt8, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), g1, g2)
 end
 
 function GEOSCoveredBy(g1, g2)
     ccall((:GEOSCoveredBy, libgeos), UInt8, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), g1, g2)
+end
+
+function GEOSEqualsExact(g1, g2, tolerance)
+    ccall((:GEOSEqualsExact, libgeos), UInt8, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cdouble), g1, g2, tolerance)
 end
 
 function GEOSPrepare(g)
@@ -1312,6 +1388,10 @@ end
 
 function GEOSisValidDetail(g, flags, reason, location)
     ccall((:GEOSisValidDetail, libgeos), UInt8, (Ptr{GEOSGeometry}, Cint, Ptr{Cstring}, Ptr{Ptr{GEOSGeometry}}), g, flags, reason, location)
+end
+
+function GEOSMakeValid(g)
+    ccall((:GEOSMakeValid, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry},), g)
 end
 
 function GEOSGeomType(g)
