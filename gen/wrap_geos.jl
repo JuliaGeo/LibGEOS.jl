@@ -13,8 +13,10 @@ like `GEOS_VERSION`, which are just strings, are correct.
 
 using Clang
 using MacroTools
+using GEOS_jll
 
-includedir = normpath(joinpath(@__DIR__, "..", "deps", "usr", "include"))
+# maybe use GEOS_jll.prefix later pending https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/525
+includedir = abspath(joinpath(dirname(GEOS_jll.libgeos_path), "..", "include"))
 headerfiles = [joinpath(includedir, "geos_c.h")]
 
 """
