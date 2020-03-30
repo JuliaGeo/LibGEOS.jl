@@ -37,7 +37,7 @@ Installation
   ```julia
   pkg> add LibGEOS
   ```
-  This will install both the Julia package and GEOS shared libraries together. To just reinstall the GEOS shared libraries, run `pkg> build LibGEOS`.
+  This will install both the Julia package and GEOS shared libraries together. The GEOS build comes from [GEOS_jll](https://github.com/JuliaBinaryWrappers/GEOS_jll.jl/releases), and the build script can be found in [Yggdrasil](https://github.com/JuliaPackaging/Yggdrasil/tree/master/G/GEOS).
 
 2. Test that `LibGEOS` works by runnning
   ```julia
