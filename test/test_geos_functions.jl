@@ -730,5 +730,13 @@
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
     LibGEOS.destroyGeom(g)
-    
+
+    # GEOSMinimumRotatedRectangleTest
+    input_ = readgeom("POLYGON ((1 6, 6 11, 11 6, 6 1, 1 6))")
+    output_ = minimumRotatedRectangle(input_)
+    expected_ = readgeom("POLYGON ((6 1, 11 6, 6 11, 1 6, 6 1))")
+    @test writegeom(output_) == writegeom(expected_)
+    LibGEOS.destroyGeom(input_)
+    LibGEOS.destroyGeom(output_)
+    LibGEOS.destroyGeom(expected_)
 end

@@ -17,7 +17,7 @@ module LibGEOS
             prepdisjoint, prepintersects, prepoverlaps, preptouches, prepwithin,
             isEmpty, isSimple, isRing, hasZ, isClosed, isValid, interiorRings, exteriorRing,
             numPoints, startPoint, endPoint, area, geomLength, distance, hausdorffdistance, nearestPoints,
-            getPrecision, setPrecision
+            getPrecision, setPrecision, minimumRotatedRectangle
 
     include("geos_common.jl")
     include("geos_c.jl")
