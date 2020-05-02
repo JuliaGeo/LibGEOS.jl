@@ -402,6 +402,24 @@ function envelope(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
+
+"""
+    minimumRotatedRectangle(geom)
+
+Returns the minimum rotated rectangular POLYGON which encloses the input geometry. The rectangle
+has width equal to the minimum diameter, and a longer length. If the convex hill of the input is
+degenerate (a line or point) a LINESTRING or POINT is returned. The minimum rotated rectangle can
+be used as an extremely generalized representation for the given geometry.
+"""
+function minimumRotatedRectangle(ptr::GEOSGeom, context::GEOSContext = _context)
+    result = GEOSMinimumRotatedRectangle_r(context.ptr, ptr)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSMinimumRotatedRectangle")
+    end
+    result
+end
+
+
 function intersection(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result = GEOSIntersection_r(context.ptr, g1, g2)
     if result == C_NULL
