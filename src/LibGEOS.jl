@@ -12,12 +12,18 @@ module LibGEOS
             boundary, union, unaryUnion, pointOnSurface, centroid, node,
             polygonize, lineMerge, simplify, topologyPreserveSimplify, uniquePoints, sharedPaths,
             snap, delaunayTriangulation, delaunayTriangulationEdges,
-            disjoint, touches, intersects, crosses, within, contains, overlaps, equals, equalsexact, covers, coveredby,
+            disjoint, touches, intersects, crosses, within, overlaps, equals, equalsexact, covers, coveredby,
             prepareGeom, prepcontains, prepcontainsproperly, prepcoveredby, prepcovers, prepcrosses,
             prepdisjoint, prepintersects, prepoverlaps, preptouches, prepwithin,
             isEmpty, isSimple, isRing, hasZ, isClosed, isValid, interiorRings, exteriorRing,
             numPoints, startPoint, endPoint, area, geomLength, distance, hausdorffdistance, nearestPoints,
             getPrecision, setPrecision, minimumRotatedRectangle
+
+    if VERSION >= v"1.5.0-DEV.639"
+        import Base: contains
+    else
+        export contains
+    end
 
     include("geos_common.jl")
     include("geos_c.jl")
