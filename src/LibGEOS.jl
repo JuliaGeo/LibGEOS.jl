@@ -2,7 +2,6 @@ module LibGEOS
 
     using GEOS_jll
     using GeoInterface
-    using Libdl
     using CEnum
 
     export  Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection,
