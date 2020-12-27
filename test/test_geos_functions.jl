@@ -693,7 +693,7 @@
     geom_ = LibGEOS._readgeom("LINESTRING(0 0, 0 1, 1 1, 0 0)")
     @test LibGEOS.isClosed(geom_)
     LibGEOS.destroyGeom(geom_)
-    
+
     # setPrecision, getPrecision
     # Taken from https://git.osgeo.org/gitea/geos/geos/src/branch/master/tests/unit/capi/GEOSGeom_setPrecisionTest.cpp
 
@@ -733,7 +733,7 @@
     geom3_ = setPrecision(geom1_, 5.0, flags = LibGEOS.GEOS_PREC_KEEP_COLLAPSED)
     # @test equals(geom3_, readgeom("LINESTRING (0 0, 0 0)")) # false ??
     @test writegeom(geom3_) == "LINESTRING (0 0, 0 0)"
-    
+
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
