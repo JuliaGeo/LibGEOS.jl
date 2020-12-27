@@ -1,6 +1,6 @@
 function equivalent_to_wkt(geom::GeoInterface.AbstractGeometry, wkt::String)
     test_geom = readgeom(wkt)
-    @test writegeom(geom) == writegeom(test_geom)
+    @test LibGEOS.equals(geom, test_geom)
 end
 
 function factcheck(f::Function, geom::String, expected::String)
