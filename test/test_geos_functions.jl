@@ -1,3 +1,25 @@
+@testset "WKTWriter" begin
+    # default writing options
+    p = readgeom("POINT(0.12345 2.000 0.1)")
+    @test writegeom(p) == "POINT Z (0.12345 2 0.1)"
+
+    p = readgeom("POINT(0.12345 2.000)")
+    @test writegeom(p) == "POINT (0.12345 2)"
+
+    # round to 2 decimals
+    writer = LibGEOS.WKTWriter(LibGEOS._context, trim=true, outputdim=3, roundingprecision=2)
+    @test writegeom(p, writer) == "POINT (0.12 2)"
+
+    # round to 2 decimals and don't trim trailing zeros
+    writer = LibGEOS.WKTWriter(LibGEOS._context, trim=false, outputdim=3, roundingprecision=2)
+    @test writegeom(p, writer) == "POINT (0.12 2.00)"
+
+    # don't output the Z dimension
+    p = readgeom("POINT(0.12345 2.000 0.1)")
+    writer = LibGEOS.WKTWriter(LibGEOS._context, trim=false, outputdim=2, roundingprecision=2)
+    @test writegeom(p, writer) == "POINT (0.12 2.00)"
+end
+
 @testset "GEOS functions" begin
     a = LibGEOS.createCoordSeq(Vector{Float64}[[1,2,3],[4,5,6]])
     b = LibGEOS.cloneCoordSeq(a)
