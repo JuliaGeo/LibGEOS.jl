@@ -72,11 +72,11 @@ module LibGEOS
 
         function WKTWriter(context::GEOSContext; trim::Bool=true, outputdim::Int=3, roundingprecision::Int=-1)
             writer = new(GEOSWKTWriter_create_r(context.ptr))
+            GEOSWKTWriter_setTrim_r(context.ptr, writer.ptr, UInt8(trim))
+            GEOSWKTWriter_setOutputDimension_r(context.ptr, writer.ptr, outputdim)
+            GEOSWKTWriter_setRoundingPrecision_r(context.ptr, writer.ptr, roundingprecision)
             finalizer(function(writer)
                 GEOSWKTWriter_destroy_r(context.ptr, writer.ptr)
-                GEOSWKTWriter_setTrim_r(context.ptr, writer.ptr, UInt8(trim))
-                GEOSWKTWriter_setOutputDimension_r(context.ptr, writer.ptr, outputdim)
-                GEOSWKTWriter_setRoundingPrecision_r(context.ptr, writer.ptr, roundingprecision)
                 writer.ptr = C_NULL
             end, writer)
             writer

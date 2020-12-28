@@ -1,3 +1,25 @@
+@testset "WKTWriter" begin
+    # default writing options
+    p = readgeom("POINT(0.12345 2.000 0.1)")
+    @test writegeom(p) == "POINT Z (0.12345 2 0.1)"
+
+    p = readgeom("POINT(0.12345 2.000)")
+    @test writegeom(p) == "POINT (0.12345 2)"
+
+    # round to 2 decimals
+    writer = LibGEOS.WKTWriter(LibGEOS._context, trim=true, outputdim=3, roundingprecision=2)
+    @test writegeom(p, writer) == "POINT (0.12 2)"
+
+    # round to 2 decimals and don't trim trailing zeros
+    writer = LibGEOS.WKTWriter(LibGEOS._context, trim=false, outputdim=3, roundingprecision=2)
+    @test writegeom(p, writer) == "POINT (0.12 2.00)"
+
+    # don't output the Z dimension
+    p = readgeom("POINT(0.12345 2.000 0.1)")
+    writer = LibGEOS.WKTWriter(LibGEOS._context, trim=false, outputdim=2, roundingprecision=2)
+    @test writegeom(p, writer) == "POINT (0.12 2.00)"
+end
+
 @testset "GEOS functions" begin
     a = LibGEOS.createCoordSeq(Vector{Float64}[[1,2,3],[4,5,6]])
     b = LibGEOS.cloneCoordSeq(a)
@@ -693,7 +715,7 @@
     geom_ = LibGEOS._readgeom("LINESTRING(0 0, 0 1, 1 1, 0 0)")
     @test LibGEOS.isClosed(geom_)
     LibGEOS.destroyGeom(geom_)
-    
+
     # setPrecision, getPrecision
     # Taken from https://git.osgeo.org/gitea/geos/geos/src/branch/master/tests/unit/capi/GEOSGeom_setPrecisionTest.cpp
 
@@ -733,7 +755,7 @@
     geom3_ = setPrecision(geom1_, 5.0, flags = LibGEOS.GEOS_PREC_KEEP_COLLAPSED)
     # @test equals(geom3_, readgeom("LINESTRING (0 0, 0 0)")) # false ??
     @test writegeom(geom3_) == "LINESTRING (0 0, 0 0)"
-    
+
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
