@@ -282,12 +282,24 @@ function GEOSIntersection_r(handle, g1, g2)
     ccall((:GEOSIntersection_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), handle, g1, g2)
 end
 
+function GEOSIntersectionPrec_r(handle, g1, g2, gridSize)
+    ccall((:GEOSIntersectionPrec_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cdouble), handle, g1, g2, gridSize)
+end
+
 function GEOSConvexHull_r(handle, g)
     ccall((:GEOSConvexHull_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g)
 end
 
 function GEOSMinimumRotatedRectangle_r(handle, g)
     ccall((:GEOSMinimumRotatedRectangle_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g)
+end
+
+function GEOSMaximumInscribedCircle_r(handle, g, tolerance)
+    ccall((:GEOSMaximumInscribedCircle_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Cdouble), handle, g, tolerance)
+end
+
+function GEOSLargestEmptyCircle_r(handle, g, boundary, tolerance)
+    ccall((:GEOSLargestEmptyCircle_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cdouble), handle, g, boundary, tolerance)
 end
 
 function GEOSMinimumWidth_r(handle, g)
@@ -306,8 +318,16 @@ function GEOSDifference_r(handle, g1, g2)
     ccall((:GEOSDifference_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), handle, g1, g2)
 end
 
+function GEOSDifferencePrec_r(handle, g1, g2, gridSize)
+    ccall((:GEOSDifferencePrec_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cdouble), handle, g1, g2, gridSize)
+end
+
 function GEOSSymDifference_r(handle, g1, g2)
     ccall((:GEOSSymDifference_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), handle, g1, g2)
+end
+
+function GEOSSymDifferencePrec_r(handle, g1, g2, gridSize)
+    ccall((:GEOSSymDifferencePrec_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cdouble), handle, g1, g2, gridSize)
 end
 
 function GEOSBoundary_r(handle, g)
@@ -318,8 +338,16 @@ function GEOSUnion_r(handle, g1, g2)
     ccall((:GEOSUnion_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), handle, g1, g2)
 end
 
+function GEOSUnionPrec_r(handle, g1, g2, gridSize)
+    ccall((:GEOSUnionPrec_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cdouble), handle, g1, g2, gridSize)
+end
+
 function GEOSUnaryUnion_r(handle, g)
     ccall((:GEOSUnaryUnion_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}), handle, g)
+end
+
+function GEOSUnaryUnionPrec_r(handle, g, gridSize)
+    ccall((:GEOSUnaryUnionPrec_r, libgeos), Ptr{GEOSGeometry}, (GEOSContextHandle_t, Ptr{GEOSGeometry}, Cdouble), handle, g, gridSize)
 end
 
 function GEOSCoverageUnion_r(handle, g)
@@ -500,6 +528,14 @@ end
 
 function GEOSPreparedWithin_r(handle, pg1, g2)
     ccall((:GEOSPreparedWithin_r, libgeos), UInt8, (GEOSContextHandle_t, Ptr{GEOSPreparedGeometry}, Ptr{GEOSGeometry}), handle, pg1, g2)
+end
+
+function GEOSPreparedNearestPoints_r(handle, pg1, g2)
+    ccall((:GEOSPreparedNearestPoints_r, libgeos), Ptr{GEOSCoordSequence}, (GEOSContextHandle_t, Ptr{GEOSPreparedGeometry}, Ptr{GEOSGeometry}), handle, pg1, g2)
+end
+
+function GEOSPreparedDistance_r(handle, pg1, g2, dist)
+    ccall((:GEOSPreparedDistance_r, libgeos), Cint, (GEOSContextHandle_t, Ptr{GEOSPreparedGeometry}, Ptr{GEOSGeometry}, Ptr{Cdouble}), handle, pg1, g2, dist)
 end
 
 function GEOSSTRtree_create_r(handle, nodeCapacity)
@@ -1090,12 +1126,24 @@ function GEOSIntersection(g1, g2)
     ccall((:GEOSIntersection, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), g1, g2)
 end
 
+function GEOSIntersectionPrec(g1, g2, gridSize)
+    ccall((:GEOSIntersectionPrec, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cdouble), g1, g2, gridSize)
+end
+
 function GEOSConvexHull(g)
     ccall((:GEOSConvexHull, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry},), g)
 end
 
 function GEOSMinimumRotatedRectangle(g)
     ccall((:GEOSMinimumRotatedRectangle, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry},), g)
+end
+
+function GEOSMaximumInscribedCircle(g, tolerance)
+    ccall((:GEOSMaximumInscribedCircle, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Cdouble), g, tolerance)
+end
+
+function GEOSLargestEmptyCircle(g, boundary, tolerance)
+    ccall((:GEOSLargestEmptyCircle, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cdouble), g, boundary, tolerance)
 end
 
 function GEOSMinimumWidth(g)
@@ -1114,8 +1162,16 @@ function GEOSDifference(g1, g2)
     ccall((:GEOSDifference, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), g1, g2)
 end
 
+function GEOSDifferencePrec(g1, g2, gridSize)
+    ccall((:GEOSDifferencePrec, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cdouble), g1, g2, gridSize)
+end
+
 function GEOSSymDifference(g1, g2)
     ccall((:GEOSSymDifference, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), g1, g2)
+end
+
+function GEOSSymDifferencePrec(g1, g2, gridSize)
+    ccall((:GEOSSymDifferencePrec, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cdouble), g1, g2, gridSize)
 end
 
 function GEOSBoundary(g)
@@ -1126,8 +1182,16 @@ function GEOSUnion(g1, g2)
     ccall((:GEOSUnion, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}), g1, g2)
 end
 
+function GEOSUnionPrec(g1, g2, gridSize)
+    ccall((:GEOSUnionPrec, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Ptr{GEOSGeometry}, Cdouble), g1, g2, gridSize)
+end
+
 function GEOSUnaryUnion(g)
     ccall((:GEOSUnaryUnion, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry},), g)
+end
+
+function GEOSUnaryUnionPrec(g, gridSize)
+    ccall((:GEOSUnaryUnionPrec, libgeos), Ptr{GEOSGeometry}, (Ptr{GEOSGeometry}, Cdouble), g, gridSize)
 end
 
 function GEOSCoverageUnion(g)
@@ -1308,6 +1372,14 @@ end
 
 function GEOSPreparedWithin(pg1, g2)
     ccall((:GEOSPreparedWithin, libgeos), UInt8, (Ptr{GEOSPreparedGeometry}, Ptr{GEOSGeometry}), pg1, g2)
+end
+
+function GEOSPreparedNearestPoints(pg1, g2)
+    ccall((:GEOSPreparedNearestPoints, libgeos), Ptr{GEOSCoordSequence}, (Ptr{GEOSPreparedGeometry}, Ptr{GEOSGeometry}), pg1, g2)
+end
+
+function GEOSPreparedDistance(pg1, g2, dist)
+    ccall((:GEOSPreparedDistance, libgeos), Cint, (Ptr{GEOSPreparedGeometry}, Ptr{GEOSGeometry}, Ptr{Cdouble}), pg1, g2, dist)
 end
 
 function GEOSSTRtree_create(nodeCapacity)

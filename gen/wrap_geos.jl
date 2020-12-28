@@ -1,11 +1,8 @@
 #=
 Run this file to regenerate `geos_c.jl` and `geos_common.jl`.
 
-It expects a GEOS install in the deps folder, run `build LibGEOS` in Pkg mode
-if these are not in place.
-
 The wrapped GEOS version and provided GEOS version should be kept in sync.
-So when updating the GEOSBuilder provided version, also rerun this wrapper.
+So when updating the GEOS_jll version, also rerun this wrapper.
 This way we ensure that the provided library has the same functions available
 as the wrapped one. Furthermore this makes sure constants in `geos_common.jl`
 like `GEOS_VERSION`, which are just strings, are correct.
@@ -15,8 +12,7 @@ using Clang
 using MacroTools
 using GEOS_jll
 
-# maybe use GEOS_jll.prefix later pending https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/525
-includedir = abspath(joinpath(dirname(GEOS_jll.libgeos_path), "..", "include"))
+includedir = joinpath(GEOS_jll.artifact_dir, "include")
 headerfiles = [joinpath(includedir, "geos_c.h")]
 
 """
