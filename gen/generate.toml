@@ -1,6 +1,6 @@
 [general]
 library_name = "libgeos"
-output_file_path = "../src/libgeos.jl"
+output_file_path = "../src/libgeos_api.jl"
 # prologue_file_path = "prologue.jl"
 use_julia_native_enum_type = false
 print_using_CEnum = false
