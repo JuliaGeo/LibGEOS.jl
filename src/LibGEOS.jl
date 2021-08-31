@@ -24,7 +24,7 @@ module LibGEOS
         export contains
     end
 
-    include("libgeos.jl")
+    include("libgeos_api.jl")
 
     mutable struct GEOSError <: Exception
         msg::String
