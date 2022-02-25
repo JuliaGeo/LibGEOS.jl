@@ -305,5 +305,18 @@ end
 
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
     @eval getPrecision(obj::$geom, context::GEOSContext = _context) = getPrecision(obj.ptr, context)
-    @eval setPrecision(obj::$geom, grid::Real, context::GEOSContext = _context; flags::Int = 0) = setPrecision(obj.ptr, grid::Real, flags::Int, context)
+    @eval setPrecision(obj::$geom, grid::Real, context::GEOSContext = _context; flags::GEOSPrecisionRules = GEOS_PREC_VALID_OUTPUT) = setPrecision(obj.ptr, grid::Real, flags::GEOSPrecisionRules, context)
+end
+
+# ----
+#  Geometry information functions
+# ----
+
+for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
+    @eval xmin(obj::$geom, context::GEOSContext = _context) = getXMin(obj.ptr, context)
+    @eval ymin(obj::$geom, context::GEOSContext = _context) = getYMin(obj.ptr, context)
+    @eval xmax(obj::$geom, context::GEOSContext = _context) = getXMax(obj.ptr, context)
+    @eval ymax(obj::$geom, context::GEOSContext = _context) = getYMax(obj.ptr, context)
+    # TODO 02/2022: wait for libgeos release beyond 3.10.2 which will in include GEOSGeom_getExtent_r
+    # @eval extent(obj::$geom, context::GEOSContext = _context) = getExtent(obj.ptr, context)
 end
