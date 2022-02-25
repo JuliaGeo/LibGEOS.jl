@@ -769,4 +769,17 @@ end
     LibGEOS.destroyGeom(input_)
     LibGEOS.destroyGeom(output_)
     LibGEOS.destroyGeom(expected_)
+
+    # getXMin et al.
+    # taken from https://github.com/libgeos/geos/blob/main/tests/unit/capi/GEOSGeom_extentTest.cpp
+    g = readgeom(("LINESTRING (3 8, -12 -4)"))
+    @test LibGEOS.xmin(g) == -12
+    @test LibGEOS.xmax(g) == 3
+    @test LibGEOS.ymin(g) == -4
+    @test LibGEOS.ymax(g) == 8
+    g = readgeom("POLYGON EMPTY")
+    @test (@test_throws ErrorException LibGEOS.xmin(g) == 0).value.msg == "LibGEOS: Error in GEOSGeom_getXMin_r"
+    @test (@test_throws ErrorException LibGEOS.xmax(g) == 0).value.msg == "LibGEOS: Error in GEOSGeom_getXMax_r"
+    @test (@test_throws ErrorException LibGEOS.ymin(g) == 0).value.msg == "LibGEOS: Error in GEOSGeom_getYMin_r"
+    @test (@test_throws ErrorException LibGEOS.ymax(g) == 0).value.msg == "LibGEOS: Error in GEOSGeom_getYMax_r"
 end

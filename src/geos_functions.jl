@@ -1031,6 +1031,58 @@ getGeomDimensions(ptr::GEOSGeom, context::GEOSContext = _context) =
 getCoordinateDimension(ptr::GEOSGeom, context::GEOSContext = _context) =
     GEOSGeom_getCoordinateDimension_r(context.ptr, ptr)
 
+# Finds the minimum X value in the geometry
+function getXMin(ptr::GEOSGeom, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    result = GEOSGeom_getXMin_r(context.ptr, ptr, out)
+    if result == 0
+        error("LibGEOS: Error in GEOSGeom_getXMin_r")
+    end
+    return out[]
+end
+
+# Finds the minimum Y value in the geometry
+function getYMin(ptr::GEOSGeom, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    result = GEOSGeom_getYMin_r(context.ptr, ptr, out)
+    if result == 0
+        error("LibGEOS: Error in GEOSGeom_getYMin_r")
+    end
+    return out[]
+end
+
+# Finds the maximum X value in the geometry
+function getXMax(ptr::GEOSGeom, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    result = GEOSGeom_getXMax_r(context.ptr, ptr, out)
+    if result == 0
+        error("LibGEOS: Error in GEOSGeom_getXMax_r")
+    end
+    return out[]
+end
+
+# Finds the maximum Y value in the geometry
+function getYMax(ptr::GEOSGeom, context::GEOSContext = _context)
+    out = Ref{Float64}()
+    result = GEOSGeom_getYMax_r(context.ptr, ptr, out)
+    if result == 0
+        error("LibGEOS: Error in GEOSGeom_getYMax_r")
+    end
+    return out[]
+end
+
+
+# TODO 02/2022: wait for libgeos release beyond 3.10.2 which will in include GEOSGeom_getExtent_r
+# # Finds the extent (minimum and maximum X and Y value) of the geometry
+# function getExtent(ptr::GEOSGeom, context::GEOSContext = _context)
+#     out = Vector{Float64}(undef, 4)
+#     result = GEOSGeom_getExtent_r(context.ptr, ptr, Ref(out, 1), Ref(out, 2), Ref(out, 3), Ref(out, 4))
+#     if result == 0
+#         error("LibGEOS: Error in GEOSGeom_getExtent_r")
+#     end
+#     return out
+# end
+
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
 function getPoint(ptr::GEOSGeom, n::Integer, context::GEOSContext = _context)
     result = GEOSGeomGetPointN_r(context.ptr, ptr, n-1)
@@ -1144,7 +1196,7 @@ That same precision will be attached to the operation outputs.
   * `LibGEOS.GEOS_PREC_KEEP_COLLAPSED` retain collapsed elements
   * `LibGEOS.GEOS_PREC_NO_TOPO` do not attempt at preserving the topology
 """
-function setPrecision(geom::GEOSGeom, gridSize::Real, flags::Int, context::GEOSContext = _context)
+function setPrecision(geom::GEOSGeom, gridSize::Real, flags::GEOSPrecisionRules, context::GEOSContext = _context)
     result = geomFromGEOS(GEOSGeom_setPrecision_r(context.ptr, geom, gridSize, flags))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_setPrecision_r")
