@@ -745,14 +745,14 @@ end
     geom2_ = setPrecision(geom1_, 5.0)
     @test equals(geom2_, readgeom(
         "MULTIPOLYGON (((10 10, 15 15, 20 10, 10 10)), ((15 15, 10 20, 20 20, 15 15)))"))
-    geom3_ = setPrecision(geom1_, 5.0, flags = LibGEOS.GEOS_PREC_NO_TOPO)
+    geom3_ = setPrecision(geom1_, 5.0; flags = 1)
     @test equals(geom3_, readgeom(
         "POLYGON ((10 10, 20 10, 15 15, 20 20, 10 20, 15 15, 10 10))"))
 
     geom1_ = readgeom("LINESTRING(1 0, 2 0)")
     geom2_ = setPrecision(geom1_, 5.0)
     @test equals(geom2_, readgeom("LINESTRING EMPTY"))
-    geom3_ = setPrecision(geom1_, 5.0, flags = LibGEOS.GEOS_PREC_KEEP_COLLAPSED)
+    geom3_ = setPrecision(geom1_, 5.0, flags = 2)
     # @test equals(geom3_, readgeom("LINESTRING (0 0, 0 0)")) # false ??
     @test writegeom(geom3_) == "LINESTRING (0 0, 0 0)"
 
