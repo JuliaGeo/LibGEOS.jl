@@ -1196,7 +1196,7 @@ That same precision will be attached to the operation outputs.
   * `LibGEOS.GEOS_PREC_KEEP_COLLAPSED` retain collapsed elements
   * `LibGEOS.GEOS_PREC_NO_TOPO` do not attempt at preserving the topology
 """
-function setPrecision(geom::GEOSGeom, gridSize::Real, flags::GEOSPrecisionRules, context::GEOSContext = _context)
+function setPrecision(geom::GEOSGeom, gridSize::Real, flags::Int, context::GEOSContext = _context)
     result = geomFromGEOS(GEOSGeom_setPrecision_r(context.ptr, geom, gridSize, flags))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_setPrecision_r")
