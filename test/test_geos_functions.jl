@@ -755,6 +755,11 @@ end
     geom3_ = setPrecision(geom1_, 5.0; flags = 2)
     @test writegeom(geom3_) == "LINESTRING (0 0, 0 0)"
 
+    @test writegeom(setPrecision(geom1_, 5.0; flags = LibGEOS.GEOS_PREC_VALID_OUTPUT)) == writegeom(setPrecision(geom1_, 5.0; flags = 0))
+    @test writegeom(setPrecision(geom1_, 5.0; flags = LibGEOS.GEOS_PREC_NO_TOPO)) == writegeom(setPrecision(geom1_, 5.0; flags = 1))
+    @test writegeom(setPrecision(geom1_, 5.0; flags = LibGEOS.GEOS_PREC_KEEP_COLLAPSED)) == writegeom(setPrecision(geom1_, 5.0; flags = 2))
+    @test_throws ErrorException setPrecision(geom1_, 5.0; flags = 3)
+
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
