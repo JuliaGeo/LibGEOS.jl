@@ -1182,24 +1182,33 @@ function getPrecision(geom::GEOSGeom, context::GEOSContext = _context)
 end
 
 """
-    setPrecision(geom, gridSize; flags = 0)
+    setPrecision(geom, gridSize; flags = GEOS_PREC_VALID_OUTPUT)
 
-Set the geometry's precision, optionally rounding all its coordinates to the
-precision grid (if it changes).
+Change the rounding precision on a geometry. This will affect the precision of the existing geometry as well as any geometries derived from this geometry using overlay functions. The output will be a valid GEOSGeometry.
 
-Note that operations will always be performed in the precision
-of the geometry with higher precision (smaller `gridSize`).
-That same precision will be attached to the operation outputs.
+Note that operations will always be performed in the precision of the geometry with higher precision (smaller "gridSize"). That same precision will be attached to the operation outputs.
 
-* `gridSize` size of the precision grid, or 0 for FLOATING precision.
-* `flags` The bitwise OR of one of more of the "precision options"
-  * `LibGEOS.GEOS_PREC_KEEP_COLLAPSED` retain collapsed elements
-  * `LibGEOS.GEOS_PREC_NO_TOPO` do not attempt at preserving the topology
+In the Default and `GEOS_PREC_KEEP_COLLAPSED` modes invalid input may cause an error to occur, unless the invalidity is below the scale of the requested precision
+
+There are only 3 modes. The `GEOS_PREC_NO_TOPO` mode takes precedence over `GEOS_PREC_KEEP_COLLAPSED`. So the combination `GEOS_PREC_NO_TOPO || GEOS_PREC_KEEP_COLLAPSED` has the same semantics as `GEOS_PREC_NO_TOPO`
+
+# Parameters
+* `g`	Input geometry
+* `gridSize`	cell size of grid to round coordinates to, or 0 for FLOATING precision
+* `flags`	The bitwise OR of members of the `GEOSPrecisionRules` enum
+
+# Returns
+The precision reduced result. Caller must free with `GEOSGeom_destroy()` NULL on exception.
+
 """
-function setPrecision(geom::GEOSGeom, gridSize::Real, flags::Int, context::GEOSContext = _context)
+function setPrecision(geom::GEOSGeom, gridSize::Real, flags::GEOSPrecisionRules, context::GEOSContext = _context)
     result = geomFromGEOS(GEOSGeom_setPrecision_r(context.ptr, geom, gridSize, flags))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_setPrecision_r")
     end
     result
+end
+@eval function setPrecision(geom::GEOSGeom, gridSize::Real, flags::Int, context::GEOSContext = _context)
+    !(flags in $(Int.(instances(GEOSPrecisionRules)))) && error("flags value should be in $(Int.(instances(GEOSPrecisionRules))) or use GEOSPrecisionRules enum members")
+    return setPrecision(geom, gridSize, GEOSPrecisionRules(flags), context)
 end

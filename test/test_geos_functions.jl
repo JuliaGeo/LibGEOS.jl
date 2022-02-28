@@ -753,7 +753,6 @@ end
     geom2_ = setPrecision(geom1_, 5.0)
     @test equals(geom2_, readgeom("LINESTRING EMPTY"))
     geom3_ = setPrecision(geom1_, 5.0; flags = 2)
-    # @test equals(geom3_, readgeom("LINESTRING (0 0, 0 0)")) # false ??
     @test writegeom(geom3_) == "LINESTRING (0 0, 0 0)"
 
     LibGEOS.destroyGeom(geom1_)
