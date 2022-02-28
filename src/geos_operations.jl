@@ -305,8 +305,8 @@ end
 
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
     @eval getPrecision(obj::$geom, context::GEOSContext = _context) = getPrecision(obj.ptr, context)
-    @eval setPrecision(obj::$geom, grid::Real; flags::Int = 0, context::GEOSContext = _context) = setPrecision(obj.ptr, grid::Real, flags::Int, context)
-    # @eval setPrecision(obj::$geom, grid::Real; flags::GEOSPrecisionRules = GEOS_PREC_VALID_OUTPUT, context::GEOSContext = _context) = setPrecision(obj.ptr, grid::Real, flags::GEOSPrecisionRules, context)
+    @eval setPrecision(obj::$geom, grid::Real; flags = 0, context::GEOSContext = _context) = setPrecision(obj.ptr, grid::Real, flags, context)
+    @eval setPrecision(obj::$geom, grid::Real; flags = GEOS_PREC_VALID_OUTPUT, context::GEOSContext = _context) = setPrecision(obj.ptr, grid::Real, flags, context)
 end
 
 # ----
