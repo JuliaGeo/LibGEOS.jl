@@ -6,3 +6,4 @@ deps/usr
 deps/build.log
 /Manifest.toml
 .vscode
+lcov.info

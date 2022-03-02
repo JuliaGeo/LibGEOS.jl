@@ -305,7 +305,6 @@ end
 
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
     @eval getPrecision(obj::$geom, context::GEOSContext = _context) = getPrecision(obj.ptr, context)
-    @eval setPrecision(obj::$geom, grid::Real; flags = 0, context::GEOSContext = _context) = setPrecision(obj.ptr, grid::Real, flags, context)
     @eval setPrecision(obj::$geom, grid::Real; flags = GEOS_PREC_VALID_OUTPUT, context::GEOSContext = _context) = setPrecision(obj.ptr, grid::Real, flags, context)
 end
 
@@ -314,10 +313,10 @@ end
 # ----
 
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
-    @eval xmin(obj::$geom, context::GEOSContext = _context) = getXMin(obj.ptr, context)
-    @eval ymin(obj::$geom, context::GEOSContext = _context) = getYMin(obj.ptr, context)
-    @eval xmax(obj::$geom, context::GEOSContext = _context) = getXMax(obj.ptr, context)
-    @eval ymax(obj::$geom, context::GEOSContext = _context) = getYMax(obj.ptr, context)
+    @eval getXMin(obj::$geom, context::GEOSContext = _context) = getXMin(obj.ptr, context)
+    @eval getYMin(obj::$geom, context::GEOSContext = _context) = getYMin(obj.ptr, context)
+    @eval getXMax(obj::$geom, context::GEOSContext = _context) = getXMax(obj.ptr, context)
+    @eval getYMax(obj::$geom, context::GEOSContext = _context) = getYMax(obj.ptr, context)
     # TODO 02/2022: wait for libgeos release beyond 3.10.2 which will in include GEOSGeom_getExtent_r
     # @eval extent(obj::$geom, context::GEOSContext = _context) = getExtent(obj.ptr, context)
 end
