@@ -245,6 +245,14 @@ end
     @test !isClosed(readgeom("LINESTRING(0 0, 1 0, 1 1)"))
     @test isClosed(readgeom("LINESTRING(0 0, 0 1, 1 1, 0 0)"))
 
+    # -----
+    # Geometry info
+    # -----
+
+    # numGeometries
+    @test numGeometries(readgeom("POINT(2 2)")) == 1
+    # TODO: extend to other geometries
+
     # Buffer should return Polygon or MultiPolygon
     @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 0.1) isa LibGEOS.MultiPolygon
     @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 10) isa LibGEOS.Polygon
