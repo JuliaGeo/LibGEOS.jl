@@ -319,8 +319,8 @@ end
 
 Finds the minimum X value in the geometry
 """
-@generated function getYMin(geom::T, context::GEOSContext = _context) where {T<:UNION_ALL_GEOMTYPES}
-    return :(getYMin(geom.ptr, context))
+@generated function getXMin(geom::T, context::GEOSContext = _context) where {T<:UNION_ALL_GEOMTYPES}
+    return :(getXMin(geom.ptr, context))
 end
 
 """
