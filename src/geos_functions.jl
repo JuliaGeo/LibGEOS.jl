@@ -926,13 +926,28 @@ end
 # it must NOT be destroyed directly.
 # Up to GEOS 3.2.0 the input geometry must be a Collection, in
 # later version it doesn't matter (i.e. getGeometryN(0) for a single will return the input).
+"""
+    getGeometry(geom, n)
+
+Returns a copy of the specified sub-geometry of a collection.
+Numbering in one-based
+For a simple geometry, returns a copy of the input.
+"""
 function getGeometry(ptr::GEOSGeom, n::Integer, context::GEOSContext = _context)
+    n in 1:numGeometries(ptr, context) || error("GEOSGetGeometryN: $(numGeometries(ptr, context)) sub-geometries in geom, therefore n should be in 1:$(numGeometries(ptr, context))")
     result = GEOSGetGeometryN_r(context.ptr, ptr, n-1)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetGeometryN")
     end
     cloneGeom(result, context)
 end
+
+"""
+    getGeometries(geom)
+
+Returns a vector of copy of the sub-geometries of a collection.
+For a simple geometry, returns the geometry in a vector of length one.
+"""
 getGeometries(ptr::GEOSGeom, context::GEOSContext = _context) =
     GEOSGeom[getGeometry(ptr, i, context) for i=1:numGeometries(ptr, context)]
 

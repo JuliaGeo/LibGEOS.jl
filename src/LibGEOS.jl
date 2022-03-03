@@ -16,7 +16,8 @@ module LibGEOS
             prepdisjoint, prepintersects, prepoverlaps, preptouches, prepwithin,
             isEmpty, isSimple, isRing, hasZ, isClosed, isValid, interiorRings, exteriorRing, numGeometries,
             numPoints, startPoint, endPoint, area, geomLength, distance, hausdorffdistance, nearestPoints,
-            getPrecision, setPrecision, getXMin, getYMin, getXMax, getYMax, minimumRotatedRectangle
+            getPrecision, setPrecision, getXMin, getYMin, getXMax, getYMax, minimumRotatedRectangle,
+            getGeometry, getGeometries
 
     if VERSION >= v"1.5.0-DEV.639"
         import Base: contains
