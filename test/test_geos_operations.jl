@@ -293,4 +293,33 @@ end
         @test (@test_throws ErrorException LibGEOS.getYMin(g) == 0).value.msg == "LibGEOS: Error in GEOSGeom_getYMin_r"
         @test (@test_throws ErrorException LibGEOS.getYMax(g) == 0).value.msg == "LibGEOS: Error in GEOSGeom_getYMax_r"
     end
+
+    @testset "getGeometry/getGeometries" begin
+        @test writegeom(getGeometry(readgeom("POLYGON EMPTY"), 1)) == "POLYGON EMPTY"
+        @test writegeom.(getGeometries(readgeom("POLYGON EMPTY"))) == ["POLYGON EMPTY"]
+        
+        multipoint = readgeom("MULTIPOINT (4 5, 6 7, 4 5, 6 5, 9 10)")
+        @test writegeom(getGeometry(multipoint, 1)) == "POINT (4 5)"
+        @test writegeom(getGeometry(multipoint, 2)) == "POINT (6 7)"
+        @test writegeom(getGeometry(multipoint, 5)) == "POINT (9 10)"
+        @test (@test_throws ErrorException getGeometry(multipoint, 7)).value.msg == "GEOSGetGeometryN: 5 sub-geometries in geom, therefore n should be in 1:5"
+        @test writegeom.(getGeometries(multipoint)) == ["POINT (4 5)", "POINT (6 7)", "POINT (4 5)", "POINT (6 5)", "POINT (9 10)"]
+        
+        multilinestring = readgeom("MULTILINESTRING((5 7, 12 7), (4 5, 6 5), (5.5 7.5, 6.5 7.5))")
+        @test writegeom(getGeometry(multilinestring, 1)) == "LINESTRING (5 7, 12 7)"
+        @test writegeom(getGeometry(multilinestring, 2)) == "LINESTRING (4 5, 6 5)"
+        @test writegeom(getGeometry(multilinestring, 3)) == "LINESTRING (5.5 7.5, 6.5 7.5)"
+        @test writegeom.(getGeometries(multilinestring)) == ["LINESTRING (5 7, 12 7)", "LINESTRING (4 5, 6 5)", "LINESTRING (5.5 7.5, 6.5 7.5)"]
+
+        multipolygon = readgeom("MULTIPOLYGON (((40 40, 20 45, 45 30, 40 40)), ((20 35, 10 30, 10 10, 30 5, 45 20, 20 35), (30 20, 20 15, 20 25, 30 20)))")
+        @test writegeom(getGeometry(multipolygon, 1)) == "POLYGON ((40 40, 20 45, 45 30, 40 40))"
+        @test writegeom(getGeometry(multipolygon, 2)) == "POLYGON ((20 35, 10 30, 10 10, 30 5, 45 20, 20 35), (30 20, 20 15, 20 25, 30 20))"
+        @test writegeom.(getGeometries(multipolygon)) == ["POLYGON ((40 40, 20 45, 45 30, 40 40))", "POLYGON ((20 35, 10 30, 10 10, 30 5, 45 20, 20 35), (30 20, 20 15, 20 25, 30 20))"]
+
+        geomcollection = readgeom("GEOMETRYCOLLECTION (POINT (40 10), LINESTRING (10 10, 20 20, 10 40), POLYGON ((40 40, 20 45, 45 30, 40 40)))")
+        @test writegeom(getGeometry(geomcollection, 1)) == "POINT (40 10)"
+        @test writegeom(getGeometry(geomcollection, 2)) == "LINESTRING (10 10, 20 20, 10 40)"
+        @test writegeom(getGeometry(geomcollection, 3)) == "POLYGON ((40 40, 20 45, 45 30, 40 40))"
+        @test writegeom.(getGeometries(geomcollection)) == ["POINT (40 10)", "LINESTRING (10 10, 20 20, 10 40)", "POLYGON ((40 40, 20 45, 45 30, 40 40))"]
+    end
 end

@@ -224,6 +224,11 @@ end
 #     result
 # end
 # getGeometries(ptr::GEOSGeom) = GEOSGeom[getGeometry(ptr, i) for i=1:numGeometries(ptr)]
+# Gets sub-geomtry at index n or a vector of all sub-geometries
+for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
+    @eval getGeometry(obj::$geom, n::Integer, context::GEOSContext = _context) = geomFromGEOS(getGeometry(obj.ptr, n, context))
+    @eval getGeometries(obj::$geom, context::GEOSContext = _context) = geomFromGEOS.(getGeometries(obj.ptr, context))
+end
 
 # Converts Geometry to normal form (or canonical form).
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
