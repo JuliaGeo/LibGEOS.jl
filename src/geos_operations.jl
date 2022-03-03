@@ -215,18 +215,7 @@ sub-geometries are **themselves** also collections.
 @generated function numGeometries(
     geom::T,
     context::GEOSContext = _context,
-) where {
-    T<:Union{
-        Point,
-        MultiPoint,
-        LineString,
-        MultiLineString,
-        LinearRing,
-        Polygon,
-        MultiPolygon,
-        GeometryCollection,
-    },
-}
+) where {T<:UNION_ALL_GEOMTYPES}
     return :(numGeometries(geom.ptr, context))
 end
 
