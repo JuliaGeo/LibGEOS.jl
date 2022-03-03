@@ -245,6 +245,24 @@ end
     @test !isClosed(readgeom("LINESTRING(0 0, 1 0, 1 1)"))
     @test isClosed(readgeom("LINESTRING(0 0, 0 1, 1 1, 0 0)"))
 
+    # -----
+    # Geometry info
+    # -----
+
+    @testset "numGeometries" begin
+        @test numGeometries(readgeom("POINT(2 2)")) == 1
+        @test numGeometries(readgeom("MULTIPOINT(0 0, 5 0, 10 0)")) == 3
+        @test numGeometries(readgeom("LINESTRING(0 0, 0 1, 1 1, 0 0)")) == 1
+        @test numGeometries(readgeom("MULTILINESTRING ((5 5, 10 0, 10 10, 5 5), (0 10, 5 5), (0 0, 5 5))")) == 3
+        @test numGeometries(readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")) == 1
+        # Polygon with a hole
+        @test numGeometries(readgeom("POLYGON ((35 10, 45 45, 15 40, 10 20, 35 10),(20 30, 35 35, 30 20, 20 30))")) == 1
+        @test numGeometries(readgeom("MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))")) == 2
+        # MultiPolygon with holes
+        @test numGeometries(readgeom("MULTIPOLYGON (((40 40, 20 45, 45 30, 40 40)),((20 35, 10 30, 10 10, 30 5, 45 20, 20 35),(30 20, 20 15, 20 25, 30 20)))")) == 2
+        @test numGeometries(readgeom("GEOMETRYCOLLECTION (POINT (40 10), LINESTRING (10 10, 20 20, 10 40), POLYGON ((40 40, 20 45, 45 30, 40 40)))")) == 3
+    end
+
     # Buffer should return Polygon or MultiPolygon
     @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 0.1) isa LibGEOS.MultiPolygon
     @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 10) isa LibGEOS.Polygon
