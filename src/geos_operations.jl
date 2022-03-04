@@ -314,40 +314,11 @@ end
 #  Geometry information functions
 # ----
 
-"""
-    getXMin(geom, context=_context)
-
-Finds the minimum X value in the geometry
-"""
-@generated function getXMin(geom::T, context::GEOSContext = _context) where {T<:UNION_ALL_GEOMTYPES}
-    return :(getXMin(geom.ptr, context))
-end
-
-"""
-    getYMin(geom, context=_context)
-
-Finds the minimum Y value in the geometry
-"""
-@generated function getYMin(geom::T, context::GEOSContext = _context) where {T<:UNION_ALL_GEOMTYPES}
-    return :(getYMin(geom.ptr, context))
-end
-
-"""
-    getXMax(geom, context=_context)
-
-Finds the maximum X value in the geometry
-"""
-@generated function getXMax(geom::T, context::GEOSContext = _context) where {T<:UNION_ALL_GEOMTYPES}
-    return :(getXMax(geom.ptr, context))
-end
-
-"""
-    getYMax(geom, context=_context)
-
-Finds the maximum Y value in the geometry
-"""
-@generated function getYMax(geom::T, context::GEOSContext = _context) where {T<:UNION_ALL_GEOMTYPES}
-    return :(getYMax(geom.ptr, context))
+for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
+    @eval getXMin(obj::$geom, context::GEOSContext = _context) = getXMin(obj.ptr, context)
+    @eval getYMin(obj::$geom, context::GEOSContext = _context) = getYMin(obj.ptr, context)
+    @eval getXMax(obj::$geom, context::GEOSContext = _context) = getXMax(obj.ptr, context)
+    @eval getYMax(obj::$geom, context::GEOSContext = _context) = getYMax(obj.ptr, context)
 end
 
 # TODO 02/2022: wait for libgeos release beyond 3.10.2 which will in include GEOSGeom_getExtent_r
