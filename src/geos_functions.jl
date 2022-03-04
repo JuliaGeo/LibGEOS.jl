@@ -1031,7 +1031,11 @@ getGeomDimensions(ptr::GEOSGeom, context::GEOSContext = _context) =
 getCoordinateDimension(ptr::GEOSGeom, context::GEOSContext = _context) =
     GEOSGeom_getCoordinateDimension_r(context.ptr, ptr)
 
-# Finds the minimum X value in the geometry
+"""
+    getXMin(geom, context=_context)
+
+Finds the minimum X value in the geometry
+"""
 function getXMin(ptr::GEOSGeom, context::GEOSContext = _context)
     out = Ref{Float64}()
     result = GEOSGeom_getXMin_r(context.ptr, ptr, out)
@@ -1041,7 +1045,11 @@ function getXMin(ptr::GEOSGeom, context::GEOSContext = _context)
     return out[]
 end
 
-# Finds the minimum Y value in the geometry
+"""
+    getYMin(geom, context=_context)
+
+Finds the minimum Y value in the geometry
+"""
 function getYMin(ptr::GEOSGeom, context::GEOSContext = _context)
     out = Ref{Float64}()
     result = GEOSGeom_getYMin_r(context.ptr, ptr, out)
@@ -1051,7 +1059,11 @@ function getYMin(ptr::GEOSGeom, context::GEOSContext = _context)
     return out[]
 end
 
-# Finds the maximum X value in the geometry
+"""
+    getXMax(geom, context=_context)
+
+Finds the maximum X value in the geometry
+"""
 function getXMax(ptr::GEOSGeom, context::GEOSContext = _context)
     out = Ref{Float64}()
     result = GEOSGeom_getXMax_r(context.ptr, ptr, out)
@@ -1061,7 +1073,11 @@ function getXMax(ptr::GEOSGeom, context::GEOSContext = _context)
     return out[]
 end
 
-# Finds the maximum Y value in the geometry
+"""
+    getYMax(geom, context=_context)
+
+Finds the maximum Y value in the geometry
+"""
 function getYMax(ptr::GEOSGeom, context::GEOSContext = _context)
     out = Ref{Float64}()
     result = GEOSGeom_getYMax_r(context.ptr, ptr, out)
