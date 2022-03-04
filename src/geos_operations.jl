@@ -204,19 +204,9 @@ isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
 # # Geometry info
 # # -----
 
-"""
-    numGeometries(geom, context=_context)
-
-Returns the number of sub-geometries immediately under a
-multi-geometry or collection or 1 for a simple geometry.
-For nested collections, remember to check if returned
-sub-geometries are **themselves** also collections.
-"""
-@generated function numGeometries(
-    geom::T,
-    context::GEOSContext = _context,
-) where {T<:UNION_ALL_GEOMTYPES}
-    return :(numGeometries(geom.ptr, context))
+# Gets the number of sub-geometries 
+for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
+    @eval numGeometries(obj::$geom, context::GEOSContext = _context) = numGeometries(obj.ptr, context)
 end
 
 # # Call only on GEOMETRYCOLLECTION or MULTI*

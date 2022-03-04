@@ -904,6 +904,14 @@ setSRID(ptr::GEOSGeom, context::GEOSContext = _context) =
 # GeometryCollections or Multi* geometries here, and are likely to crash
 # when fed simple geometries, so beware if you need compatibility with
 # old GEOS versions.
+"""
+    numGeometries(geom, context=_context)
+
+Returns the number of sub-geometries immediately under a
+multi-geometry or collection or 1 for a simple geometry.
+For nested collections, remember to check if returned
+sub-geometries are **themselves** also collections.
+"""
 function numGeometries(ptr::GEOSGeom, context::GEOSContext = _context)
     result = GEOSGetNumGeometries_r(context.ptr, ptr)
     if result == -1
