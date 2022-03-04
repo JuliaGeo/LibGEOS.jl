@@ -261,4 +261,18 @@ end
     g1 = bufferWithStyle(readgeom("POLYGON((-1 -1,1 -1,1 1,-1 1,-1 -1))"), 0.2, joinStyle=LibGEOS.GEOSBUF_JOIN_MITRE)
     g2 = readgeom("POLYGON((-1.2 1.2,1.2 1.2,1.2 -1.2,-1.2 -1.2,-1.2 1.2))")
     @test equals(g1, g2)
+
+    @testset "getXMin et al." begin
+        # taken from https://github.com/libgeos/geos/blob/main/tests/unit/capi/GEOSGeom_extentTest.cpp
+        g = readgeom(("LINESTRING (3 8, -12 -4)"))
+        @test LibGEOS.getXMin(g) == -12
+        @test LibGEOS.getXMax(g) == 3
+        @test LibGEOS.getYMin(g) == -4
+        @test LibGEOS.getYMax(g) == 8
+        g = readgeom("POLYGON EMPTY")
+        @test (@test_throws ErrorException LibGEOS.getXMin(g) == 0).value.msg == "LibGEOS: Error in GEOSGeom_getXMin_r"
+        @test (@test_throws ErrorException LibGEOS.getXMax(g) == 0).value.msg == "LibGEOS: Error in GEOSGeom_getXMax_r"
+        @test (@test_throws ErrorException LibGEOS.getYMin(g) == 0).value.msg == "LibGEOS: Error in GEOSGeom_getYMin_r"
+        @test (@test_throws ErrorException LibGEOS.getYMax(g) == 0).value.msg == "LibGEOS: Error in GEOSGeom_getYMax_r"
+    end
 end
