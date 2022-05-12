@@ -41,7 +41,7 @@ cd(@__DIR__)
 include_dir = joinpath(GEOS_jll.artifact_dir, "include") |> normpath
 
 # wrapper generator options
-options = load_options(joinpath(@__DIR__, "generate.toml"))
+options = load_options(joinpath(@__DIR__, "generator.toml"))
 
 args = get_default_args()
 push!(args, "-I$include_dir")
