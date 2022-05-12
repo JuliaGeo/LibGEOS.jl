@@ -1,4 +1,5 @@
-GEOMTYPE = Dict( GEOS_POINT => :Point,
+const GEOMTYPE = Dict{GEOSGeomTypes, Symbol}(
+                 GEOS_POINT => :Point,
                  GEOS_LINESTRING => :LineString,
                  GEOS_LINEARRING => :LinearRing,
                  GEOS_POLYGON => :Polygon,
@@ -7,7 +8,7 @@ GEOMTYPE = Dict( GEOS_POINT => :Point,
                  GEOS_MULTIPOLYGON => :MultiPolygon,
                  GEOS_GEOMETRYCOLLECTION => :GeometryCollection)
 
-UNION_ALL_GEOMTYPES = Union{Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection}
+const Geometry = Union{Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection}
 
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
     @eval writegeom(obj::$geom, wktwriter::WKTWriter, context::GEOSContext = _context) = _writegeom(obj.ptr, wktwriter, context)
