@@ -1231,11 +1231,15 @@ function GEOSRelatePattern_r(handle, g1, g2, pat)
 end
 
 function GEOSRelate_r(handle, g1, g2)
-    @ccall libgeos.GEOSRelate_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cstring
+    unsafe_string(
+        @ccall(
+            libgeos.GEOSRelate_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cstring
+        )
+    )
 end
 
 function GEOSRelatePatternMatch_r(handle, mat, pat)
@@ -1247,12 +1251,16 @@ function GEOSRelatePatternMatch_r(handle, mat, pat)
 end
 
 function GEOSRelateBoundaryNodeRule_r(handle, g1, g2, bnr)
-    @ccall libgeos.GEOSRelateBoundaryNodeRule_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        bnr::Cint,
-    )::Cstring
+    unsafe_string(
+        @ccall(
+            libgeos.GEOSRelateBoundaryNodeRule_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                bnr::Cint,
+            )::Cstring
+        )
+    )
 end
 
 @cenum GEOSValidFlags::UInt32 begin
@@ -1264,10 +1272,14 @@ function GEOSisValid_r(handle, g)
 end
 
 function GEOSisValidReason_r(handle, g)
-    @ccall libgeos.GEOSisValidReason_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Cstring
+    unsafe_string(
+        @ccall(
+            libgeos.GEOSisValidReason_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cstring
+        )
+    )
 end
 
 function GEOSisValidDetail_r(handle, g, flags, reason, location)
@@ -1330,10 +1342,14 @@ function GEOSMakeValidWithParams_r(handle, g, makeValidParams)
 end
 
 function GEOSGeomType_r(handle, g)
-    @ccall libgeos.GEOSGeomType_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Cstring
+    unsafe_string(
+        @ccall(
+            libgeos.GEOSGeomType_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cstring
+        )
+    )
 end
 
 function GEOSGeomTypeId_r(handle, g)
@@ -1707,11 +1723,15 @@ function GEOSWKTWriter_destroy_r(handle, writer)
 end
 
 function GEOSWKTWriter_write_r(handle, writer, g)
-    @ccall libgeos.GEOSWKTWriter_write_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKTWriter},
-        g::Ptr{GEOSGeometry},
-    )::Cstring
+    unsafe_string(
+        @ccall(
+            libgeos.GEOSWKTWriter_write_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKTWriter},
+                g::Ptr{GEOSGeometry},
+            )::Cstring
+        )
+    )
 end
 
 function GEOSWKTWriter_setTrim_r(handle, writer, trim)
@@ -1906,12 +1926,16 @@ function GEOSGeoJSONWriter_destroy_r(handle, writer)
 end
 
 function GEOSGeoJSONWriter_writeGeometry_r(handle, writer, g, indent)
-    @ccall libgeos.GEOSGeoJSONWriter_writeGeometry_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSGeoJSONWriter},
-        g::Ptr{GEOSGeometry},
-        indent::Cint,
-    )::Cstring
+    unsafe_string(
+        @ccall(
+            libgeos.GEOSGeoJSONWriter_writeGeometry_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSGeoJSONWriter},
+                g::Ptr{GEOSGeometry},
+                indent::Cint,
+            )::Cstring
+        )
+    )
 end
 
 function GEOSFree_r(handle, buffer)
@@ -1919,7 +1943,7 @@ function GEOSFree_r(handle, buffer)
 end
 
 function GEOSversion()
-    @ccall libgeos.GEOSversion()::Cstring
+    unsafe_string(@ccall(libgeos.GEOSversion()::Cstring))
 end
 
 function initGEOS(notice_function, error_function)
@@ -2758,7 +2782,9 @@ function GEOSRelatePattern(g1, g2, pat)
 end
 
 function GEOSRelate(g1, g2)
-    @ccall libgeos.GEOSRelate(g1::Ptr{GEOSGeometry}, g2::Ptr{GEOSGeometry})::Cstring
+    unsafe_string(
+        @ccall(libgeos.GEOSRelate(g1::Ptr{GEOSGeometry}, g2::Ptr{GEOSGeometry})::Cstring)
+    )
 end
 
 function GEOSRelatePatternMatch(mat, pat)
@@ -2766,11 +2792,15 @@ function GEOSRelatePatternMatch(mat, pat)
 end
 
 function GEOSRelateBoundaryNodeRule(g1, g2, bnr)
-    @ccall libgeos.GEOSRelateBoundaryNodeRule(
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        bnr::Cint,
-    )::Cstring
+    unsafe_string(
+        @ccall(
+            libgeos.GEOSRelateBoundaryNodeRule(
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                bnr::Cint,
+            )::Cstring
+        )
+    )
 end
 
 function GEOSisValid(g)
@@ -2778,7 +2808,7 @@ function GEOSisValid(g)
 end
 
 function GEOSisValidReason(g)
-    @ccall libgeos.GEOSisValidReason(g::Ptr{GEOSGeometry})::Cstring
+    unsafe_string(@ccall(libgeos.GEOSisValidReason(g::Ptr{GEOSGeometry})::Cstring))
 end
 
 function GEOSisValidDetail(g, flags, reason, location)
@@ -2824,7 +2854,7 @@ function GEOSMakeValidParams_setKeepCollapsed(p, keepCollapsed)
 end
 
 function GEOSGeomType(g)
-    @ccall libgeos.GEOSGeomType(g::Ptr{GEOSGeometry})::Cstring
+    unsafe_string(@ccall(libgeos.GEOSGeomType(g::Ptr{GEOSGeometry})::Cstring))
 end
 
 function GEOSGeomTypeId(g)
@@ -3055,10 +3085,14 @@ function GEOSWKTWriter_destroy(writer)
 end
 
 function GEOSWKTWriter_write(writer, g)
-    @ccall libgeos.GEOSWKTWriter_write(
-        writer::Ptr{GEOSWKTWriter},
-        g::Ptr{GEOSGeometry},
-    )::Cstring
+    unsafe_string(
+        @ccall(
+            libgeos.GEOSWKTWriter_write(
+                writer::Ptr{GEOSWKTWriter},
+                g::Ptr{GEOSGeometry},
+            )::Cstring
+        )
+    )
 end
 
 function GEOSWKTWriter_setTrim(writer, trim)
@@ -3204,11 +3238,15 @@ function GEOSGeoJSONWriter_destroy(writer)
 end
 
 function GEOSGeoJSONWriter_writeGeometry(writer, g, indent)
-    @ccall libgeos.GEOSGeoJSONWriter_writeGeometry(
-        writer::Ptr{GEOSGeoJSONWriter},
-        g::Ptr{GEOSGeometry},
-        indent::Cint,
-    )::Cstring
+    unsafe_string(
+        @ccall(
+            libgeos.GEOSGeoJSONWriter_writeGeometry(
+                writer::Ptr{GEOSGeoJSONWriter},
+                g::Ptr{GEOSGeometry},
+                indent::Cint,
+            )::Cstring
+        )
+    )
 end
 
 function GEOSSingleSidedBuffer(g, width, quadsegs, joinStyle, mitreLimit, leftSide)
@@ -3261,10 +3299,14 @@ function GEOSGeomFromWKT_r(handle, wkt)
 end
 
 function GEOSGeomToWKT_r(handle, g)
-    @ccall libgeos.GEOSGeomToWKT_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Cstring
+    unsafe_string(
+        @ccall(
+            libgeos.GEOSGeomToWKT_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cstring
+        )
+    )
 end
 
 function GEOS_getWKBOutputDims_r(handle)
@@ -3323,7 +3365,7 @@ function GEOSGeomFromWKT(wkt)
 end
 
 function GEOSGeomToWKT(g)
-    @ccall libgeos.GEOSGeomToWKT(g::Ptr{GEOSGeometry})::Cstring
+    unsafe_string(@ccall(libgeos.GEOSGeomToWKT(g::Ptr{GEOSGeometry})::Cstring))
 end
 
 function GEOS_getWKBOutputDims()
