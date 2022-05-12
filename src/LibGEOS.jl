@@ -19,12 +19,6 @@ module LibGEOS
             getPrecision, setPrecision, getXMin, getYMin, getXMax, getYMax, minimumRotatedRectangle,
             getGeometry, getGeometries
 
-    if VERSION >= v"1.5.0-DEV.639"
-        import Base: contains
-    else
-        export contains
-    end
-
     include("libgeos_api.jl")
 
     mutable struct GEOSError <: Exception
