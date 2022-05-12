@@ -1,4 +1,5 @@
-GEOMTYPE = Dict( GEOS_POINT => :Point,
+const GEOMTYPE = Dict{GEOSGeomTypes, Symbol}(
+                 GEOS_POINT => :Point,
                  GEOS_LINESTRING => :LineString,
                  GEOS_LINEARRING => :LinearRing,
                  GEOS_POLYGON => :Polygon,
@@ -7,7 +8,7 @@ GEOMTYPE = Dict( GEOS_POINT => :Point,
                  GEOS_MULTIPOLYGON => :MultiPolygon,
                  GEOS_GEOMETRYCOLLECTION => :GeometryCollection)
 
-UNION_ALL_GEOMTYPES = Union{Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection}
+const Geometry = Union{Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection}
 
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
     @eval writegeom(obj::$geom, wktwriter::WKTWriter, context::GEOSContext = _context) = _writegeom(obj.ptr, wktwriter, context)
@@ -204,18 +205,10 @@ isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
 # # Geometry info
 # # -----
 
-# # May be called on all geometries in GEOS 3.x, returns -1 on error and 1
-# # for non-multi geometries. Older GEOS versions only accept
-# # GeometryCollections or Multi* geometries here, and are likely to crash
-# # when fed simple geometries, so beware if you need compatibility with
-# # old GEOS versions.
-# function numGeometries(ptr::GEOSGeom)
-#     result = GEOSGetNumGeometries(ptr)
-#     if result == -1
-#         error("LibGEOS: Error in GEOSGeomTypeId")
-#     end
-#     result
-# end
+# Gets the number of sub-geometries 
+for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
+    @eval numGeometries(obj::$geom, context::GEOSContext = _context) = numGeometries(obj.ptr, context)
+end
 
 # # Call only on GEOMETRYCOLLECTION or MULTI*
 # # (Return a pointer to the internal Geometry. Return NULL on exception.)

@@ -14,7 +14,7 @@ module LibGEOS
             disjoint, touches, intersects, crosses, within, overlaps, equals, equalsexact, covers, coveredby,
             prepareGeom, prepcontains, prepcontainsproperly, prepcoveredby, prepcovers, prepcrosses,
             prepdisjoint, prepintersects, prepoverlaps, preptouches, prepwithin,
-            isEmpty, isSimple, isRing, hasZ, isClosed, isValid, interiorRings, exteriorRing,
+            isEmpty, isSimple, isRing, hasZ, isClosed, isValid, interiorRings, exteriorRing, numGeometries,
             numPoints, startPoint, endPoint, area, geomLength, distance, hausdorffdistance, nearestPoints,
             getPrecision, setPrecision, getXMin, getYMin, getXMax, getYMax, minimumRotatedRectangle
 
