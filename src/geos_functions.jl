@@ -633,7 +633,7 @@ function within(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result != 0x00
 end
 
-function contains(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function Base.contains(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result = GEOSContains_r(context.ptr, g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSContains")

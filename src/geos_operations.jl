@@ -125,7 +125,7 @@ for g1 in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Pol
         @eval intersects(obj1::$g1, obj2::$g2) = intersects(obj1.ptr, obj2.ptr)
         @eval crosses(obj1::$g1, obj2::$g2) = crosses(obj1.ptr, obj2.ptr)
         @eval within(obj1::$g1, obj2::$g2) = within(obj1.ptr, obj2.ptr)
-        @eval contains(obj1::$g1, obj2::$g2) = contains(obj1.ptr, obj2.ptr)
+        @eval Base.contains(obj1::$g1, obj2::$g2) = Base.contains(obj1.ptr, obj2.ptr)
         @eval overlaps(obj1::$g1, obj2::$g2) = overlaps(obj1.ptr, obj2.ptr)
         @eval equals(obj1::$g1, obj2::$g2) = equals(obj1.ptr, obj2.ptr)
         @eval equalsexact(obj1::$g1, obj2::$g2, tol::Real) = equalsexact(obj1.ptr, obj2.ptr, tol)
@@ -140,7 +140,7 @@ end
 
 for geom in (:Point, :MultiPoint, :LineString, :MultiLineString, :LinearRing, :Polygon, :MultiPolygon, :GeometryCollection)
     @eval prepareGeom(obj::$geom, context::GEOSContext = _context) = PreparedGeometry(prepareGeom(obj.ptr, context), obj)
-    @eval contains(obj1::PreparedGeometry, obj2::$geom) = prepcontains(obj1.ptr, obj2.ptr)
+    @eval Base.contains(obj1::PreparedGeometry, obj2::$geom) = prepcontains(obj1.ptr, obj2.ptr)
     @eval containsproperly(obj1::PreparedGeometry, obj2::$geom) = prepcontainsproperly(obj1.ptr, obj2.ptr)
     @eval coveredby(obj1::PreparedGeometry, obj2::$geom) = prepcoveredby(obj1.ptr, obj2.ptr)
     @eval covers(obj1::PreparedGeometry, obj2::$geom) = prepcovers(obj1.ptr, obj2.ptr)
