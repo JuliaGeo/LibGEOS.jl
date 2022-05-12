@@ -1,6 +1,9 @@
 import GeoInterface
 using Test, LibGEOS
 
+version = LibGEOS.GEOSversion()
+@info "GEOS version $version"
+
 @testset "LibGEOS" begin
     include("test_geos_functions.jl")
     include("test_geos_operations.jl")

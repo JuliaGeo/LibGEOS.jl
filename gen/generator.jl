@@ -3,36 +3,34 @@ using MacroTools
 using GEOS_jll
 using JuliaFormatter: format
 
-function rewriter(dag::ExprDAG)
-    for n in dag.nodes
-        map!(rewriter, n.exprs, n.exprs)
-    end
-end
-
 "Functions that return a Cstring are wrapped in unsafe_string to return a String"
-function rewriter(x::Expr)
-    if @capture(x, function f_(fargs__)
-        ccall(fname_, rettype_, argtypes_, argvalues__)
+function rewrite(ex::Expr)
+    if @capture(ex, function fname_(fargs__)
+        @ccall lib_.cname_(cargs__)::rettype_
     end)
-        # it is a function wrapper around a ccall
 
         # bind the ccall such that we can easily wrap it
-        cc = :(ccall($fname, $rettype, $argtypes, $(argvalues...)))
+        cc = :(@ccall $lib.$cname($(cargs...))::$rettype)
 
-        cc2 = if rettype == :Cstring
+        cc′ = if rettype == :Cstring
             :(unsafe_string($cc))
         else
             cc
         end
 
         # stitch the modified function expression back together
-        x2 = :(function $f($(fargs...))
-            $cc2
+        f = :(function $fname($(fargs...))
+            $cc′
         end) |> prettify
-        x2
-    else
-        # do not modify expressions that are no ccall function wrappers
-        x
+
+        return f
+    end
+    return ex
+end
+
+function rewrite!(dag::ExprDAG)
+    for n in dag.nodes
+        map!(rewrite, n.exprs, n.exprs)
     end
 end
 
@@ -54,7 +52,7 @@ ctx = create_context(headers, args, options)
 
 # run generator
 build!(ctx, BUILDSTAGE_NO_PRINTING)
-rewriter(ctx.dag)
+rewrite!(ctx.dag)
 build!(ctx, BUILDSTAGE_PRINTING_ONLY)
 
 # run JuliaFormatter on the whole package
