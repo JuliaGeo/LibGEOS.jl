@@ -1,7 +1,7 @@
 @testset "LibGEOS regressions" begin
 
     # https://github.com/JuliaGeo/LibGEOS.jl/issues/29
-    pts = [[0.,0.],[10.,0.], [10.,10.],[0.,10.]]
+    pts = [[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0, 10.0]]
     @test_throws LibGEOS.GEOSError Polygon([pts])
 
     # https://github.com/JuliaGeo/LibGEOS.jl/issues/24
@@ -10,10 +10,10 @@
 
     # https://github.com/JuliaGeo/LibGEOS.jl/issues/25
     a = LibGEOS.createCoordSeq([0.0, 2.0])
-    @test LibGEOS.getCoordinates(a) == Array{Float64,1}[[0.0,2.0]]
+    @test LibGEOS.getCoordinates(a) == Array{Float64,1}[[0.0, 2.0]]
 
     # https://github.com/JuliaGeo/LibGEOS.jl/issues/12
-    mp = LibGEOS.MultiPoint(Vector{Float64}[[0,0],[10,0],[10,10],[11,10]])
+    mp = LibGEOS.MultiPoint(Vector{Float64}[[0, 0], [10, 0], [10, 10], [11, 10]])
     @test GeoInterface.geotype(mp) == :MultiPoint
 
     # https://github.com/JuliaGeo/LibGEOS.jl/issues/20

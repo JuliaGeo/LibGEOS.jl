@@ -2,7 +2,8 @@
 #     @eval Base.copy(obj::$geom) = ($geom)(GEOSGeom_clone(obj.ptr))
 # end
 
-GeoInterface.coordinates(obj::Point) = isEmpty(obj.ptr) ? Float64[] : getCoordinates(getCoordSeq(obj.ptr), 1)
+GeoInterface.coordinates(obj::Point) =
+    isEmpty(obj.ptr) ? Float64[] : getCoordinates(getCoordSeq(obj.ptr), 1)
 GeoInterface.coordinates(obj::LineString) = getCoordinates(getCoordSeq(obj.ptr))
 GeoInterface.coordinates(obj::LinearRing) = getCoordinates(getCoordSeq(obj.ptr))
 
@@ -16,12 +17,16 @@ function GeoInterface.coordinates(polygon::Polygon)
     end
 end
 
-GeoInterface.coordinates(multipoint::MultiPoint) = Vector{Float64}[getCoordinates(getCoordSeq(geom),1) for geom in getGeometries(multipoint.ptr)]
-GeoInterface.coordinates(multiline::MultiLineString) = Vector{Vector{Float64}}[getCoordinates(getCoordSeq(geom)) for geom in getGeometries(multiline.ptr)]
+GeoInterface.coordinates(multipoint::MultiPoint) = Vector{Float64}[
+    getCoordinates(getCoordSeq(geom), 1) for geom in getGeometries(multipoint.ptr)
+]
+GeoInterface.coordinates(multiline::MultiLineString) = Vector{Vector{Float64}}[
+    getCoordinates(getCoordSeq(geom)) for geom in getGeometries(multiline.ptr)
+]
 function GeoInterface.coordinates(multipolygon::MultiPolygon)
     geometries = getGeometries(multipolygon.ptr)
     coords = Array{Vector{Vector{Vector{Float64}}}}(undef, length(geometries))
-    for (i,geom) in enumerate(getGeometries(multipolygon.ptr))
+    for (i, geom) in enumerate(getGeometries(multipolygon.ptr))
         exterior = getCoordinates(getCoordSeq(exteriorRing(geom)))
         interiors = [getCoordinates(getCoordSeq(ring)) for ring in interiorRings(geom)]
         coords[i] = [Vector{Vector{Float64}}[exterior]; interiors]

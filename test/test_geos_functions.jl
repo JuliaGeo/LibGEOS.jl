@@ -7,64 +7,90 @@
     @test writegeom(p) == "POINT (0.12345 2)"
 
     # round to 2 decimals
-    writer = LibGEOS.WKTWriter(LibGEOS._context, trim=true, outputdim=3, roundingprecision=2)
+    writer = LibGEOS.WKTWriter(
+        LibGEOS._context,
+        trim = true,
+        outputdim = 3,
+        roundingprecision = 2,
+    )
     @test writegeom(p, writer) == "POINT (0.12 2)"
 
     # round to 2 decimals and don't trim trailing zeros
-    writer = LibGEOS.WKTWriter(LibGEOS._context, trim=false, outputdim=3, roundingprecision=2)
+    writer = LibGEOS.WKTWriter(
+        LibGEOS._context,
+        trim = false,
+        outputdim = 3,
+        roundingprecision = 2,
+    )
     @test writegeom(p, writer) == "POINT (0.12 2.00)"
 
     # don't output the Z dimension
     p = readgeom("POINT(0.12345 2.000 0.1)")
-    writer = LibGEOS.WKTWriter(LibGEOS._context, trim=false, outputdim=2, roundingprecision=2)
+    writer = LibGEOS.WKTWriter(
+        LibGEOS._context,
+        trim = false,
+        outputdim = 2,
+        roundingprecision = 2,
+    )
     @test writegeom(p, writer) == "POINT (0.12 2.00)"
 end
 
 @testset "GEOS functions" begin
-    a = LibGEOS.createCoordSeq(Vector{Float64}[[1,2,3],[4,5,6]])
+    a = LibGEOS.createCoordSeq(Vector{Float64}[[1, 2, 3], [4, 5, 6]])
     b = LibGEOS.cloneCoordSeq(a)
     @test LibGEOS.getCoordinates(b) == LibGEOS.getCoordinates(a)
-    a = LibGEOS.createCoordSeq(Vector{Float64}[[1,2,3],[4,5,6],[7,8,9],[10,11,12]])
+    a = LibGEOS.createCoordSeq(
+        Vector{Float64}[[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]],
+    )
     b = LibGEOS.cloneCoordSeq(a)
     @test LibGEOS.getCoordinates(b) == LibGEOS.getCoordinates(a)
     LibGEOS.setCoordSeq!(b, 2, [3.0, 3.0, 3.0])
-    @test LibGEOS.getCoordinates(a) == Vector{Float64}[[1,2,3],[4,5,6],[7,8,9],[10,11,12]]
-    @test LibGEOS.getCoordinates(b) == Vector{Float64}[[1,2,3],[3,3,3],[7,8,9],[10,11,12]]
-    c = LibGEOS.createPoint(LibGEOS.createCoordSeq(Vector{Float64}[[1,2]]))
-    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(c))[1] ≈ [1,2] atol=1e-5
+    @test LibGEOS.getCoordinates(a) ==
+          Vector{Float64}[[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
+    @test LibGEOS.getCoordinates(b) ==
+          Vector{Float64}[[1, 2, 3], [3, 3, 3], [7, 8, 9], [10, 11, 12]]
+    c = LibGEOS.createPoint(LibGEOS.createCoordSeq(Vector{Float64}[[1, 2]]))
+    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(c))[1] ≈ [1, 2] atol = 1e-5
 
     # Polygons and Holes
-    shell = LibGEOS.createLinearRing(Vector{Float64}[[0,0],[10,0],[10,10],[0,10],[0,0]])
-    hole1 = LibGEOS.createLinearRing(Vector{Float64}[[1,8],[2,8],[2,9],[1,9],[1,8]])
-    hole2 = LibGEOS.createLinearRing(Vector{Float64}[[8,1],[9,1],[9,2],[8,2],[8,1]])
-    polygon = LibGEOS.createPolygon(shell,LibGEOS.GEOSGeom[hole1,hole2])
+    shell = LibGEOS.createLinearRing(
+        Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]],
+    )
+    hole1 =
+        LibGEOS.createLinearRing(Vector{Float64}[[1, 8], [2, 8], [2, 9], [1, 9], [1, 8]])
+    hole2 =
+        LibGEOS.createLinearRing(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]])
+    polygon = LibGEOS.createPolygon(shell, LibGEOS.GEOSGeom[hole1, hole2])
     @test LibGEOS.getGeomDimensions(polygon) == 2
     @test LibGEOS.geomTypeId(polygon) == LibGEOS.GEOS_POLYGON
-    @test LibGEOS.geomArea(polygon) ≈ 98.0 atol=1e-5
+    @test LibGEOS.geomArea(polygon) ≈ 98.0 atol = 1e-5
     exterior = LibGEOS.exteriorRing(polygon)
-    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(exterior)) == Vector{Float64}[[0,0],[10,0],[10,10],[0,10],[0,0]]
+    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(exterior)) ==
+          Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]
     interiors = LibGEOS.interiorRings(polygon)
-    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[1])) == Vector{Float64}[[1,8],[2,8],[2,9],[1,9],[1,8]]
-    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[2])) == Vector{Float64}[[8,1],[9,1],[9,2],[8,2],[8,1]]
+    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[1])) ==
+          Vector{Float64}[[1, 8], [2, 8], [2, 9], [1, 9], [1, 8]]
+    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[2])) ==
+          Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]]
 
     # Interpolation and Projection
-    ls = LibGEOS.createLineString(Vector{Float64}[[8,1],[9,1],[9,2],[8,2]])
+    ls = LibGEOS.createLineString(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2]])
     pt = LibGEOS.interpolate(ls, 2.5)
     coords = LibGEOS.getCoordinates(LibGEOS.getCoordSeq(pt))
     @test length(coords) == 1
-    @test coords[1] ≈ [8.5, 2.0] atol=1e-5
-    p1 = LibGEOS.createPoint(Float64[10,1])
-    p2 = LibGEOS.createPoint(Float64[9,1])
-    p3 = LibGEOS.createPoint(Float64[10,0])
-    p4 = LibGEOS.createPoint(Float64[9,2])
-    p5 = LibGEOS.createPoint(Float64[8.7,1.5])
+    @test coords[1] ≈ [8.5, 2.0] atol = 1e-5
+    p1 = LibGEOS.createPoint(Float64[10, 1])
+    p2 = LibGEOS.createPoint(Float64[9, 1])
+    p3 = LibGEOS.createPoint(Float64[10, 0])
+    p4 = LibGEOS.createPoint(Float64[9, 2])
+    p5 = LibGEOS.createPoint(Float64[8.7, 1.5])
     dist = LibGEOS.project(ls, p1)
-    @test dist ≈ 1 atol=1e-5
+    @test dist ≈ 1 atol = 1e-5
     @test LibGEOS.equals(LibGEOS.interpolate(ls, dist), p2)
-    @test LibGEOS.project(ls, p2) ≈ 1 atol=1e-5
-    @test LibGEOS.project(ls, p3) ≈ 1 atol=1e-5
-    @test LibGEOS.project(ls, p4) ≈ 2 atol=1e-5
-    @test LibGEOS.project(ls, p5) ≈ 1.5 atol=1e-5
+    @test LibGEOS.project(ls, p2) ≈ 1 atol = 1e-5
+    @test LibGEOS.project(ls, p3) ≈ 1 atol = 1e-5
+    @test LibGEOS.project(ls, p4) ≈ 2 atol = 1e-5
+    @test LibGEOS.project(ls, p5) ≈ 1.5 atol = 1e-5
 
 
     # Taken from https://svn.osgeo.org/geos/trunk/tests/unit/capi/
@@ -92,7 +118,9 @@ end
     LibGEOS.destroyGeom(geom2_)
 
     # GEOSConvexHullTest
-    input_ = LibGEOS._readgeom("MULTIPOINT (130 240, 130 240, 130 240, 570 240, 570 240, 570 240, 650 240)")
+    input_ = LibGEOS._readgeom(
+        "MULTIPOINT (130 240, 130 240, 130 240, 570 240, 570 240, 570 240, 650 240)",
+    )
     expected_ = LibGEOS._readgeom("LINESTRING (130 240, 650 240)")
     output_ = LibGEOS.convexhull(input_)
     @test !LibGEOS.isEmpty(output_)
@@ -123,47 +151,47 @@ end
     @test LibGEOS.getCoordinates(cs_3, 3) == [1.0, 3.0]
 
 
-    for i=1:5
-        x = i*10.0
-        y = i*10.0+1.0
-        z = i*10.0+2.0
+    for i = 1:5
+        x = i * 10.0
+        y = i * 10.0 + 1.0
+        z = i * 10.0 + 2.0
 
         LibGEOS.setX!(cs_, 1, x)
         LibGEOS.setY!(cs_, 1, y)
         LibGEOS.setZ!(cs_, 1, z)
-        @test LibGEOS.getX(cs_, 1) ≈ x atol=1e-5
-        @test LibGEOS.getY(cs_, 1) ≈ y atol=1e-5
-        @test LibGEOS.getZ(cs_, 1) ≈ z atol=1e-5
+        @test LibGEOS.getX(cs_, 1) ≈ x atol = 1e-5
+        @test LibGEOS.getY(cs_, 1) ≈ y atol = 1e-5
+        @test LibGEOS.getZ(cs_, 1) ≈ z atol = 1e-5
     end
 
-    cs_ = LibGEOS.createCoordSeq(1, ndim=3)
+    cs_ = LibGEOS.createCoordSeq(1, ndim = 3)
     @test LibGEOS.getSize(cs_) == 1
     @test LibGEOS.getDimensions(cs_) == 3
-    x,y,z = 10.0, 11.0, 12.0
+    x, y, z = 10.0, 11.0, 12.0
 
     LibGEOS.setX!(cs_, 1, x)
     LibGEOS.setY!(cs_, 1, y)
     LibGEOS.setZ!(cs_, 1, z)
-    @test LibGEOS.getX(cs_, 1) ≈ x atol=1e-5
-    @test LibGEOS.getY(cs_, 1) ≈ y atol=1e-5
-    @test LibGEOS.getZ(cs_, 1) ≈ z atol=1e-5
+    @test LibGEOS.getX(cs_, 1) ≈ x atol = 1e-5
+    @test LibGEOS.getY(cs_, 1) ≈ y atol = 1e-5
+    @test LibGEOS.getZ(cs_, 1) ≈ z atol = 1e-5
 
-    cs_ = LibGEOS.createCoordSeq(1, ndim=3)
+    cs_ = LibGEOS.createCoordSeq(1, ndim = 3)
     @test LibGEOS.getSize(cs_) == 1
     @test LibGEOS.getDimensions(cs_) == 3
-    x,y,z = 10.0, 11.0, 12.0
+    x, y, z = 10.0, 11.0, 12.0
 
     LibGEOS.setX!(cs_, 1, x)
     LibGEOS.setY!(cs_, 1, y)
     LibGEOS.setZ!(cs_, 1, z)
-    @test LibGEOS.getX(cs_, 1) ≈ x atol=1e-5
-    @test LibGEOS.getY(cs_, 1) ≈ y atol=1e-5
-    @test LibGEOS.getZ(cs_, 1) ≈ z atol=1e-5
+    @test LibGEOS.getX(cs_, 1) ≈ x atol = 1e-5
+    @test LibGEOS.getY(cs_, 1) ≈ y atol = 1e-5
+    @test LibGEOS.getZ(cs_, 1) ≈ z atol = 1e-5
 
     # LibGEOS.delaunayTriangulationTest
     geom1_ = LibGEOS._readgeom("POLYGON EMPTY")
     @test LibGEOS.isEmpty(geom1_)
-    geom2_ = LibGEOS.delaunayTriangulation(geom1_,0.0,true)
+    geom2_ = LibGEOS.delaunayTriangulation(geom1_, 0.0, true)
     @test LibGEOS.isEmpty(geom2_)
     @test LibGEOS.geomTypeId(geom2_) == LibGEOS.GEOS_MULTILINESTRING
     LibGEOS.destroyGeom(geom1_)
@@ -199,7 +227,7 @@ end
     # GEOSDistanceTest
     geom1_ = LibGEOS._readgeom("POINT(10 10)")
     geom2_ = LibGEOS._readgeom("POINT(3 6)")
-    @test LibGEOS.geomDistance(geom1_, geom2_) ≈ 8.06225774829855 atol=1e-12
+    @test LibGEOS.geomDistance(geom1_, geom2_) ≈ 8.06225774829855 atol = 1e-12
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
@@ -218,7 +246,9 @@ end
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("GEOMETRYCOLLECTION(MULTIPOINT(0 0, 0 0, 1 1),LINESTRING(1 1, 2 2, 2 2, 0 0),POLYGON((5 5, 0 0, 0 2, 2 2, 5 5)))")
+    geom1_ = LibGEOS._readgeom(
+        "GEOMETRYCOLLECTION(MULTIPOINT(0 0, 0 0, 1 1),LINESTRING(1 1, 2 2, 2 2, 0 0),POLYGON((5 5, 0 0, 0 2, 2 2, 5 5)))",
+    )
     geom2_ = LibGEOS._readgeom("MULTIPOINT(0 0, 1 1, 2 2, 5 5, 0 2)")
     geom3_ = LibGEOS.uniquePoints(geom1_)
     @test LibGEOS.equals(geom3_, geom2_)
@@ -288,10 +318,14 @@ end
     LibGEOS.destroyGeom(geom3_)
     LibGEOS.destroyGeom(geom4_)
 
-    geom1_ = LibGEOS._readgeom("MULTIPOLYGON(((0 0,5 10,10 0,0 0),(1 1,1 2,2 2,2 1,1 1),(100 100,100 102,102 102,102 100,100 100)))")
+    geom1_ = LibGEOS._readgeom(
+        "MULTIPOLYGON(((0 0,5 10,10 0,0 0),(1 1,1 2,2 2,2 1,1 1),(100 100,100 102,102 102,102 100,100 100)))",
+    )
     geom2_ = LibGEOS._readgeom("POLYGON((0 1,0 2,10 2,10 1,0 1))")
     geom3_ = LibGEOS.intersection(geom1_, geom2_)
-    geom4_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (LINESTRING (1 2, 2 2), LINESTRING (2 1, 1 1), POLYGON ((0.5 1, 1 2, 1 1, 0.5 1)), POLYGON ((9 2, 9.5 1, 2 1, 2 2, 9 2)))")
+    geom4_ = LibGEOS._readgeom(
+        "GEOMETRYCOLLECTION (LINESTRING (1 2, 2 2), LINESTRING (2 1, 1 1), POLYGON ((0.5 1, 1 2, 1 1, 0.5 1)), POLYGON ((9 2, 9.5 1, 2 1, 2 2, 9 2)))",
+    )
     @test LibGEOS.equals(geom3_, geom4_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
@@ -324,24 +358,24 @@ end
     @test !LibGEOS.isClosed(geom1)
     @test LibGEOS.geomTypeId(geom1) == LibGEOS.GEOS_LINESTRING
     @test LibGEOS.numPoints(geom1) == 3
-    @test LibGEOS.geomLength(geom1) ≈ sqrt(100 + 100) atol=1e-5
+    @test LibGEOS.geomLength(geom1) ≈ sqrt(100 + 100) atol = 1e-5
     geom2 = LibGEOS.getPoint(geom1, 1)
-    @test LibGEOS.getGeomX(geom2) ≈ 0.0 atol=1e-5
-    @test LibGEOS.getGeomY(geom2) ≈ 0.0 atol=1e-5
+    @test LibGEOS.getGeomX(geom2) ≈ 0.0 atol = 1e-5
+    @test LibGEOS.getGeomY(geom2) ≈ 0.0 atol = 1e-5
     geom2 = LibGEOS.getPoint(geom1, 2)
-    @test LibGEOS.getGeomX(geom2) ≈ 5.0 atol=1e-5
-    @test LibGEOS.getGeomY(geom2) ≈ 5.0 atol=1e-5
+    @test LibGEOS.getGeomX(geom2) ≈ 5.0 atol = 1e-5
+    @test LibGEOS.getGeomY(geom2) ≈ 5.0 atol = 1e-5
     LibGEOS.destroyGeom(geom2)
     geom2 = LibGEOS.getPoint(geom1, 3)
-    @test LibGEOS.getGeomX(geom2) ≈ 10.0 atol=1e-5
-    @test LibGEOS.getGeomY(geom2) ≈ 10.0 atol=1e-5
+    @test LibGEOS.getGeomX(geom2) ≈ 10.0 atol = 1e-5
+    @test LibGEOS.getGeomY(geom2) ≈ 10.0 atol = 1e-5
     geom2 = LibGEOS.startPoint(geom1)
-    @test LibGEOS.getGeomX(geom2) ≈ 0.0 atol=1e-5
-    @test LibGEOS.getGeomY(geom2) ≈ 0.0 atol=1e-5
+    @test LibGEOS.getGeomX(geom2) ≈ 0.0 atol = 1e-5
+    @test LibGEOS.getGeomY(geom2) ≈ 0.0 atol = 1e-5
     LibGEOS.destroyGeom(geom2)
     geom2 = LibGEOS.endPoint(geom1)
-    @test LibGEOS.getGeomX(geom2) ≈ 10.0 atol=1e-5
-    @test LibGEOS.getGeomY(geom2) ≈ 10.0 atol=1e-5
+    @test LibGEOS.getGeomX(geom2) ≈ 10.0 atol = 1e-5
+    @test LibGEOS.getGeomY(geom2) ≈ 10.0 atol = 1e-5
     LibGEOS.destroyGeom(geom2)
 
     # GEOSNearestPointsTest
@@ -355,8 +389,8 @@ end
     geom2_ = LibGEOS._readgeom("POLYGON((8 8, 9 9, 9 10, 8 8))")
     coords_ = LibGEOS.nearestPoints(geom1_, geom2_)
     @test LibGEOS.getSize(coords_) == 2
-    @test LibGEOS.getCoordinates(coords_,1)[1:2] ≈ [5.0,5.0] atol=1e-5
-    @test LibGEOS.getCoordinates(coords_,2)[1:2] ≈ [8.0,8.0] atol=1e-5
+    @test LibGEOS.getCoordinates(coords_, 1)[1:2] ≈ [5.0, 5.0] atol = 1e-5
+    @test LibGEOS.getCoordinates(coords_, 2)[1:2] ≈ [8.0, 8.0] atol = 1e-5
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyCoordSeq(coords_)
@@ -365,7 +399,9 @@ end
     geom1_ = LibGEOS._readgeom("LINESTRING(0 0, 10 10, 10 0, 0 10)")
     geom2_ = LibGEOS.node(geom1_)
     LibGEOS.normalize!(geom2_)
-    geom3_ = LibGEOS._readgeom("MULTILINESTRING ((5 5, 10 0, 10 10, 5 5), (0 10, 5 5), (0 0, 5 5))")
+    geom3_ = LibGEOS._readgeom(
+        "MULTILINESTRING ((5 5, 10 0, 10 10, 5 5), (0 10, 5 5), (0 0, 5 5))",
+    )
     @test equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
@@ -374,7 +410,9 @@ end
     geom1_ = LibGEOS._readgeom("MULTILINESTRING((0 0, 2 0, 4 0),(5 0, 3 0, 1 0))")
     geom2_ = LibGEOS.node(geom1_)
     LibGEOS.normalize!(geom2_)
-    geom3_ = LibGEOS._readgeom("MULTILINESTRING ((4 0, 5 0), (3 0, 4 0), (2 0, 3 0), (1 0, 2 0), (0 0, 1 0))")
+    geom3_ = LibGEOS._readgeom(
+        "MULTILINESTRING ((4 0, 5 0), (3 0, 4 0), (2 0, 3 0), (1 0, 2 0), (0 0, 1 0))",
+    )
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
@@ -414,14 +452,14 @@ end
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom(
-    """POLYGON((
-    56.528666666700 25.2101666667,
-    56.529000000000 25.2105000000,
-    56.528833333300 25.2103333333,
-    56.528666666700 25.2101666667))""")
+    geom1_ = LibGEOS._readgeom("""POLYGON((
+                               56.528666666700 25.2101666667,
+                               56.529000000000 25.2105000000,
+                               56.528833333300 25.2103333333,
+                               56.528666666700 25.2101666667))""")
     geom2_ = LibGEOS.pointOnSurface(geom1_)
-    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(geom2_))[1] ≈ [56.5286666667, 25.2101666667] atol=1e-5
+    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(geom2_))[1] ≈
+          [56.5286666667, 25.2101666667] atol = 1e-5
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
@@ -492,7 +530,9 @@ end
     geom1_ = LibGEOS._readgeom("LINESTRING (-30 -20, 50 60, 50 70, 50 0)")
     geom2_ = LibGEOS._readgeom("LINESTRING (-29 -20, 50 60, 50 70, 51 0)")
     geom3_ = LibGEOS.sharedPaths(geom1_, geom2_)
-    geom4_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (MULTILINESTRING ((50 60, 50 70)), MULTILINESTRING EMPTY)")
+    geom4_ = LibGEOS._readgeom(
+        "GEOMETRYCOLLECTION (MULTILINESTRING ((50 60, 50 70)), MULTILINESTRING EMPTY)",
+    )
     @test LibGEOS.equals(geom3_, geom4_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
@@ -612,9 +652,12 @@ end
     LibGEOS.destroyGeom(geom4_)
 
     geom1_ = LibGEOS._readgeom("LINESTRING(-71.1317 42.2511,-71.1317 42.2509)")
-    geom2_ = LibGEOS._readgeom("MULTIPOINT(-71.1261 42.2703,-71.1257 42.2703,-71.1261 42.2702)")
+    geom2_ =
+        LibGEOS._readgeom("MULTIPOINT(-71.1261 42.2703,-71.1257 42.2703,-71.1261 42.2702)")
     geom3_ = LibGEOS.snap(geom1_, geom2_, 0.5)
-    geom4_ = LibGEOS._readgeom("LINESTRING (-71.1257 42.2703, -71.1261 42.2703, -71.1261 42.2702, -71.1317 42.2509)")
+    geom4_ = LibGEOS._readgeom(
+        "LINESTRING (-71.1257 42.2703, -71.1261 42.2703, -71.1261 42.2702, -71.1317 42.2509)",
+    )
     @test LibGEOS.equals(geom3_, geom4_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
@@ -654,33 +697,49 @@ end
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (POINT(4 5), MULTIPOINT(6 7, 6 5, 6 7), LINESTRING(0 5, 10 5), LINESTRING(4 -10, 4 10))")
+    geom1_ = LibGEOS._readgeom(
+        "GEOMETRYCOLLECTION (POINT(4 5), MULTIPOINT(6 7, 6 5, 6 7), LINESTRING(0 5, 10 5), LINESTRING(4 -10, 4 10))",
+    )
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (POINT (6 7), LINESTRING (0 5, 4 5), LINESTRING (4 5, 10 5), LINESTRING (4 -10, 4 5), LINESTRING (4 5, 4 10))")
+    geom3_ = LibGEOS._readgeom(
+        "GEOMETRYCOLLECTION (POINT (6 7), LINESTRING (0 5, 4 5), LINESTRING (4 5, 10 5), LINESTRING (4 -10, 4 5), LINESTRING (4 5, 4 10))",
+    )
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (POINT(4 5), MULTIPOINT(6 7, 6 5, 6 7), POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),(5 6, 7 6, 7 8, 5 8, 5 6)))")
+    geom1_ = LibGEOS._readgeom(
+        "GEOMETRYCOLLECTION (POINT(4 5), MULTIPOINT(6 7, 6 5, 6 7), POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),(5 6, 7 6, 7 8, 5 8, 5 6)))",
+    )
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (POINT (6 7), POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0), (5 6, 7 6, 7 8, 5 8, 5 6)))")
+    geom3_ = LibGEOS._readgeom(
+        "GEOMETRYCOLLECTION (POINT (6 7), POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0), (5 6, 7 6, 7 8, 5 8, 5 6)))",
+    )
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (MULTILINESTRING((5 7, 12 7), (4 5, 6 5), (5.5 7.5, 6.5 7.5)), POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),(5 6, 7 6, 7 8, 5 8, 5 6)))")
+    geom1_ = LibGEOS._readgeom(
+        "GEOMETRYCOLLECTION (MULTILINESTRING((5 7, 12 7), (4 5, 6 5), (5.5 7.5, 6.5 7.5)), POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),(5 6, 7 6, 7 8, 5 8, 5 6)))",
+    )
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (LINESTRING (5 7, 7 7), LINESTRING (10 7, 12 7), LINESTRING (5.5 7.5, 6.5 7.5), POLYGON ((10 7, 10 0, 0 0, 0 10, 10 10, 10 7), (5 6, 7 6, 7 7, 7 8, 5 8, 5 7, 5 6)))")
+    geom3_ = LibGEOS._readgeom(
+        "GEOMETRYCOLLECTION (LINESTRING (5 7, 7 7), LINESTRING (10 7, 12 7), LINESTRING (5.5 7.5, 6.5 7.5), POLYGON ((10 7, 10 0, 0 0, 0 10, 10 10, 10 7), (5 6, 7 6, 7 7, 7 8, 5 8, 5 7, 5 6)))",
+    )
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (MULTILINESTRING((5 7, 12 7), (4 5, 6 5), (5.5 7.5, 6.5 7.5)), POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),(5 6, 7 6, 7 8, 5 8, 5 6)), MULTIPOINT(6 6.5, 6 1, 12 2, 6 1))")
+    geom1_ = LibGEOS._readgeom(
+        "GEOMETRYCOLLECTION (MULTILINESTRING((5 7, 12 7), (4 5, 6 5), (5.5 7.5, 6.5 7.5)), POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),(5 6, 7 6, 7 8, 5 8, 5 6)), MULTIPOINT(6 6.5, 6 1, 12 2, 6 1))",
+    )
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom("GEOMETRYCOLLECTION (POINT (6 6.5), POINT (12 2), LINESTRING (5 7, 7 7), LINESTRING (10 7, 12 7), LINESTRING (5.5 7.5, 6.5 7.5), POLYGON ((10 7, 10 0, 0 0, 0 10, 10 10, 10 7), (5 6, 7 6, 7 7, 7 8, 5 8, 5 7, 5 6)))")
+    geom3_ = LibGEOS._readgeom(
+        "GEOMETRYCOLLECTION (POINT (6 6.5), POINT (12 2), LINESTRING (5 7, 7 7), LINESTRING (10 7, 12 7), LINESTRING (5.5 7.5, 6.5 7.5), POLYGON ((10 7, 10 0, 0 0, 0 10, 10 10, 10 7), (5 6, 7 6, 7 7, 7 8, 5 8, 5 7, 5 6)))",
+    )
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
@@ -743,11 +802,17 @@ end
 
     geom1_ = readgeom("POLYGON((10 10,20 10,16 15,20 20, 10 20, 14 15, 10 10))")
     geom2_ = setPrecision(geom1_, 5.0)
-    @test equals(geom2_, readgeom(
-        "MULTIPOLYGON (((10 10, 15 15, 20 10, 10 10)), ((15 15, 10 20, 20 20, 15 15)))"))
+    @test equals(
+        geom2_,
+        readgeom(
+            "MULTIPOLYGON (((10 10, 15 15, 20 10, 10 10)), ((15 15, 10 20, 20 20, 15 15)))",
+        ),
+    )
     geom3_ = setPrecision(geom1_, 5.0; flags = 1)
-    @test equals(geom3_, readgeom(
-        "POLYGON ((10 10, 20 10, 15 15, 20 20, 10 20, 15 15, 10 10))"))
+    @test equals(
+        geom3_,
+        readgeom("POLYGON ((10 10, 20 10, 15 15, 20 20, 10 20, 15 15, 10 10))"),
+    )
 
     geom1_ = readgeom("LINESTRING(1 0, 2 0)")
     geom2_ = setPrecision(geom1_, 5.0)
@@ -755,9 +820,12 @@ end
     geom3_ = setPrecision(geom1_, 5.0; flags = 2)
     @test writegeom(geom3_) == "LINESTRING (0 0, 0 0)"
 
-    @test writegeom(setPrecision(geom1_, 5.0; flags = LibGEOS.GEOS_PREC_VALID_OUTPUT)) == writegeom(setPrecision(geom1_, 5.0; flags = 0))
-    @test writegeom(setPrecision(geom1_, 5.0; flags = LibGEOS.GEOS_PREC_NO_TOPO)) == writegeom(setPrecision(geom1_, 5.0; flags = 1))
-    @test writegeom(setPrecision(geom1_, 5.0; flags = LibGEOS.GEOS_PREC_KEEP_COLLAPSED)) == writegeom(setPrecision(geom1_, 5.0; flags = 2))
+    @test writegeom(setPrecision(geom1_, 5.0; flags = LibGEOS.GEOS_PREC_VALID_OUTPUT)) ==
+          writegeom(setPrecision(geom1_, 5.0; flags = 0))
+    @test writegeom(setPrecision(geom1_, 5.0; flags = LibGEOS.GEOS_PREC_NO_TOPO)) ==
+          writegeom(setPrecision(geom1_, 5.0; flags = 1))
+    @test writegeom(setPrecision(geom1_, 5.0; flags = LibGEOS.GEOS_PREC_KEEP_COLLAPSED)) ==
+          writegeom(setPrecision(geom1_, 5.0; flags = 2))
     @test_throws ErrorException setPrecision(geom1_, 5.0; flags = 3)
 
     LibGEOS.destroyGeom(geom1_)

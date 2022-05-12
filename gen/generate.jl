@@ -1,6 +1,7 @@
 using Clang.Generators
 using MacroTools
 using GEOS_jll
+using JuliaFormatter: format
 
 function rewriter(dag::ExprDAG)
     for n in dag.nodes
@@ -10,11 +11,9 @@ end
 
 "Functions that return a Cstring are wrapped in unsafe_string to return a String"
 function rewriter(x::Expr)
-    if @capture(x,
-        function f_(fargs__)
-            ccall(fname_, rettype_, argtypes_, argvalues__)
-        end
-    )
+    if @capture(x, function f_(fargs__)
+        ccall(fname_, rettype_, argtypes_, argvalues__)
+    end)
         # it is a function wrapper around a ccall
 
         # bind the ccall such that we can easily wrap it
@@ -57,3 +56,6 @@ ctx = create_context(headers, args, options)
 build!(ctx, BUILDSTAGE_NO_PRINTING)
 rewriter(ctx.dag)
 build!(ctx, BUILDSTAGE_PRINTING_ONLY)
+
+# run JuliaFormatter on the whole package
+format(joinpath(@__DIR__, ".."))
