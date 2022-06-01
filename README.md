@@ -3,9 +3,13 @@ LibGEOS.jl
 [![CI](https://github.com/JuliaGeo/LibGEOS.jl/workflows/CI/badge.svg)](https://github.com/JuliaGeo/LibGEOS.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/JuliaGeo/LibGEOS.jl/branch/master/graph/badge.svg?token=wnS3J00ZPH)](https://codecov.io/gh/JuliaGeo/LibGEOS.jl)
 
-LibGEOS is a package for manipulation and analysis of planar geometric objects, based on the libraries [GEOS](https://trac.osgeo.org/geos/) (the engine of PostGIS) and JTS (from which GEOS is ported). This package wraps the [GEOS C API](https://geos.osgeo.org/doxygen/geos__c_8h_source.html).
+LibGEOS is a package for manipulation and analysis of planar geometric objects, based on the
+libraries [GEOS](https://libgeos.org/) (the engine of PostGIS) and JTS (from which GEOS is
+ported). This package wraps the GEOS C API, see its
+[usage](https://libgeos.org/usage/c_api/) and
+[reference](http://libgeos.org/doxygen/geos__c_8h.html) docs.
 
-Among other things, it allows you to parse [Well-known Text (WKT)](https://en.wikipedia.org/wiki/Well-known_text)
+Among other things, it allows you to parse [Well-known Text (WKT)](https://en.wikipedia.org/wiki/Well-known_text).
 
 ```julia
 p1 = readgeom("POLYGON((0 0,1 0,1 1,0 0))")
