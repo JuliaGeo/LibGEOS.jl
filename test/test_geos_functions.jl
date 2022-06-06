@@ -52,6 +52,13 @@ end
     c = LibGEOS.createPoint(LibGEOS.createCoordSeq(Vector{Float64}[[1, 2]]))
     @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(c))[1] ≈ [1, 2] atol = 1e-5
 
+    # isCCW
+    seq = Vector{Float64}[[-1, 0], [0, 0], [10, 0], [10, 10], [0, 10], [-1, 0]]
+    a = LibGEOS.createCoordSeq(seq)
+    @test LibGEOS.isCCW(a)
+    a = LibGEOS.createCoordSeq(reverse(seq))
+    @test !LibGEOS.isCCW(a)
+
     # Polygons and Holes
     shell = LibGEOS.createLinearRing(
         Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]],

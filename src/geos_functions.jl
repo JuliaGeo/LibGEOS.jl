@@ -271,6 +271,15 @@ function getCoordinates(ptr::GEOSCoordSeq, context::GEOSContext = _context)
     coordseq
 end
 
+function isCCW(ptr::GEOSCoordSeq, context::GEOSContext=_context)::Bool
+    d = UInt8[1]
+    GC.@preserve result = GEOSCoordSeq_isCCW_r(context.ptr, ptr, pointer(d))
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSInterpolateNormalized")
+    end
+    Bool(d[1])
+end
+
 # -----
 # Linear referencing functions -- there are more, but these are probably sufficient for most purposes
 # -----
