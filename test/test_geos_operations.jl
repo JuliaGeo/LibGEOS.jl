@@ -1,4 +1,4 @@
-function equivalent_to_wkt(geom::GeoInterface.AbstractGeometry, wkt::String)
+function equivalent_to_wkt(geom::LibGEOS.AbstractGeometry, wkt::String)
     test_geom = readgeom(wkt)
     @test LibGEOS.equals(geom, test_geom)
 end
@@ -52,17 +52,17 @@ end
     g2 = delaunayTriangulationEdges(g1)
     @test isEmpty(g1)
     @test isEmpty(g2)
-    @test GeoInterface.geotype(g2) == :MultiLineString
+    @test GeoInterface.geomtrait(g2) == MultiLineStringTrait()
 
     g1 = readgeom("POINT(0 0)")
     g2 = delaunayTriangulation(g1)
     @test isEmpty(g2)
-    @test GeoInterface.geotype(g2) == :GeometryCollection
+    @test GeoInterface.geomtrait(g2) == GeometryCollectionTrait()
 
     g1 = readgeom("MULTIPOINT(0 0, 5 0, 10 0)")
     g2 = delaunayTriangulation(g1, 0.0)
     @test isEmpty(g2)
-    @test GeoInterface.geotype(g2) == :GeometryCollection
+    @test GeoInterface.geomtrait(g2) == GeometryCollectionTrait()
     g2 = delaunayTriangulationEdges(g1, 0.0)
     equivalent_to_wkt(g2, "MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))")
 
@@ -115,7 +115,7 @@ end
     # LineString_PointTest
     g1 = readgeom("LINESTRING(0 0, 5 5, 10 10)")
     @test !isClosed(g1)
-    @test GeoInterface.geotype(g1) == :LineString
+    @test GeoInterface.geomtrait(g1) == LineStringTrait()
     @test numPoints(g1) == 3
     @test geomLength(g1) ≈ sqrt(100 + 100) atol = 1e-5
     @test GeoInterface.coordinates(startPoint(g1)) ≈ [0, 0] atol = 1e-5

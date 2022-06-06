@@ -271,7 +271,7 @@ function getCoordinates(ptr::GEOSCoordSeq, context::GEOSContext = _context)
     coordseq
 end
 
-function isCCW(ptr::GEOSCoordSeq, context::GEOSContext=_context)::Bool
+function isCCW(ptr::GEOSCoordSeq, context::GEOSContext = _context)::Bool
     d = UInt8[1]
     GC.@preserve result = GEOSCoordSeq_isCCW_r(context.ptr, ptr, pointer(d))
     if result == C_NULL
@@ -1021,7 +1021,7 @@ end
     getGeometry(geom, n)
 
 Returns a copy of the specified sub-geometry of a collection.
-Numbering in one-based
+Numbering is one-based.
 For a simple geometry, returns a copy of the input.
 """
 function getGeometry(ptr::GEOSGeom, n::Integer, context::GEOSContext = _context)

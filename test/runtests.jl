@@ -1,4 +1,4 @@
-import GeoInterface
+using GeoInterface
 using Test, LibGEOS
 
 version = LibGEOS.GEOSversion()
