@@ -72,7 +72,7 @@ end
 
     # LibGEOS.constrainedDelaunayTriangulationTest
     g1 = readgeom("POLYGON EMPTY")
-    g2 = constrainedDelaunayTriangulationEdges(g1)
+    g2 = constrainedDelaunayTriangulation(g1)
     @test isEmpty(g1)
     @test isEmpty(g2)
     @test GeoInterface.geotype(g2) == :GeometryCollection
