@@ -14,7 +14,7 @@ The tree cannot be changed after its creation.
     - `nodecapacity`: The maximum number of items that can be stored per tree node (default 10).
     - `context`: The geos context in which the tree should be created in. Defaults to the global LibGEOS context.
 """
-function STRtree(items; nodecapacity=10, context::GEOSContext=_context)
+function STRtree(items; nodecapacity = 10, context::GEOSContext = _context)
     tree = LibGEOS.GEOSSTRtree_create_r(context.ptr, nodecapacity)
     for item in items
         envptr = envelope(item).ptr
@@ -33,7 +33,7 @@ Returns the objects within `tree`, whose envolope intersects the envelope of `ge
     - `geometry`: The LibGEOS geometry (e.g. Polygon) to run the query for
     - `context`: The geos context. Defaults to the global LibGEOS context.
 """
-function query(tree::STRtree, geometry::T; context::GEOSContext=_context) where T
+function query(tree::STRtree, geometry::T; context::GEOSContext = _context) where {T}
     matches = T[]
 
     function callback(item, userdata)::Ptr{Cvoid}
@@ -44,6 +44,12 @@ function query(tree::STRtree, geometry::T; context::GEOSContext=_context) where 
     end
 
     cfun_callback = @cfunction($callback, Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}))
-    GEOSSTRtree_query_r(context.ptr, tree.ptr, envelope(geometry).ptr, cfun_callback, pointer_from_objref(matches))
+    GEOSSTRtree_query_r(
+        context.ptr,
+        tree.ptr,
+        envelope(geometry).ptr,
+        cfun_callback,
+        pointer_from_objref(matches),
+    )
     return matches
 end
