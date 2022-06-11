@@ -9,7 +9,15 @@
 
     tree = STRtree((p1, p2, p3))
     res = query(tree, p4)
+    @test res isa Vector{Polygon}
     @test res == [p1, p2]
+
+    # heterogeneous tree with linestring and polygon
+    ls = readgeom("LINESTRING(0 0,1 0,1 1,0 0)")
+    tree = STRtree((p1, p2, p3, ls))
+    res = query(tree, p4)
+    @test res isa Vector{GeoInterface.AbstractGeometry}
+    @test res == [p1, p2, ls]
 
     # Let's accidentally "drop" p2. Since it is in the tree it won't be finalized.
     p2 = nothing

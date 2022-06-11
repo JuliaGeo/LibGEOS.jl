@@ -34,21 +34,26 @@ Returns the objects within `tree`, whose envelope intersects the envelope of `ge
 - `geometry`: The LibGEOS geometry (e.g. Polygon) to run the query for
 - `context`: The GEOS context. Defaults to the global LibGEOS context.
 """
-function query(tree::STRtree, geometry::T; context::GEOSContext = _context) where {T}
-    matches = T[]
+function query(
+    tree::STRtree{T},
+    geometry::Geometry;
+    context::GEOSContext = _context,
+) where {T}
+    matches = eltype(T)[]
 
+    # called for each overlapping item in the tree, used to push the item to matches
     function callback(item, userdata)::Ptr{Cvoid}
         item_ = unsafe_pointer_to_objref(item)
         userdata_ = unsafe_pointer_to_objref(userdata)
         push!(userdata_, item_)
-        return pointer(Cvoid[])
+        return C_NULL
     end
 
     cfun_callback = @cfunction($callback, Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}))
     GEOSSTRtree_query_r(
         context.ptr,
         tree.ptr,
-        envelope(geometry).ptr,
+        geometry.ptr,
         cfun_callback,
         pointer_from_objref(matches),
     )
