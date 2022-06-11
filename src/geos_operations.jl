@@ -182,6 +182,8 @@ for geom in (
         MultiLineString(delaunayTriangulation(obj.ptr, tol, true))
     @eval delaunayTriangulation(obj::$geom, tol::Real = 0.0) =
         GeometryCollection(delaunayTriangulation(obj.ptr, tol, false))
+    @eval constrainedDelaunayTriangulation(obj::$geom) =
+        GeometryCollection(constrainedDelaunayTriangulation(obj.ptr))
 end
 
 sharedPaths(obj1::LineString, obj2::LineString) =
