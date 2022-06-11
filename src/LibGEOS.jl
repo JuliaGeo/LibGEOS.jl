@@ -89,18 +89,20 @@ export Point,
     getYMax,
     minimumRotatedRectangle,
     getGeometry,
-    getGeometries
-
-include("libgeos_api.jl")
-
-mutable struct GEOSError <: Exception
-    msg::String
-end
-Base.showerror(io::IO, err::GEOSError) = print(io, "GEOSError\n\t$(err.msg)")
-
-function geosjl_errorhandler(message::Ptr{UInt8}, userdata)
-    if unsafe_string(message) == "%s"
-        throw(GEOSError(unsafe_string(Cstring(userdata))))
+    getGeometries,
+    STRtree,
+    query
+    
+    include("libgeos_api.jl")
+    
+    mutable struct GEOSError <: Exception
+        msg::String
+    end
+    Base.showerror(io::IO, err::GEOSError) = print(io, "GEOSError\n\t$(err.msg)")
+    
+    function geosjl_errorhandler(message::Ptr{UInt8}, userdata)
+        if unsafe_string(message) == "%s"
+            throw(GEOSError(unsafe_string(Cstring(userdata))))
     else
         throw(GEOSError(unsafe_string(message)))
     end
@@ -189,5 +191,6 @@ include("geos_functions.jl")
 include("geos_types.jl")
 include("geos_operations.jl")
 include("geo_interface.jl")
+include("strtree.jl")
 include("deprecated.jl")
 end
