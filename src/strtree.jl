@@ -6,13 +6,14 @@ end
 """
     STRtree(items; nodecapacity=10, context::GEOSContext=_context)
 
-Create a Sort Tile Recursive tree for fast intersection queries of objects for which an envelope is defined.
-The tree cannot be changed after its creation.
+Create a Sort Tile Recursive tree for fast intersection queries of objects for which an
+envelope is defined. The tree cannot be changed after its creation.
 
 ## Arguments
-    - `items`: The items to store in the tree.
-    - `nodecapacity`: The maximum number of items that can be stored per tree node (default 10).
-    - `context`: The geos context in which the tree should be created in. Defaults to the global LibGEOS context.
+- `items`: The items to store in the tree.
+- `nodecapacity`: The maximum number of items that can be stored per tree node (default 10).
+- `context`: The GEOS context in which the tree should be created in. Defaults to the global
+  LibGEOS context.
 """
 function STRtree(items; nodecapacity = 10, context::GEOSContext = _context)
     tree = LibGEOS.GEOSSTRtree_create_r(context.ptr, nodecapacity)
@@ -26,12 +27,12 @@ end
 """
     query(tree::STRtree, geometry; context::GEOSContext=_context)
 
-Returns the objects within `tree`, whose envolope intersects the envelope of `geometry`.
+Returns the objects within `tree`, whose envelope intersects the envelope of `geometry`.
 
 ## Arguments
-    - `tree`: The STRtree to query
-    - `geometry`: The LibGEOS geometry (e.g. Polygon) to run the query for
-    - `context`: The geos context. Defaults to the global LibGEOS context.
+- `tree`: The STRtree to query
+- `geometry`: The LibGEOS geometry (e.g. Polygon) to run the query for
+- `context`: The GEOS context. Defaults to the global LibGEOS context.
 """
 function query(tree::STRtree, geometry::T; context::GEOSContext = _context) where {T}
     matches = T[]
