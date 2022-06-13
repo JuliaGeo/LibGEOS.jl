@@ -90,7 +90,9 @@ export Point,
     getYMax,
     minimumRotatedRectangle,
     getGeometry,
-    getGeometries
+    getGeometries,
+    STRtree,
+    query
 
 include("libgeos_api.jl")
 
@@ -190,5 +192,6 @@ include("geos_functions.jl")
 include("geos_types.jl")
 include("geos_operations.jl")
 include("geo_interface.jl")
+include("strtree.jl")
 include("deprecated.jl")
 end
