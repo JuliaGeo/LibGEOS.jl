@@ -642,6 +642,17 @@ function delaunayTriangulation(
     result
 end
 
+function constrainedDelaunayTriangulation(
+    ptr::GEOSGeom,
+    context::GEOSContext = _context,
+)
+    result = GEOSConstrainedDelaunayTriangulation_r(context.ptr, ptr)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSConstrainedDelaunayTriangulation")
+    end
+    result
+end
+
 # -----
 # Binary predicates - return 2 on exception, 1 on true, 0 on false
 # -----

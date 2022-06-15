@@ -18,4 +18,5 @@ end
     include("test_geo_interface.jl")
     include("test_regressions.jl")
     include("test_invalid_geometry.jl")
+    include("test_strtree.jl")
 end
