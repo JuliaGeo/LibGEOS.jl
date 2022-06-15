@@ -1,11 +1,11 @@
-GeoInterface.isgeometry(geom::Point) = true
-GeoInterface.isgeometry(geom::MultiPoint) = true
-GeoInterface.isgeometry(geom::LineString) = true
-GeoInterface.isgeometry(geom::MultiLineString) = true
-GeoInterface.isgeometry(geom::LinearRing) = true
-GeoInterface.isgeometry(geom::Polygon) = true
-GeoInterface.isgeometry(geom::MultiPolygon) = true
-GeoInterface.isgeometry(geom::GeometryCollection) = true
+GeoInterface.isgeometry(::Type{Point}) = true
+GeoInterface.isgeometry(::Type{MultiPoint}) = true
+GeoInterface.isgeometry(::Type{LineString}) = true
+GeoInterface.isgeometry(::Type{MultiLineString}) = true
+GeoInterface.isgeometry(::Type{LinearRing}) = true
+GeoInterface.isgeometry(::Type{Polygon}) = true
+GeoInterface.isgeometry(::Type{MultiPolygon}) = true
+GeoInterface.isgeometry(::Type{GeometryCollection}) = true
 
 GeoInterface.geomtrait(geom::Point) = PointTrait()
 GeoInterface.geomtrait(geom::MultiPoint) = MultiPointTrait()
