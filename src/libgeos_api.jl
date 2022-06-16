@@ -591,6 +591,16 @@ function GEOSConvexHull_r(handle, g)
     )::Ptr{GEOSGeometry}
 end
 
+
+function GEOSConcaveHull_r(handle, g, ratio, allowHoles)
+    @ccall libgeos.GEOSConcaveHull_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        ratio::Cdouble,
+        allowHoles::Cuint,
+    )::Ptr{GEOSGeometry}
+end
+
 function GEOSMinimumRotatedRectangle_r(handle, g)
     @ccall libgeos.GEOSMinimumRotatedRectangle_r(
         handle::GEOSContextHandle_t,
@@ -2369,6 +2379,14 @@ end
 
 function GEOSConvexHull(g)
     @ccall libgeos.GEOSConvexHull(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSConcaveHull(g, ratio, allowHoles)
+    @ccall libgeos.GEOSConcaveHull(
+        g::Ptr{GEOSGeometry},
+        ratio::Cdouble,
+        allowHoles::Cuint,
+    )::Ptr{GEOSGeometry}
 end
 
 function GEOSMinimumRotatedRectangle(g)

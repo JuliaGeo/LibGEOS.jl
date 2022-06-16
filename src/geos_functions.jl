@@ -487,6 +487,25 @@ function convexhull(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
+# Returns a Geometry that represents the concave hull of the input geometry. 
+# The area ratio is the ratio of the concave hull area to the convex hull area. 1 produces the convex hull; 0 produces maximum concaveness. 
+# The Length Ratio is a fraction determining the length of the longest edge in the computed hull. 1 produces the convex hull; 0 produces a hull with maximum concaveness
+
+# Returns:
+function concavehull(
+    ptr::GEOSGeom,
+    ratio::Real = 0.0,
+    allowHoles::Bool=false,
+    context::GEOSContext = _context,
+)
+    result = GEOSConcaveHull_r(context.ptr, ptr, ratio, Int32(allowHoles))
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSConcaveHull")
+    end
+    result
+end
+
+
 function difference(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result = GEOSDifference_r(context.ptr, g1, g2)
     if result == C_NULL
