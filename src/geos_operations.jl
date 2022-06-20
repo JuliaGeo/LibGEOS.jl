@@ -73,8 +73,7 @@ readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = _context) =
 # Linear referencing functions -- there are more, but these are probably sufficient for most purposes
 # -----
 project(line::LineString, point::Point) = project(line.ptr, point.ptr)
-projectNormalized(line::LineString, point::Point) =
-    projectNormalized(line.ptr, point.ptr)
+projectNormalized(line::LineString, point::Point) = projectNormalized(line.ptr, point.ptr)
 interpolate(line::LineString, dist::Real) = Point(interpolate(line.ptr, dist))
 interpolateNormalized(line::LineString, dist::Real) =
     Point(interpolateNormalized(line.ptr, dist))
@@ -346,7 +345,7 @@ isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
 # # Geometry info
 # # -----
 
-# Gets the number of sub-geometries 
+# Gets the number of sub-geometries
 for geom in (
     :Point,
     :MultiPoint,

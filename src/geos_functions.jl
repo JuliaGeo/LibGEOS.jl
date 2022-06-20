@@ -271,7 +271,7 @@ function getCoordinates(ptr::GEOSCoordSeq, context::GEOSContext = _context)
     coordseq
 end
 
-function isCCW(ptr::GEOSCoordSeq, context::GEOSContext=_context)::Bool
+function isCCW(ptr::GEOSCoordSeq, context::GEOSContext = _context)::Bool
     d = UInt8[1]
     GC.@preserve result = GEOSCoordSeq_isCCW_r(context.ptr, ptr, pointer(d))
     if result == C_NULL
@@ -642,10 +642,7 @@ function delaunayTriangulation(
     result
 end
 
-function constrainedDelaunayTriangulation(
-    ptr::GEOSGeom,
-    context::GEOSContext = _context,
-)
+function constrainedDelaunayTriangulation(ptr::GEOSGeom, context::GEOSContext = _context)
     result = GEOSConstrainedDelaunayTriangulation_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSConstrainedDelaunayTriangulation")
