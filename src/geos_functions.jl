@@ -1349,7 +1349,7 @@ The precision reduced result. Caller must free with `GEOSGeom_destroy()` NULL on
 function setPrecision(
     geom::GEOSGeom,
     gridSize::Real,
-    flags::GEOSPrecisionRules,
+    flags::Union{GEOSPrecisionRules,Integer},
     context::GEOSContext = _context,
 )
     result = geomFromGEOS(GEOSGeom_setPrecision_r(context.ptr, geom, gridSize, flags))
@@ -1357,15 +1357,4 @@ function setPrecision(
         error("LibGEOS: Error in GEOSGeom_setPrecision_r")
     end
     result
-end
-@eval function setPrecision(
-    geom::GEOSGeom,
-    gridSize::Real,
-    flags::Int,
-    context::GEOSContext = _context,
-)
-    !(flags in $(Int.(instances(GEOSPrecisionRules)))) && error(
-        "flags value should be in $(Int.(instances(GEOSPrecisionRules))) or use GEOSPrecisionRules enum members",
-    )
-    return setPrecision(geom, gridSize, GEOSPrecisionRules(flags), context)
 end

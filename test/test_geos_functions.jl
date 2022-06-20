@@ -833,7 +833,9 @@ end
           writegeom(setPrecision(geom1_, 5.0; flags = 1))
     @test writegeom(setPrecision(geom1_, 5.0; flags = LibGEOS.GEOS_PREC_KEEP_COLLAPSED)) ==
           writegeom(setPrecision(geom1_, 5.0; flags = 2))
-    @test_throws ErrorException setPrecision(geom1_, 5.0; flags = 3)
+    bitwise_or_flag = LibGEOS.GEOS_PREC_NO_TOPO | LibGEOS.GEOS_PREC_KEEP_COLLAPSED
+    @test writegeom(setPrecision(geom1_, 5.0; flags = bitwise_or_flag)) ==
+          writegeom(setPrecision(geom1_, 5.0; flags = 0x03))
 
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
