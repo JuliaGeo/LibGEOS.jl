@@ -124,22 +124,20 @@ mutable struct GeometryCollection <: AbstractGeometry
         GeometryCollection(createCollection(GEOS_GEOMETRYCOLLECTION, collection))
 end
 
-for geom in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    @eval begin
-        function destroyGeom(obj::$geom, context::GEOSContext = _context)
-            destroyGeom(obj.ptr, context)
-            obj.ptr = C_NULL
-        end
-    end
+const Geometry = Union{
+    Point,
+    MultiPoint,
+    LineString,
+    MultiLineString,
+    LinearRing,
+    Polygon,
+    MultiPolygon,
+    GeometryCollection,
+}
+
+function destroyGeom(obj::Geometry, context::GEOSContext = _context)
+    destroyGeom(obj.ptr, context)
+    obj.ptr = C_NULL
 end
 
 mutable struct PreparedGeometry{G<:AbstractGeometry} <: AbstractGeometry

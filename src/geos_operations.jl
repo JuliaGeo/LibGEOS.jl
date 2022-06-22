@@ -9,34 +9,11 @@ const GEOMTYPE = Dict{GEOSGeomTypes,Symbol}(
     GEOS_GEOMETRYCOLLECTION => :GeometryCollection,
 )
 
-const Geometry = Union{
-    Point,
-    MultiPoint,
-    LineString,
-    MultiLineString,
-    LinearRing,
-    Polygon,
-    MultiPolygon,
-    GeometryCollection,
-}
-
-for geom in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    @eval writegeom(obj::$geom, wktwriter::WKTWriter, context::GEOSContext = _context) =
-        _writegeom(obj.ptr, wktwriter, context)
-    @eval writegeom(obj::$geom, wkbwriter::WKBWriter, context::GEOSContext = _context) =
-        _writegeom(obj.ptr, wkbwriter, context)
-    @eval writegeom(obj::$geom, context::GEOSContext = _context) =
-        _writegeom(obj.ptr, context)
-end
+writegeom(obj::Geometry, wktwriter::WKTWriter, context::GEOSContext = _context) =
+    _writegeom(obj.ptr, wktwriter, context)
+writegeom(obj::Geometry, wkbwriter::WKBWriter, context::GEOSContext = _context) =
+    _writegeom(obj.ptr, wkbwriter, context)
+writegeom(obj::Geometry, context::GEOSContext = _context) = _writegeom(obj.ptr, context)
 
 function geomFromGEOS(ptr::GEOSGeom)
     if geomTypeId(ptr) == GEOS_POINT
@@ -81,68 +58,34 @@ interpolateNormalized(line::LineString, dist::Real) =
 # # -----
 # # Topology operations
 # # -----
-for geom in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    @eval buffer(obj::$geom, dist::Real, quadsegs::Integer = 8) =
-        geomFromGEOS(buffer(obj.ptr, dist, quadsegs))
-    @eval bufferWithStyle(
-        obj::$geom,
-        dist::Real;
-        quadsegs::Integer = 8,
-        endCapStyle::GEOSBufCapStyles = GEOSBUF_CAP_ROUND,
-        joinStyle::GEOSBufJoinStyles = GEOSBUF_JOIN_ROUND,
-        mitreLimit::Real = 5.0,
-    ) = geomFromGEOS(
-        bufferWithStyle(obj.ptr, dist, quadsegs, endCapStyle, joinStyle, mitreLimit),
-    )
-    @eval envelope(obj::$geom) = geomFromGEOS(envelope(obj.ptr))
-    @eval minimumRotatedRectangle(obj::$geom) =
-        geomFromGEOS(minimumRotatedRectangle(obj.ptr))
-    @eval convexhull(obj::$geom) = geomFromGEOS(convexhull(obj.ptr))
-    @eval boundary(obj::$geom) = geomFromGEOS(boundary(obj.ptr))
-    @eval unaryUnion(obj::$geom) = geomFromGEOS(unaryUnion(obj.ptr))
-    @eval pointOnSurface(obj::$geom) = Point(pointOnSurface(obj.ptr))
-    @eval centroid(obj::$geom) = Point(centroid(obj.ptr))
-    @eval node(obj::$geom) = geomFromGEOS(node(obj.ptr))
-end
 
-for g1 in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
+buffer(obj::Geometry, dist::Real, quadsegs::Integer = 8) =
+    geomFromGEOS(buffer(obj.ptr, dist, quadsegs))
+bufferWithStyle(
+    obj::Geometry,
+    dist::Real;
+    quadsegs::Integer = 8,
+    endCapStyle::GEOSBufCapStyles = GEOSBUF_CAP_ROUND,
+    joinStyle::GEOSBufJoinStyles = GEOSBUF_JOIN_ROUND,
+    mitreLimit::Real = 5.0,
+) = geomFromGEOS(
+    bufferWithStyle(obj.ptr, dist, quadsegs, endCapStyle, joinStyle, mitreLimit),
 )
-    for g2 in (
-        :Point,
-        :MultiPoint,
-        :LineString,
-        :MultiLineString,
-        :LinearRing,
-        :Polygon,
-        :MultiPolygon,
-        :GeometryCollection,
-    )
-        @eval intersection(obj1::$g1, obj2::$g2) =
-            geomFromGEOS(intersection(obj1.ptr, obj2.ptr))
-        @eval difference(obj1::$g1, obj2::$g2) =
-            geomFromGEOS(difference(obj1.ptr, obj2.ptr))
-        @eval symmetricDifference(obj1::$g1, obj2::$g2) =
-            geomFromGEOS(symmetricDifference(obj1.ptr, obj2.ptr))
-        @eval union(obj1::$g1, obj2::$g2) = geomFromGEOS(union(obj1.ptr, obj2.ptr))
-    end
-end
+envelope(obj::Geometry) = geomFromGEOS(envelope(obj.ptr))
+minimumRotatedRectangle(obj::Geometry) = geomFromGEOS(minimumRotatedRectangle(obj.ptr))
+convexhull(obj::Geometry) = geomFromGEOS(convexhull(obj.ptr))
+boundary(obj::Geometry) = geomFromGEOS(boundary(obj.ptr))
+unaryUnion(obj::Geometry) = geomFromGEOS(unaryUnion(obj.ptr))
+pointOnSurface(obj::Geometry) = Point(pointOnSurface(obj.ptr))
+centroid(obj::Geometry) = Point(centroid(obj.ptr))
+node(obj::Geometry) = geomFromGEOS(node(obj.ptr))
+
+intersection(obj1::Geometry, obj2::Geometry) =
+    geomFromGEOS(intersection(obj1.ptr, obj2.ptr))
+difference(obj1::Geometry, obj2::Geometry) = geomFromGEOS(difference(obj1.ptr, obj2.ptr))
+symmetricDifference(obj1::Geometry, obj2::Geometry) =
+    geomFromGEOS(symmetricDifference(obj1.ptr, obj2.ptr))
+union(obj1::Geometry, obj2::Geometry) = geomFromGEOS(union(obj1.ptr, obj2.ptr))
 
 # # all arguments remain ownership of the caller (both Geometries and pointers)
 # function polygonize(geoms::Vector{GEOSGeom})
@@ -163,125 +106,60 @@ end
 #     result
 # end
 
-for geom in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    @eval simplify(obj::$geom, tol::Real) = geomFromGEOS(simplify(obj.ptr, tol))
-    @eval topologyPreserveSimplify(obj::$geom, tol::Real) =
-        geomFromGEOS(topologyPreserveSimplify(obj.ptr, tol))
-    @eval uniquePoints(obj::$geom) = MultiPoint(uniquePoints(obj.ptr))
-    @eval delaunayTriangulationEdges(obj::$geom, tol::Real = 0.0) =
-        MultiLineString(delaunayTriangulation(obj.ptr, tol, true))
-    @eval delaunayTriangulation(obj::$geom, tol::Real = 0.0) =
-        GeometryCollection(delaunayTriangulation(obj.ptr, tol, false))
-    @eval constrainedDelaunayTriangulation(obj::$geom) =
-        GeometryCollection(constrainedDelaunayTriangulation(obj.ptr))
-end
+simplify(obj::Geometry, tol::Real) = geomFromGEOS(simplify(obj.ptr, tol))
+topologyPreserveSimplify(obj::Geometry, tol::Real) =
+    geomFromGEOS(topologyPreserveSimplify(obj.ptr, tol))
+uniquePoints(obj::Geometry) = MultiPoint(uniquePoints(obj.ptr))
+delaunayTriangulationEdges(obj::Geometry, tol::Real = 0.0) =
+    MultiLineString(delaunayTriangulation(obj.ptr, tol, true))
+delaunayTriangulation(obj::Geometry, tol::Real = 0.0) =
+    GeometryCollection(delaunayTriangulation(obj.ptr, tol, false))
+constrainedDelaunayTriangulation(obj::Geometry) =
+    GeometryCollection(constrainedDelaunayTriangulation(obj.ptr))
+
 
 sharedPaths(obj1::LineString, obj2::LineString) =
     GeometryCollection(sharedPaths(obj1.ptr, obj2.ptr))
 
 # # Snap first geometry on to second with given tolerance
-for g1 in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    for g2 in (
-        :Point,
-        :MultiPoint,
-        :LineString,
-        :MultiLineString,
-        :LinearRing,
-        :Polygon,
-        :MultiPolygon,
-        :GeometryCollection,
-    )
-        @eval snap(obj1::$g1, obj2::$g2, tol::Real) =
-            geomFromGEOS(snap(obj1.ptr, obj2.ptr, tol))
-    end
-end
+snap(obj1::Geometry, obj2::Geometry, tol::Real) =
+    geomFromGEOS(snap(obj1.ptr, obj2.ptr, tol))
 
 # -----
 # Binary predicates
 # -----
-for g1 in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    for g2 in (
-        :Point,
-        :MultiPoint,
-        :LineString,
-        :MultiLineString,
-        :LinearRing,
-        :Polygon,
-        :MultiPolygon,
-        :GeometryCollection,
-    )
-        @eval disjoint(obj1::$g1, obj2::$g2) = disjoint(obj1.ptr, obj2.ptr)
-        @eval touches(obj1::$g1, obj2::$g2) = touches(obj1.ptr, obj2.ptr)
-        @eval intersects(obj1::$g1, obj2::$g2) = intersects(obj1.ptr, obj2.ptr)
-        @eval crosses(obj1::$g1, obj2::$g2) = crosses(obj1.ptr, obj2.ptr)
-        @eval within(obj1::$g1, obj2::$g2) = within(obj1.ptr, obj2.ptr)
-        @eval Base.contains(obj1::$g1, obj2::$g2) = Base.contains(obj1.ptr, obj2.ptr)
-        @eval overlaps(obj1::$g1, obj2::$g2) = overlaps(obj1.ptr, obj2.ptr)
-        @eval equals(obj1::$g1, obj2::$g2) = equals(obj1.ptr, obj2.ptr)
-        @eval equalsexact(obj1::$g1, obj2::$g2, tol::Real) =
-            equalsexact(obj1.ptr, obj2.ptr, tol)
-        @eval covers(obj1::$g1, obj2::$g2) = covers(obj1.ptr, obj2.ptr)
-        @eval coveredby(obj1::$g1, obj2::$g2) = coveredby(obj1.ptr, obj2.ptr)
-    end
-end
+
+disjoint(obj1::Geometry, obj2::Geometry) = disjoint(obj1.ptr, obj2.ptr)
+touches(obj1::Geometry, obj2::Geometry) = touches(obj1.ptr, obj2.ptr)
+intersects(obj1::Geometry, obj2::Geometry) = intersects(obj1.ptr, obj2.ptr)
+crosses(obj1::Geometry, obj2::Geometry) = crosses(obj1.ptr, obj2.ptr)
+within(obj1::Geometry, obj2::Geometry) = within(obj1.ptr, obj2.ptr)
+Base.contains(obj1::Geometry, obj2::Geometry) = Base.contains(obj1.ptr, obj2.ptr)
+overlaps(obj1::Geometry, obj2::Geometry) = overlaps(obj1.ptr, obj2.ptr)
+equals(obj1::Geometry, obj2::Geometry) = equals(obj1.ptr, obj2.ptr)
+equalsexact(obj1::Geometry, obj2::Geometry, tol::Real) =
+    equalsexact(obj1.ptr, obj2.ptr, tol)
+covers(obj1::Geometry, obj2::Geometry) = covers(obj1.ptr, obj2.ptr)
+coveredby(obj1::Geometry, obj2::Geometry) = coveredby(obj1.ptr, obj2.ptr)
+
 
 # # -----
 # # Prepared Geometry Binary predicates
 # # -----
 
-for geom in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    @eval prepareGeom(obj::$geom, context::GEOSContext = _context) =
-        PreparedGeometry(prepareGeom(obj.ptr, context), obj)
-    @eval Base.contains(obj1::PreparedGeometry, obj2::$geom) =
-        prepcontains(obj1.ptr, obj2.ptr)
-    @eval containsproperly(obj1::PreparedGeometry, obj2::$geom) =
-        prepcontainsproperly(obj1.ptr, obj2.ptr)
-    @eval coveredby(obj1::PreparedGeometry, obj2::$geom) = prepcoveredby(obj1.ptr, obj2.ptr)
-    @eval covers(obj1::PreparedGeometry, obj2::$geom) = prepcovers(obj1.ptr, obj2.ptr)
-    @eval crosses(obj1::PreparedGeometry, obj2::$geom) = prepcrosses(obj1.ptr, obj2.ptr)
-    @eval disjoint(obj1::PreparedGeometry, obj2::$geom) = prepdisjoint(obj1.ptr, obj2.ptr)
-    @eval intersects(obj1::PreparedGeometry, obj2::$geom) =
-        prepintersects(obj1.ptr, obj2.ptr)
-    @eval overlaps(obj1::PreparedGeometry, obj2::$geom) = prepoverlaps(obj1.ptr, obj2.ptr)
-    @eval touches(obj1::PreparedGeometry, obj2::$geom) = preptouches(obj1.ptr, obj2.ptr)
-    @eval within(obj1::PreparedGeometry, obj2::$geom) = prepwithin(obj1.ptr, obj2.ptr)
-end
+prepareGeom(obj::Geometry, context::GEOSContext = _context) =
+    PreparedGeometry(prepareGeom(obj.ptr, context), obj)
+Base.contains(obj1::PreparedGeometry, obj2::Geometry) = prepcontains(obj1.ptr, obj2.ptr)
+containsproperly(obj1::PreparedGeometry, obj2::Geometry) =
+    prepcontainsproperly(obj1.ptr, obj2.ptr)
+coveredby(obj1::PreparedGeometry, obj2::Geometry) = prepcoveredby(obj1.ptr, obj2.ptr)
+covers(obj1::PreparedGeometry, obj2::Geometry) = prepcovers(obj1.ptr, obj2.ptr)
+crosses(obj1::PreparedGeometry, obj2::Geometry) = prepcrosses(obj1.ptr, obj2.ptr)
+disjoint(obj1::PreparedGeometry, obj2::Geometry) = prepdisjoint(obj1.ptr, obj2.ptr)
+intersects(obj1::PreparedGeometry, obj2::Geometry) = prepintersects(obj1.ptr, obj2.ptr)
+overlaps(obj1::PreparedGeometry, obj2::Geometry) = prepoverlaps(obj1.ptr, obj2.ptr)
+touches(obj1::PreparedGeometry, obj2::Geometry) = preptouches(obj1.ptr, obj2.ptr)
+within(obj1::PreparedGeometry, obj2::Geometry) = prepwithin(obj1.ptr, obj2.ptr)
 
 # # -----
 # # STRtree functions
@@ -296,22 +174,11 @@ end
 # # -----
 # # Unary predicate - return 2 on exception, 1 on true, 0 on false
 # # -----
-for geom in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    @eval isEmpty(obj::$geom) = isEmpty(obj.ptr)
-    @eval isSimple(obj::$geom) = isSimple(obj.ptr)
-    @eval isRing(obj::$geom) = isRing(obj.ptr)
-    @eval isValid(obj::$geom) = isValid(obj.ptr)
-    @eval hasZ(obj::$geom) = hasZ(obj.ptr)
-end
+isEmpty(obj::Geometry) = isEmpty(obj.ptr)
+isSimple(obj::Geometry) = isSimple(obj.ptr)
+isRing(obj::Geometry) = isRing(obj.ptr)
+isValid(obj::Geometry) = isValid(obj.ptr)
+hasZ(obj::Geometry) = hasZ(obj.ptr)
 
 isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
 
@@ -346,19 +213,8 @@ isClosed(obj::LineString) = isClosed(obj.ptr) # Call only on LINESTRING
 # # -----
 
 # Gets the number of sub-geometries
-for geom in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    @eval numGeometries(obj::$geom, context::GEOSContext = _context) =
-        numGeometries(obj.ptr, context)
-end
+numGeometries(obj::Geometry, context::GEOSContext = _context) =
+    numGeometries(obj.ptr, context)
 
 # # Call only on GEOMETRYCOLLECTION or MULTI*
 # # (Return a pointer to the internal Geometry. Return NULL on exception.)
@@ -375,35 +231,13 @@ end
 # end
 # getGeometries(ptr::GEOSGeom) = GEOSGeom[getGeometry(ptr, i) for i=1:numGeometries(ptr)]
 # Gets sub-geomtry at index n or a vector of all sub-geometries
-for geom in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    @eval getGeometry(obj::$geom, n::Integer, context::GEOSContext = _context) =
-        geomFromGEOS(getGeometry(obj.ptr, n, context))
-    @eval getGeometries(obj::$geom, context::GEOSContext = _context) =
-        geomFromGEOS.(getGeometries(obj.ptr, context))
-end
+getGeometry(obj::Geometry, n::Integer, context::GEOSContext = _context) =
+    geomFromGEOS(getGeometry(obj.ptr, n, context))
+getGeometries(obj::Geometry, context::GEOSContext = _context) =
+    geomFromGEOS.(getGeometries(obj.ptr, context))
 
 # Converts Geometry to normal form (or canonical form).
-for geom in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    @eval normalize!(obj::$geom) = normalize!(obj.ptr)
-end
+normalize!(obj::Geometry) = normalize!(obj.ptr)
 
 interiorRings(obj::Polygon) = map(LinearRing, interiorRings(obj.ptr))
 exteriorRing(obj::Polygon) = LinearRing(exteriorRing(obj.ptr))
@@ -440,82 +274,23 @@ endPoint(obj::LineString) = Point(endPoint(obj.ptr)) # Call only on LINESTRING
 # # -----
 # # Misc functions
 # # -----
-for geom in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    @eval area(obj::$geom) = geomArea(obj.ptr)
-    @eval geomLength(obj::$geom) = geomLength(obj.ptr)
-end
 
-for g1 in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    for g2 in (
-        :Point,
-        :MultiPoint,
-        :LineString,
-        :MultiLineString,
-        :LinearRing,
-        :Polygon,
-        :MultiPolygon,
-        :GeometryCollection,
-    )
-        @eval distance(obj1::$g1, obj2::$g2) = geomDistance(obj1.ptr, obj2.ptr)
-        @eval hausdorffdistance(obj1::$g1, obj2::$g2) =
-            hausdorffdistance(obj1.ptr, obj2.ptr)
-        @eval hausdorffdistance(obj1::$g1, obj2::$g2, densify::Real) =
-            hausdorffdistance(obj1.ptr, obj2.ptr, densify)
-    end
-end
+area(obj::Geometry) = geomArea(obj.ptr)
+geomLength(obj::Geometry) = geomLength(obj.ptr)
 
-# Returns the closest points of the two geometries. The first point comes from g1 geometry and the second point comes from g2.
-for g1 in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    for g2 in (
-        :Point,
-        :MultiPoint,
-        :LineString,
-        :MultiLineString,
-        :LinearRing,
-        :Polygon,
-        :MultiPolygon,
-        :GeometryCollection,
-    )
-        @eval begin
-            function nearestPoints(obj1::$g1, obj2::$g2)
-                points = nearestPoints(obj1.ptr, obj2.ptr)
-                if points == C_NULL
-                    return Point[]
-                else
-                    return Point[
-                        Point(getCoordinates(points, 1)),
-                        Point(getCoordinates(points, 2)),
-                    ]
-                end
-            end
-        end
+distance(obj1::Geometry, obj2::Geometry) = geomDistance(obj1.ptr, obj2.ptr)
+hausdorffdistance(obj1::Geometry, obj2::Geometry) = hausdorffdistance(obj1.ptr, obj2.ptr)
+hausdorffdistance(obj1::Geometry, obj2::Geometry, densify::Real) =
+    hausdorffdistance(obj1.ptr, obj2.ptr, densify)
+
+# Returns the closest points of the two geometries.
+# The first point comes from g1 geometry and the second point comes from g2.
+function nearestPoints(obj1::Geometry, obj2::Geometry)
+    points = nearestPoints(obj1.ptr, obj2.ptr)
+    if points == C_NULL
+        return Point[]
+    else
+        return Point[Point(getCoordinates(points, 1)), Point(getCoordinates(points, 2))]
     end
 end
 
@@ -523,44 +298,22 @@ end
 # # Precision functions
 # # -----
 
-for geom in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    @eval getPrecision(obj::$geom, context::GEOSContext = _context) =
-        getPrecision(obj.ptr, context)
-    @eval setPrecision(
-        obj::$geom,
-        grid::Real;
-        flags = GEOS_PREC_VALID_OUTPUT,
-        context::GEOSContext = _context,
-    ) = setPrecision(obj.ptr, grid::Real, flags, context)
-end
+getPrecision(obj::Geometry, context::GEOSContext = _context) =
+    getPrecision(obj.ptr, context)
+setPrecision(
+    obj::Geometry,
+    grid::Real;
+    flags = GEOS_PREC_VALID_OUTPUT,
+    context::GEOSContext = _context,
+) = setPrecision(obj.ptr, grid::Real, flags, context)
 
 # ----
 #  Geometry information functions
 # ----
 
-for geom in (
-    :Point,
-    :MultiPoint,
-    :LineString,
-    :MultiLineString,
-    :LinearRing,
-    :Polygon,
-    :MultiPolygon,
-    :GeometryCollection,
-)
-    @eval getXMin(obj::$geom, context::GEOSContext = _context) = getXMin(obj.ptr, context)
-    @eval getYMin(obj::$geom, context::GEOSContext = _context) = getYMin(obj.ptr, context)
-    @eval getXMax(obj::$geom, context::GEOSContext = _context) = getXMax(obj.ptr, context)
-    @eval getYMax(obj::$geom, context::GEOSContext = _context) = getYMax(obj.ptr, context)
-end
+getXMin(obj::Geometry, context::GEOSContext = _context) = getXMin(obj.ptr, context)
+getYMin(obj::Geometry, context::GEOSContext = _context) = getYMin(obj.ptr, context)
+getXMax(obj::Geometry, context::GEOSContext = _context) = getXMax(obj.ptr, context)
+getYMax(obj::Geometry, context::GEOSContext = _context) = getYMax(obj.ptr, context)
 
 # TODO 02/2022: wait for libgeos release beyond 3.10.2 which will in include GEOSGeom_getExtent_r

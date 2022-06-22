@@ -84,7 +84,10 @@ end
 
     g1 = readgeom("POLYGON ((10 10, 20 40, 90 90, 90 10, 10 10))")
     g2 = constrainedDelaunayTriangulation(g1)
-    equivalent_to_wkt(g2, "GEOMETRYCOLLECTION (POLYGON ((10 10, 20 40, 90 10, 10 10)), POLYGON ((90 90, 20 40, 90 10, 90 90)))")
+    equivalent_to_wkt(
+        g2,
+        "GEOMETRYCOLLECTION (POLYGON ((10 10, 20 40, 90 10, 10 10)), POLYGON ((90 90, 20 40, 90 10, 90 90)))",
+    )
 
     # GEOSDistanceTest
     g1 = readgeom("POINT(10 10)")
