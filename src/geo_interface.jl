@@ -1,3 +1,13 @@
+const lookup_method = Dict{DataType,DataType}(
+    GeoInterface.PointTrait => Point,
+    GeoInterface.MultiPointTrait => MultiPoint,
+    GeoInterface.LineStringTrait => LineString,
+    GeoInterface.LinearRingTrait => LinearRing,
+    GeoInterface.MultiLineStringTrait => MultiLineString,
+    GeoInterface.PolygonTrait => Polygon,
+    GeoInterface.MultiPolygonTrait => MultiPolygon,
+)
+
 GeoInterface.isgeometry(::Type{Point}) = true
 GeoInterface.isgeometry(::Type{MultiPoint}) = true
 GeoInterface.isgeometry(::Type{LineString}) = true
@@ -42,3 +52,37 @@ GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom.ptr) ? 0 : getCoordinateDimension(geom.ptr)
 GeoInterface.getcoord(::AbstractGeometryTrait, geom::AbstractGeometry, i) =
     getCoordinates(getCoordSeq(geom.ptr), 1)[i]
+
+function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)
+    # minx, miny, maxx, maxy = getExtent(geom)
+    env = envelope(geom)
+    return Extent(X=(getXMin(env), getYMin(env)), Y=(getXMax(env), getYMax(env)))
+end
+
+function Base.convert(::Type{T}, geom::X) where {T<:AbstractGeometry,X}
+    return Base.convert(T, GeoInterface.geomtrait(geom), geom)
+end
+
+function Base.convert(
+    ::Type{T},
+    ::AbstractGeometryTrait,
+    geom::T,
+) where {T<:AbstractGeometry}
+    return geom
+end  # fast fallthrough without conversion
+
+function Base.convert(::Type{T}, ::Nothing, geom::T) where {T<:AbstractGeometry}
+    return geom
+end  # fast fallthrough without conversion
+
+function Base.convert(
+    ::Type{T},
+    type::AbstractGeometryTrait,
+    geom,
+) where {T<:AbstractGeometry}
+    f = get(lookup_method, typeof(type), nothing)
+    isnothing(f) && error(
+        "Cannot convert an object of $(typeof(geom)) with the $(typeof(type)) trait (yet). Please report an issue.",
+    )
+    return f(GeoInterface.coordinates(geom))
+end

@@ -1,4 +1,4 @@
-using GeoInterface
+using GeoInterface, Extents
 using Test, LibGEOS
 
 version = LibGEOS.GEOSversion()

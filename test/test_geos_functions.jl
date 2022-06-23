@@ -850,4 +850,10 @@ end
     LibGEOS.destroyGeom(input_)
     LibGEOS.destroyGeom(output_)
     LibGEOS.destroyGeom(expected_)
+
+    @testset "getExtent" begin
+        geom = LibGEOS.readgeom("LINESTRING(0 0, 1 0, 1 1)")
+        # LibGEOS.getExtent(geom) == [0, 0, 1, 1]
+        GeoInterface.extent(geom) == Extent(X = (0, 1), Y = (0, 1))
+    end
 end
