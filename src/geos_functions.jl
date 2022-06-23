@@ -1029,7 +1029,7 @@ end
     getGeometry(geom, n)
 
 Returns a copy of the specified sub-geometry of a collection.
-Numbering in one-based
+Numbering is one-based.
 For a simple geometry, returns a copy of the input.
 """
 function getGeometry(ptr::GEOSGeom, n::Integer, context::GEOSContext = _context)

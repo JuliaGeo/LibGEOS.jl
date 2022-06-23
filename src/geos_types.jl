@@ -1,4 +1,6 @@
-mutable struct Point <: GeoInterface.AbstractPoint
+abstract type AbstractGeometry end
+
+mutable struct Point <: AbstractGeometry
     ptr::GEOSGeom
 
     function Point(ptr::GEOSGeom)
@@ -9,11 +11,10 @@ mutable struct Point <: GeoInterface.AbstractPoint
     Point(coords::Vector{Float64}) = Point(createPoint(coords))
     Point(x::Real, y::Real) = Point(createPoint(x, y))
     Point(x::Real, y::Real, z::Real) = Point(createPoint(x, y, z))
-    Point(obj::T) where {T<:GeoInterface.AbstractPoint} =
-        Point(GeoInterface.coordinates(obj))
+
 end
 
-mutable struct MultiPoint <: GeoInterface.AbstractMultiPoint
+mutable struct MultiPoint <: AbstractGeometry
     ptr::GEOSGeom
 
     function MultiPoint(ptr::GEOSGeom)
@@ -27,11 +28,10 @@ mutable struct MultiPoint <: GeoInterface.AbstractMultiPoint
             GEOSGeom[createPoint(coords) for coords in multipoint],
         ),
     )
-    MultiPoint(obj::T) where {T<:GeoInterface.AbstractMultiPoint} =
-        MultiPoint(GeoInterface.coordinates(obj))
+
 end
 
-mutable struct LineString <: GeoInterface.AbstractLineString
+mutable struct LineString <: AbstractGeometry
     ptr::GEOSGeom
 
     function LineString(ptr::GEOSGeom)
@@ -40,11 +40,10 @@ mutable struct LineString <: GeoInterface.AbstractLineString
         line
     end
     LineString(line::Vector{Vector{Float64}}) = LineString(createLineString(line))
-    LineString(obj::T) where {T<:GeoInterface.AbstractLineString} =
-        LineString(GeoInterface.coordinates(obj))
+
 end
 
-mutable struct MultiLineString <: GeoInterface.AbstractMultiLineString
+mutable struct MultiLineString <: AbstractGeometry
     ptr::GEOSGeom
 
     function MultiLineString(ptr::GEOSGeom)
@@ -58,11 +57,10 @@ mutable struct MultiLineString <: GeoInterface.AbstractMultiLineString
             GEOSGeom[createLineString(coords) for coords in multiline],
         ),
     )
-    MultiLineString(obj::T) where {T<:GeoInterface.AbstractMultiLineString} =
-        MultiLineString(GeoInterface.coordinates(obj))
+
 end
 
-mutable struct LinearRing <: GeoInterface.AbstractLineString
+mutable struct LinearRing <: AbstractGeometry
     ptr::GEOSGeom
 
     function LinearRing(ptr::GEOSGeom)
@@ -71,11 +69,10 @@ mutable struct LinearRing <: GeoInterface.AbstractLineString
         ring
     end
     LinearRing(ring::Vector{Vector{Float64}}) = LinearRing(createLinearRing(ring))
-    LinearRing(obj::T) where {T<:GeoInterface.AbstractLineString} =
-        LinearRing(GeoInterface.coordinates(obj))
+
 end
 
-mutable struct Polygon <: GeoInterface.AbstractPolygon
+mutable struct Polygon <: AbstractGeometry
     ptr::GEOSGeom
 
     function Polygon(ptr::GEOSGeom)
@@ -90,11 +87,10 @@ mutable struct Polygon <: GeoInterface.AbstractPolygon
         finalizer(destroyGeom, polygon)
         polygon
     end
-    Polygon(obj::T) where {T<:GeoInterface.AbstractPolygon} =
-        Polygon(GeoInterface.coordinates(obj))
+
 end
 
-mutable struct MultiPolygon <: GeoInterface.AbstractMultiPolygon
+mutable struct MultiPolygon <: AbstractGeometry
     ptr::GEOSGeom
 
     function MultiPolygon(ptr::GEOSGeom)
@@ -113,11 +109,10 @@ mutable struct MultiPolygon <: GeoInterface.AbstractMultiPolygon
             ],
         ),
     )
-    MultiPolygon(obj::T) where {T<:GeoInterface.AbstractMultiPolygon} =
-        MultiPolygon(GeoInterface.coordinates(obj))
+
 end
 
-mutable struct GeometryCollection <: GeoInterface.AbstractGeometryCollection
+mutable struct GeometryCollection <: AbstractGeometry
     ptr::GEOSGeom
 
     function GeometryCollection(ptr::GEOSGeom)
@@ -145,8 +140,7 @@ function destroyGeom(obj::Geometry, context::GEOSContext = _context)
     obj.ptr = C_NULL
 end
 
-mutable struct PreparedGeometry{G<:GeoInterface.AbstractGeometry} <:
-               GeoInterface.AbstractGeometry
+mutable struct PreparedGeometry{G<:AbstractGeometry} <: AbstractGeometry
     ptr::Ptr{GEOSPreparedGeometry}
     ownedby::G
 end
@@ -155,3 +149,14 @@ function destroyGeom(obj::PreparedGeometry, context::GEOSContext = _context)
     destroyPreparedGeom(obj.ptr, context)
     obj.ptr = C_NULL
 end
+
+const geomtypes = [
+    Point,
+    LineString,
+    LinearRing,
+    Polygon,
+    MultiPoint,
+    MultiLineString,
+    MultiPolygon,
+    GeometryCollection,
+]
