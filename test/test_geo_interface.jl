@@ -195,10 +195,15 @@
         @test mp2 isa MultiPolygon
 
         struct XPolygon end
+        coords = [[[0.0, 0], [0.0, 10], [10.0, 10], [10.0, 0], [0.0, 0]]]
         GeoInterface.geomtrait(::XPolygon) = GeoInterface.PolygonTrait()
-        GeoInterface.coordinates(::XPolygon) = [[[0.0, 0], [0.0, 10], [10.0, 10], [10.0, 0], [0.0, 0]]]
+        GeoInterface.coordinates(::XPolygon) = coords
         p = convert(Polygon, XPolygon())
         @test p isa Polygon
+        @test GeoInterface.ngeom(p) == 1
+        @test GeoInterface.nring(p) == 1
+        @test GeoInterface.nhole(p) == 0
+        @test GeoInterface.coordinates(p) == coords
 
         struct XMesh end
         GeoInterface.geomtrait(::XPolygon) = GeoInterface.PolyhedralSurfaceTrait()
