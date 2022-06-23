@@ -56,7 +56,7 @@ GeoInterface.getcoord(::AbstractGeometryTrait, geom::AbstractGeometry, i) =
 function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)
     # minx, miny, maxx, maxy = getExtent(geom)
     env = envelope(geom)
-    return Extent(X=(getXMin(env), getYMin(env)), Y=(getXMax(env), getYMax(env)))
+    return Extent(X = (getXMin(env), getYMin(env)), Y = (getXMax(env), getYMax(env)))
 end
 
 function Base.convert(::Type{T}, geom::X) where {T<:AbstractGeometry,X}

@@ -210,7 +210,7 @@ end
     @test equals(g1, topologyPreserveSimplify(g1, 43.2))
 
     # GEOSSnapTest
-    function test_snap(g1::String, g2::String, expected::String, tol::Float64=0.0)
+    function test_snap(g1::String, g2::String, expected::String, tol::Float64 = 0.0)
         equivalent_to_wkt(snap(readgeom(g1), readgeom(g2), tol), expected)
     end
     test_snap(
@@ -389,8 +389,8 @@ end
     g1 = bufferWithStyle(
         readgeom("LINESTRING(0 0,0 1,1 1)"),
         0.1,
-        endCapStyle=LibGEOS.GEOSBUF_CAP_FLAT,
-        joinStyle=LibGEOS.GEOSBUF_JOIN_BEVEL,
+        endCapStyle = LibGEOS.GEOSBUF_CAP_FLAT,
+        joinStyle = LibGEOS.GEOSBUF_JOIN_BEVEL,
     )
     g2 = readgeom(
         "POLYGON((-0.1 0.0,-0.1 1.0,0.0 1.1,1.0 1.1,1.0 0.9,0.1 0.9,0.1 0.0,-0.1 0.0))",
@@ -400,8 +400,8 @@ end
     g1 = bufferWithStyle(
         readgeom("LINESTRING(0 0,0 1,1 1)"),
         0.1,
-        endCapStyle=LibGEOS.GEOSBUF_CAP_SQUARE,
-        joinStyle=LibGEOS.GEOSBUF_JOIN_MITRE,
+        endCapStyle = LibGEOS.GEOSBUF_CAP_SQUARE,
+        joinStyle = LibGEOS.GEOSBUF_JOIN_MITRE,
     )
     g2 =
         readgeom("POLYGON((-0.1 -0.1,-0.1 1.1,1.1 1.1,1.1 0.9,0.1 0.9,0.1 -0.1,-0.1 -0.1))")
@@ -410,7 +410,7 @@ end
     g1 = bufferWithStyle(
         readgeom("POLYGON((-1 -1,1 -1,1 1,-1 1,-1 -1))"),
         0.2,
-        joinStyle=LibGEOS.GEOSBUF_JOIN_MITRE,
+        joinStyle = LibGEOS.GEOSBUF_JOIN_MITRE,
     )
     g2 = readgeom("POLYGON((-1.2 1.2,1.2 1.2,1.2 -1.2,-1.2 -1.2,-1.2 1.2))")
     @test equals(g1, g2)
