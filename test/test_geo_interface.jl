@@ -206,8 +206,8 @@
         @test GeoInterface.coordinates(p) == coords
 
         struct XMesh end
-        GeoInterface.geomtrait(::XPolygon) = GeoInterface.PolyhedralSurfaceTrait()
-        @test_throws Exception convert(MultiPolygon, XPolygon())
+        GeoInterface.geomtrait(::XMesh) = GeoInterface.PolyhedralSurfaceTrait()
+        @test_throws Exception convert(MultiPolygon, XMesh())
 
     end
 
