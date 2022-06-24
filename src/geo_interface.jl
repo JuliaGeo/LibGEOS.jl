@@ -56,33 +56,43 @@ GeoInterface.getcoord(::AbstractGeometryTrait, geom::AbstractGeometry, i) =
 function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)
     # minx, miny, maxx, maxy = getExtent(geom)
     env = envelope(geom)
-    return Extent(X = (getXMin(env), getXMax(env)), Y = (getYMin(env), getYMax(env)))
+    return Extent(X=(getXMin(env), getXMax(env)), Y=(getYMin(env), getYMax(env)))
+end
+
+function Base.convert(::Type{T}, geom::T) where {T<:AbstractGeometry}
+    return geom
 end
 
 function Base.convert(::Type{T}, geom::X) where {T<:AbstractGeometry,X}
     return Base.convert(T, GeoInterface.geomtrait(geom), geom)
 end
 
-function Base.convert(
-    ::Type{T},
-    ::AbstractGeometryTrait,
-    geom::T,
-) where {T<:AbstractGeometry}
-    return geom
-end  # fast fallthrough without conversion
+function Base.convert(::Type{Point}, type::PointTrait, geom)
+    return Point(GeoInterface.coordinates(geom))
+end
+function Base.convert(::Type{MultiPoint}, type::MultiPointTrait, geom)
+    return MultiPoint(GeoInterface.coordinates(geom))
+end
+function Base.convert(::Type{LineString}, type::LineStringTrait, geom)
+    return LineString(GeoInterface.coordinates(geom))
+end
+function Base.convert(::Type{MultiLineString}, type::MultiLineStringTrait, geom)
+    return MultiLineString(GeoInterface.coordinates(geom))
+end
+function Base.convert(::Type{Polygon}, type::PolygonTrait, geom)
+    return Polygon(GeoInterface.coordinates(geom))
+end
+function Base.convert(::Type{MultiPolygon}, type::MultiPolygonTrait, geom)
+    return MultiPolygon(GeoInterface.coordinates(geom))
+end
 
-function Base.convert(::Type{T}, ::Nothing, geom::T) where {T<:AbstractGeometry}
-    return geom
-end  # fast fallthrough without conversion
-
 function Base.convert(
-    ::Type{T},
+    t::Type{<:AbstractGeometry},
     type::AbstractGeometryTrait,
     geom,
-) where {T<:AbstractGeometry}
-    f = get(lookup_method, typeof(type), nothing)
-    isnothing(f) && error(
-        "Cannot convert an object of $(typeof(geom)) with the $(typeof(type)) trait (yet). Please report an issue.",
+)
+    error(
+        "Cannot convert an object of $(typeof(geom)) with the $(typeof(type)) trait to a $t (yet). Please report an issue.",
     )
     return f(GeoInterface.coordinates(geom))
 end
