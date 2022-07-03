@@ -91,6 +91,12 @@
     @test GeoInterface.testgeometry(multipolygon)
     @test GeoInterface.extent(multipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
 
+    pmultipolygon = LibGEOS.prepareGeom(multipolygon)
+    @test GeoInterface.geomtrait(pmultipolygon) == MultiPolygonTrait()
+    @test GeoInterface.testgeometry(pmultipolygon)
+    @test GeoInterface.extent(pmultipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
+    LibGEOS.destroyGeom(pmultipolygon)
+
     geomcollection = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION (POLYGON ((8 2, 10 10, 8.5 1, 8 2)), POLYGON ((7 8, 10 10, 8 2, 7 8)), POLYGON ((3 8, 10 10, 7 8, 3 8)), POLYGON ((2 2, 8 2, 8.5 1, 2 2)), POLYGON ((2 2, 7 8, 8 2, 2 2)), POLYGON ((2 2, 3 8, 7 8, 2 2)), POLYGON ((0.5 9, 10 10, 3 8, 0.5 9)), POLYGON ((0.5 9, 3 8, 2 2, 0.5 9)), POLYGON ((0 0, 2 2, 8.5 1, 0 0)), POLYGON ((0 0, 0.5 9, 2 2, 0 0)))",
     )
@@ -238,6 +244,10 @@
         @test GeoInterface.nring(geom) == 1
         @test GeoInterface.nhole(geom) == 0
         @test GeoInterface.coordinates(geom) == coords
+
+        pgeom = LibGEOS.prepareGeom(geom)
+        @test GeoInterface.coordinates(pgeom) == coords
+        LibGEOS.destroyGeom(pgeom)
 
         struct XMultiPolygon end
         coords = [[[[0.0, 0], [0.0, 10], [10.0, 10], [10.0, 0], [0.0, 0]]]]

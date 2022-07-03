@@ -72,6 +72,7 @@ bufferWithStyle(
     bufferWithStyle(obj.ptr, dist, quadsegs, endCapStyle, joinStyle, mitreLimit),
 )
 envelope(obj::Geometry) = geomFromGEOS(envelope(obj.ptr))
+envelope(obj::PreparedGeometry) = geomFromGEOS(envelope(obj.ownedby.ptr))
 minimumRotatedRectangle(obj::Geometry) = geomFromGEOS(minimumRotatedRectangle(obj.ptr))
 convexhull(obj::Geometry) = geomFromGEOS(convexhull(obj.ptr))
 boundary(obj::Geometry) = geomFromGEOS(boundary(obj.ptr))
@@ -175,6 +176,7 @@ within(obj1::PreparedGeometry, obj2::Geometry) = prepwithin(obj1.ptr, obj2.ptr)
 # # Unary predicate - return 2 on exception, 1 on true, 0 on false
 # # -----
 isEmpty(obj::Geometry) = isEmpty(obj.ptr)
+isEmpty(obj::PreparedGeometry) = isEmpty(obj.ownedby.ptr)
 isSimple(obj::Geometry) = isSimple(obj.ptr)
 isRing(obj::Geometry) = isRing(obj.ptr)
 isValid(obj::Geometry) = isValid(obj.ptr)

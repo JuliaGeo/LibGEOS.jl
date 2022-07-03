@@ -1,11 +1,4 @@
-GeoInterface.isgeometry(::Type{Point}) = true
-GeoInterface.isgeometry(::Type{MultiPoint}) = true
-GeoInterface.isgeometry(::Type{LineString}) = true
-GeoInterface.isgeometry(::Type{MultiLineString}) = true
-GeoInterface.isgeometry(::Type{LinearRing}) = true
-GeoInterface.isgeometry(::Type{Polygon}) = true
-GeoInterface.isgeometry(::Type{MultiPolygon}) = true
-GeoInterface.isgeometry(::Type{GeometryCollection}) = true
+GeoInterface.isgeometry(::Type{<:AbstractGeometry}) = true
 
 GeoInterface.geomtrait(::Point) = PointTrait()
 GeoInterface.geomtrait(::MultiPoint) = MultiPointTrait()
@@ -15,6 +8,7 @@ GeoInterface.geomtrait(::LinearRing) = LinearRingTrait()
 GeoInterface.geomtrait(::Polygon) = PolygonTrait()
 GeoInterface.geomtrait(::MultiPolygon) = MultiPolygonTrait()
 GeoInterface.geomtrait(::GeometryCollection) = GeometryCollectionTrait()
+GeoInterface.geomtrait(geom::PreparedGeometry) = GeoInterface.geomtrait(geom.ownedby)
 
 GeoInterface.ngeom(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom.ptr) ? 0 : numGeometries(geom.ptr)
@@ -38,10 +32,16 @@ function GeoInterface.getgeom(::AbstractGeometryTrait, geom::Polygon, i)
     end
 end
 
+GeoInterface.ngeom(t::AbstractGeometryTrait, geom::PreparedGeometry) = GeoInterface.ngeom(t, geom.ownedby)
+GeoInterface.getgeom(t::AbstractGeometryTrait, geom::PreparedGeometry, i) = GeoInterface.getgeom(t, geom.ownedby, i)
+
 GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom.ptr) ? 0 : getCoordinateDimension(geom.ptr)
 GeoInterface.getcoord(::AbstractGeometryTrait, geom::AbstractGeometry, i) =
     getCoordinates(getCoordSeq(geom.ptr), 1)[i]
+
+GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) = GeoInterface.ncoord(t, geom.ownedby)
+GeoInterface.getcoord(t::AbstractGeometryTrait, geom::PreparedGeometry, i) = GeoInterface.getcoord(t, geom.ownedby, i)
 
 function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)
     # minx, miny, maxx, maxy = getExtent(geom)
