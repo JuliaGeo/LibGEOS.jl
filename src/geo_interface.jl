@@ -1,13 +1,3 @@
-const lookup_method = Dict{DataType,DataType}(
-    GeoInterface.PointTrait => Point,
-    GeoInterface.MultiPointTrait => MultiPoint,
-    GeoInterface.LineStringTrait => LineString,
-    GeoInterface.LinearRingTrait => LinearRing,
-    GeoInterface.MultiLineStringTrait => MultiLineString,
-    GeoInterface.PolygonTrait => Polygon,
-    GeoInterface.MultiPolygonTrait => MultiPolygon,
-)
-
 GeoInterface.isgeometry(::Type{Point}) = true
 GeoInterface.isgeometry(::Type{MultiPoint}) = true
 GeoInterface.isgeometry(::Type{LineString}) = true
@@ -17,14 +7,14 @@ GeoInterface.isgeometry(::Type{Polygon}) = true
 GeoInterface.isgeometry(::Type{MultiPolygon}) = true
 GeoInterface.isgeometry(::Type{GeometryCollection}) = true
 
-GeoInterface.geomtrait(geom::Point) = PointTrait()
-GeoInterface.geomtrait(geom::MultiPoint) = MultiPointTrait()
-GeoInterface.geomtrait(geom::LineString) = LineStringTrait()
-GeoInterface.geomtrait(geom::MultiLineString) = MultiLineStringTrait()
-GeoInterface.geomtrait(geom::LinearRing) = LinearRingTrait()
-GeoInterface.geomtrait(geom::Polygon) = PolygonTrait()
-GeoInterface.geomtrait(geom::MultiPolygon) = MultiPolygonTrait()
-GeoInterface.geomtrait(geom::GeometryCollection) = GeometryCollectionTrait()
+GeoInterface.geomtrait(::Point) = PointTrait()
+GeoInterface.geomtrait(::MultiPoint) = MultiPointTrait()
+GeoInterface.geomtrait(::LineString) = LineStringTrait()
+GeoInterface.geomtrait(::MultiLineString) = MultiLineStringTrait()
+GeoInterface.geomtrait(::LinearRing) = LinearRingTrait()
+GeoInterface.geomtrait(::Polygon) = PolygonTrait()
+GeoInterface.geomtrait(::MultiPolygon) = MultiPolygonTrait()
+GeoInterface.geomtrait(::GeometryCollection) = GeometryCollectionTrait()
 
 GeoInterface.ngeom(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom.ptr) ? 0 : numGeometries(geom.ptr)
