@@ -263,4 +263,29 @@
 
     end
 
+    @testset "Operations" begin
+        a, b = readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))"), readgeom("POINT(2 2)")
+
+        c = geom -> GeoInterface.coordinates(geom)
+
+        @test GeoInterface.distance(a, b) == LibGEOS.distance(a, b)
+        @test c(GeoInterface.buffer(a, 1)) == c(LibGEOS.buffer(a, 1))
+        @test c(GeoInterface.convexhull(a)) == c(LibGEOS.convexhull(a))
+
+        @test GeoInterface.equals(a, b) == LibGEOS.equals(a, b)
+        @test GeoInterface.disjoint(a, b) == LibGEOS.disjoint(a, b)
+        @test GeoInterface.intersects(a, b) == LibGEOS.intersects(a, b)
+        @test GeoInterface.touches(a, b) == LibGEOS.touches(a, b)
+        @test GeoInterface.within(a, b) == LibGEOS.within(a, b)
+        @test GeoInterface.contains(a, b) == LibGEOS.contains(a, b)
+        @test GeoInterface.overlaps(a, b) == LibGEOS.overlaps(a, b)
+        @test GeoInterface.crosses(a, b) == LibGEOS.crosses(a, b)
+
+        @test c(GeoInterface.symdifference(a, b)) == c(LibGEOS.symmetricDifference(a, b))
+        @test c(GeoInterface.difference(a, b)) == c(LibGEOS.difference(a, b))
+        @test c(GeoInterface.intersection(a, b)) == c(LibGEOS.intersection(a, b))
+        @test c(GeoInterface.union(a, b)) == c(LibGEOS.union(a, b))
+
+    end
+
 end

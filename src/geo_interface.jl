@@ -86,3 +86,22 @@ function Base.convert(
     )
     return f(GeoInterface.coordinates(geom))
 end
+
+GeoInterface.distance(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = distance(a, b)
+GeoInterface.buffer(::AbstractGeometryTrait, geom::AbstractGeometry, distance) = buffer(geom, distance)
+GeoInterface.convexhull(::AbstractGeometryTrait, geom::AbstractGeometry) = convexhull(geom)
+
+GeoInterface.equals(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = equals(a, b)
+GeoInterface.disjoint(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = disjoint(a, b)
+GeoInterface.intersects(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = intersects(a, b)
+GeoInterface.touches(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = touches(a, b)
+GeoInterface.within(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = within(a, b)
+GeoInterface.contains(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = contains(a, b)
+GeoInterface.overlaps(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = overlaps(a, b)
+GeoInterface.crosses(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = crosses(a, b)
+# GeoInterface.relate(::AbstractGeometryTrait, ::AbstractGeometryTrait, a, b, relationmatrix) = relate(a, b)  # not yet implemented
+
+GeoInterface.symdifference(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = symmetricDifference(a, b)
+GeoInterface.difference(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = difference(a, b)
+GeoInterface.intersection(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = intersection(a, b)
+GeoInterface.union(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = union(a, b)
