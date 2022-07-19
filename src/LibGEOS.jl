@@ -94,6 +94,14 @@ export Point,
     STRtree,
     query
 
+function transform_c_string(s::Cstring)::String
+    @show "freeing string"
+    copy = unsafe_string(s)
+    global _context
+    GEOSFree_r(_context.ptr, Ptr{Cvoid}(s))
+    return copy
+end
+
 include("libgeos_api.jl")
 
 mutable struct GEOSError <: Exception
