@@ -1,3 +1,4 @@
+using Clang.LibClang
 using Clang.Generators
 using MacroTools
 using GEOS_jll
@@ -13,7 +14,13 @@ function rewrite(ex::Expr)
         cc = :(@ccall $lib.$cname($(cargs...))::$rettype)
 
         cc′ = if rettype == :Cstring
-            :(unsafe_string($cc))
+            # do not try to free a const char *
+            # this is the only function returning such type
+            if cname == :GEOSversion
+                :(unsafe_string($cc))
+            else
+                :(transform_c_string($cc))
+            end
         else
             cc
         end
