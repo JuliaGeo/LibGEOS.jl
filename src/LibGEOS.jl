@@ -13,9 +13,6 @@ export Point,
     Polygon,
     MultiPolygon,
     GeometryCollection,
-    parseWKT,
-    geomFromWKT,
-    geomToWKT,
     readgeom,
     writegeom,
     project,
@@ -194,5 +191,5 @@ include("geos_types.jl")
 include("geos_operations.jl")
 include("geo_interface.jl")
 include("strtree.jl")
-include("deprecated.jl")
-end
+
+end  # module
