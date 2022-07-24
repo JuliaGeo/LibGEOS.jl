@@ -63,6 +63,9 @@ const GEOSQueryCallback = Ptr{Cvoid}
 # typedef int ( * GEOSDistanceCallback ) ( const void * item1 , const void * item2 , double * distance , void * userdata )
 const GEOSDistanceCallback = Ptr{Cvoid}
 
+# typedef int ( * GEOSTransformXYCallback ) ( double * x , double * y , void * userdata )
+const GEOSTransformXYCallback = Ptr{Cvoid}
+
 # typedef void ( GEOSInterruptCallback ) ( void )
 const GEOSInterruptCallback = Cvoid
 
@@ -546,6 +549,16 @@ function GEOSGeom_createEmptyCollection_r(handle, type)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSGeom_createRectangle_r(handle, xmin, ymin, xmax, ymax)
+    @ccall libgeos.GEOSGeom_createRectangle_r(
+        handle::GEOSContextHandle_t,
+        xmin::Cdouble,
+        ymin::Cdouble,
+        xmax::Cdouble,
+        ymax::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
 function GEOSGeom_clone_r(handle, g)
     @ccall libgeos.GEOSGeom_clone_r(
         handle::GEOSContextHandle_t,
@@ -588,6 +601,44 @@ function GEOSConvexHull_r(handle, g)
     @ccall libgeos.GEOSConvexHull_r(
         handle::GEOSContextHandle_t,
         g::Ptr{GEOSGeometry},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSConcaveHull_r(handle, g, ratio, allowHoles)
+    @ccall libgeos.GEOSConcaveHull_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        ratio::Cdouble,
+        allowHoles::Cuint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSPolygonHullSimplify_r(handle, g, isOuter, vertexNumFraction)
+    @ccall libgeos.GEOSPolygonHullSimplify_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        isOuter::Cuint,
+        vertexNumFraction::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSPolygonHullSimplifyMode_r(handle, g, isOuter, parameterMode, parameter)
+    @ccall libgeos.GEOSPolygonHullSimplifyMode_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        isOuter::Cuint,
+        parameterMode::Cuint,
+        parameter::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSConcaveHullOfPolygons_r(handle, g, lengthRatio, isTight, isHolesAllowed)
+    @ccall libgeos.GEOSConcaveHullOfPolygons_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        lengthRatio::Cdouble,
+        isTight::Cuint,
+        isHolesAllowed::Cuint,
     )::Ptr{GEOSGeometry}
 end
 
@@ -801,6 +852,13 @@ end
 
 function GEOSLineMerge_r(handle, g)
     @ccall libgeos.GEOSLineMerge_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSLineMergeDirected_r(handle, g)
+    @ccall libgeos.GEOSLineMergeDirected_r(
         handle::GEOSContextHandle_t,
         g::Ptr{GEOSGeometry},
     )::Ptr{GEOSGeometry}
@@ -1341,6 +1399,14 @@ function GEOSMakeValidWithParams_r(handle, g, makeValidParams)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSRemoveRepeatedPoints_r(handle, g, tolerance)
+    @ccall libgeos.GEOSRemoveRepeatedPoints_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        tolerance::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
 function GEOSGeomType_r(handle, g)
     unsafe_string(
         @ccall(
@@ -1537,6 +1603,17 @@ function GEOSGeom_getYMax_r(handle, g, value)
     )::Cint
 end
 
+function GEOSGeom_getExtent_r(handle, g, xmin, ymin, xmax, ymax)
+    @ccall libgeos.GEOSGeom_getExtent_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        xmin::Ptr{Cdouble},
+        ymin::Ptr{Cdouble},
+        xmax::Ptr{Cdouble},
+        ymax::Ptr{Cdouble},
+    )::Cint
+end
+
 function GEOSGeomGetPointN_r(handle, g, n)
     @ccall libgeos.GEOSGeomGetPointN_r(
         handle::GEOSContextHandle_t,
@@ -1640,6 +1717,16 @@ function GEOSFrechetDistanceDensify_r(handle, g1, g2, densifyFrac, dist)
     )::Cint
 end
 
+function GEOSHilbertCode_r(handle, geom, extent, level, code)
+    @ccall libgeos.GEOSHilbertCode_r(
+        handle::GEOSContextHandle_t,
+        geom::Ptr{GEOSGeometry},
+        extent::Ptr{GEOSGeometry},
+        level::Cuint,
+        code::Ptr{Cuint},
+    )::Cint
+end
+
 function GEOSGeomGetLength_r(handle, g, length)
     @ccall libgeos.GEOSGeomGetLength_r(
         handle::GEOSContextHandle_t,
@@ -1654,6 +1741,15 @@ function GEOSNearestPoints_r(handle, g1, g2)
         g1::Ptr{GEOSGeometry},
         g2::Ptr{GEOSGeometry},
     )::Ptr{GEOSCoordSequence}
+end
+
+function GEOSGeom_transformXY_r(handle, g, callback, userdata)
+    @ccall libgeos.GEOSGeom_transformXY_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        callback::GEOSTransformXYCallback,
+        userdata::Ptr{Cvoid},
+    )::Ptr{GEOSGeometry}
 end
 
 function GEOSOrientationIndex_r(handle, Ax, Ay, Bx, By, Px, Py)
@@ -1709,6 +1805,14 @@ function GEOSWKTReader_read_r(handle, reader, wkt)
         reader::Ptr{GEOSWKTReader},
         wkt::Cstring,
     )::Ptr{GEOSGeometry}
+end
+
+function GEOSWKTReader_setFixStructure_r(handle, reader, doFix)
+    @ccall libgeos.GEOSWKTReader_setFixStructure_r(
+        handle::GEOSContextHandle_t,
+        reader::Ptr{GEOSWKTReader},
+        doFix::Cchar,
+    )::Cvoid
 end
 
 function GEOSWKTWriter_create_r(handle)
@@ -1781,6 +1885,14 @@ function GEOSWKBReader_destroy_r(handle, reader)
     @ccall libgeos.GEOSWKBReader_destroy_r(
         handle::GEOSContextHandle_t,
         reader::Ptr{GEOSWKBReader},
+    )::Cvoid
+end
+
+function GEOSWKBReader_setFixStructure_r(handle, reader, doFix)
+    @ccall libgeos.GEOSWKBReader_setFixStructure_r(
+        handle::GEOSContextHandle_t,
+        reader::Ptr{GEOSWKBReader},
+        doFix::Cchar,
     )::Cvoid
 end
 
@@ -1957,6 +2069,10 @@ function finishGEOS()
     @ccall libgeos.finishGEOS()::Cvoid
 end
 
+function GEOSFree(buffer)
+    @ccall libgeos.GEOSFree(buffer::Ptr{Cvoid})::Cvoid
+end
+
 function GEOSCoordSeq_create(size, dims)
     @ccall libgeos.GEOSCoordSeq_create(size::Cuint, dims::Cuint)::Ptr{GEOSCoordSequence}
 end
@@ -2126,112 +2242,6 @@ function GEOSCoordSeq_isCCW(s, is_ccw)
     @ccall libgeos.GEOSCoordSeq_isCCW(s::Ptr{GEOSCoordSequence}, is_ccw::Cstring)::Cint
 end
 
-function GEOSProject(line, point)
-    @ccall libgeos.GEOSProject(line::Ptr{GEOSGeometry}, point::Ptr{GEOSGeometry})::Cdouble
-end
-
-function GEOSInterpolate(line, d)
-    @ccall libgeos.GEOSInterpolate(line::Ptr{GEOSGeometry}, d::Cdouble)::Ptr{GEOSGeometry}
-end
-
-function GEOSProjectNormalized(line, point)
-    @ccall libgeos.GEOSProjectNormalized(
-        line::Ptr{GEOSGeometry},
-        point::Ptr{GEOSGeometry},
-    )::Cdouble
-end
-
-function GEOSInterpolateNormalized(line, proportion)
-    @ccall libgeos.GEOSInterpolateNormalized(
-        line::Ptr{GEOSGeometry},
-        proportion::Cdouble,
-    )::Ptr{GEOSGeometry}
-end
-
-function GEOSBuffer(g, width, quadsegs)
-    @ccall libgeos.GEOSBuffer(
-        g::Ptr{GEOSGeometry},
-        width::Cdouble,
-        quadsegs::Cint,
-    )::Ptr{GEOSGeometry}
-end
-
-function GEOSBufferParams_create()
-    @ccall libgeos.GEOSBufferParams_create()::Ptr{GEOSBufferParams}
-end
-
-function GEOSBufferParams_destroy(parms)
-    @ccall libgeos.GEOSBufferParams_destroy(parms::Ptr{GEOSBufferParams})::Cvoid
-end
-
-function GEOSBufferParams_setEndCapStyle(p, style)
-    @ccall libgeos.GEOSBufferParams_setEndCapStyle(
-        p::Ptr{GEOSBufferParams},
-        style::Cint,
-    )::Cint
-end
-
-function GEOSBufferParams_setJoinStyle(p, joinStyle)
-    @ccall libgeos.GEOSBufferParams_setJoinStyle(
-        p::Ptr{GEOSBufferParams},
-        joinStyle::Cint,
-    )::Cint
-end
-
-function GEOSBufferParams_setMitreLimit(p, mitreLimit)
-    @ccall libgeos.GEOSBufferParams_setMitreLimit(
-        p::Ptr{GEOSBufferParams},
-        mitreLimit::Cdouble,
-    )::Cint
-end
-
-function GEOSBufferParams_setQuadrantSegments(p, quadSegs)
-    @ccall libgeos.GEOSBufferParams_setQuadrantSegments(
-        p::Ptr{GEOSBufferParams},
-        quadSegs::Cint,
-    )::Cint
-end
-
-function GEOSBufferParams_setSingleSided(p, singleSided)
-    @ccall libgeos.GEOSBufferParams_setSingleSided(
-        p::Ptr{GEOSBufferParams},
-        singleSided::Cint,
-    )::Cint
-end
-
-function GEOSBufferWithParams(g, p, width)
-    @ccall libgeos.GEOSBufferWithParams(
-        g::Ptr{GEOSGeometry},
-        p::Ptr{GEOSBufferParams},
-        width::Cdouble,
-    )::Ptr{GEOSGeometry}
-end
-
-function GEOSBufferWithStyle(g, width, quadsegs, endCapStyle, joinStyle, mitreLimit)
-    @ccall libgeos.GEOSBufferWithStyle(
-        g::Ptr{GEOSGeometry},
-        width::Cdouble,
-        quadsegs::Cint,
-        endCapStyle::Cint,
-        joinStyle::Cint,
-        mitreLimit::Cdouble,
-    )::Ptr{GEOSGeometry}
-end
-
-function GEOSDensify(g, tolerance)
-    @ccall libgeos.GEOSDensify(g::Ptr{GEOSGeometry}, tolerance::Cdouble)::Ptr{GEOSGeometry}
-end
-
-function GEOSOffsetCurve(g, width, quadsegs, joinStyle, mitreLimit)
-    @ccall libgeos.GEOSOffsetCurve(
-        g::Ptr{GEOSGeometry},
-        width::Cdouble,
-        quadsegs::Cint,
-        joinStyle::Cint,
-        mitreLimit::Cdouble,
-    )::Ptr{GEOSGeometry}
-end
-
 function GEOSGeom_createPoint(s)
     @ccall libgeos.GEOSGeom_createPoint(s::Ptr{GEOSCoordSequence})::Ptr{GEOSGeometry}
 end
@@ -2280,6 +2290,15 @@ function GEOSGeom_createEmptyCollection(type)
     @ccall libgeos.GEOSGeom_createEmptyCollection(type::Cint)::Ptr{GEOSGeometry}
 end
 
+function GEOSGeom_createRectangle(xmin, ymin, xmax, ymax)
+    @ccall libgeos.GEOSGeom_createRectangle(
+        xmin::Cdouble,
+        ymin::Cdouble,
+        xmax::Cdouble,
+        ymax::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
 function GEOSGeom_clone(g)
     @ccall libgeos.GEOSGeom_clone(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
 end
@@ -2288,8 +2307,310 @@ function GEOSGeom_destroy(g)
     @ccall libgeos.GEOSGeom_destroy(g::Ptr{GEOSGeometry})::Cvoid
 end
 
-function GEOSEnvelope(g)
-    @ccall libgeos.GEOSEnvelope(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+function GEOSGeomType(g)
+    unsafe_string(@ccall(libgeos.GEOSGeomType(g::Ptr{GEOSGeometry})::Cstring))
+end
+
+function GEOSGeomTypeId(g)
+    @ccall libgeos.GEOSGeomTypeId(g::Ptr{GEOSGeometry})::Cint
+end
+
+function GEOSGetSRID(g)
+    @ccall libgeos.GEOSGetSRID(g::Ptr{GEOSGeometry})::Cint
+end
+
+function GEOSGeom_getUserData(g)
+    @ccall libgeos.GEOSGeom_getUserData(g::Ptr{GEOSGeometry})::Ptr{Cvoid}
+end
+
+function GEOSGetNumGeometries(g)
+    @ccall libgeos.GEOSGetNumGeometries(g::Ptr{GEOSGeometry})::Cint
+end
+
+function GEOSGetGeometryN(g, n)
+    @ccall libgeos.GEOSGetGeometryN(g::Ptr{GEOSGeometry}, n::Cint)::Ptr{GEOSGeometry}
+end
+
+function GEOSGeom_getPrecision(g)
+    @ccall libgeos.GEOSGeom_getPrecision(g::Ptr{GEOSGeometry})::Cdouble
+end
+
+function GEOSGetNumInteriorRings(g)
+    @ccall libgeos.GEOSGetNumInteriorRings(g::Ptr{GEOSGeometry})::Cint
+end
+
+function GEOSGeomGetNumPoints(g)
+    @ccall libgeos.GEOSGeomGetNumPoints(g::Ptr{GEOSGeometry})::Cint
+end
+
+function GEOSGeomGetX(g, x)
+    @ccall libgeos.GEOSGeomGetX(g::Ptr{GEOSGeometry}, x::Ptr{Cdouble})::Cint
+end
+
+function GEOSGeomGetY(g, y)
+    @ccall libgeos.GEOSGeomGetY(g::Ptr{GEOSGeometry}, y::Ptr{Cdouble})::Cint
+end
+
+function GEOSGeomGetZ(g, z)
+    @ccall libgeos.GEOSGeomGetZ(g::Ptr{GEOSGeometry}, z::Ptr{Cdouble})::Cint
+end
+
+function GEOSGetInteriorRingN(g, n)
+    @ccall libgeos.GEOSGetInteriorRingN(g::Ptr{GEOSGeometry}, n::Cint)::Ptr{GEOSGeometry}
+end
+
+function GEOSGetExteriorRing(g)
+    @ccall libgeos.GEOSGetExteriorRing(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSGetNumCoordinates(g)
+    @ccall libgeos.GEOSGetNumCoordinates(g::Ptr{GEOSGeometry})::Cint
+end
+
+function GEOSGeom_getCoordSeq(g)
+    @ccall libgeos.GEOSGeom_getCoordSeq(g::Ptr{GEOSGeometry})::Ptr{GEOSCoordSequence}
+end
+
+function GEOSGeom_getDimensions(g)
+    @ccall libgeos.GEOSGeom_getDimensions(g::Ptr{GEOSGeometry})::Cint
+end
+
+function GEOSGeom_getCoordinateDimension(g)
+    @ccall libgeos.GEOSGeom_getCoordinateDimension(g::Ptr{GEOSGeometry})::Cint
+end
+
+function GEOSGeom_getXMin(g, value)
+    @ccall libgeos.GEOSGeom_getXMin(g::Ptr{GEOSGeometry}, value::Ptr{Cdouble})::Cint
+end
+
+function GEOSGeom_getYMin(g, value)
+    @ccall libgeos.GEOSGeom_getYMin(g::Ptr{GEOSGeometry}, value::Ptr{Cdouble})::Cint
+end
+
+function GEOSGeom_getXMax(g, value)
+    @ccall libgeos.GEOSGeom_getXMax(g::Ptr{GEOSGeometry}, value::Ptr{Cdouble})::Cint
+end
+
+function GEOSGeom_getYMax(g, value)
+    @ccall libgeos.GEOSGeom_getYMax(g::Ptr{GEOSGeometry}, value::Ptr{Cdouble})::Cint
+end
+
+function GEOSGeom_getExtent(g, xmin, ymin, xmax, ymax)
+    @ccall libgeos.GEOSGeom_getExtent(
+        g::Ptr{GEOSGeometry},
+        xmin::Ptr{Cdouble},
+        ymin::Ptr{Cdouble},
+        xmax::Ptr{Cdouble},
+        ymax::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSGeomGetPointN(g, n)
+    @ccall libgeos.GEOSGeomGetPointN(g::Ptr{GEOSGeometry}, n::Cint)::Ptr{GEOSGeometry}
+end
+
+function GEOSGeomGetStartPoint(g)
+    @ccall libgeos.GEOSGeomGetStartPoint(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSGeomGetEndPoint(g)
+    @ccall libgeos.GEOSGeomGetEndPoint(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSisEmpty(g)
+    @ccall libgeos.GEOSisEmpty(g::Ptr{GEOSGeometry})::Cchar
+end
+
+function GEOSisRing(g)
+    @ccall libgeos.GEOSisRing(g::Ptr{GEOSGeometry})::Cchar
+end
+
+function GEOSHasZ(g)
+    @ccall libgeos.GEOSHasZ(g::Ptr{GEOSGeometry})::Cchar
+end
+
+function GEOSisClosed(g)
+    @ccall libgeos.GEOSisClosed(g::Ptr{GEOSGeometry})::Cchar
+end
+
+function GEOSSetSRID(g, SRID)
+    @ccall libgeos.GEOSSetSRID(g::Ptr{GEOSGeometry}, SRID::Cint)::Cvoid
+end
+
+function GEOSGeom_setUserData(g, userData)
+    @ccall libgeos.GEOSGeom_setUserData(g::Ptr{GEOSGeometry}, userData::Ptr{Cvoid})::Cvoid
+end
+
+function GEOSNormalize(g)
+    @ccall libgeos.GEOSNormalize(g::Ptr{GEOSGeometry})::Cint
+end
+
+function GEOSisSimple(g)
+    @ccall libgeos.GEOSisSimple(g::Ptr{GEOSGeometry})::Cchar
+end
+
+function GEOSisValid(g)
+    @ccall libgeos.GEOSisValid(g::Ptr{GEOSGeometry})::Cchar
+end
+
+function GEOSisValidReason(g)
+    unsafe_string(@ccall(libgeos.GEOSisValidReason(g::Ptr{GEOSGeometry})::Cstring))
+end
+
+function GEOSisValidDetail(g, flags, reason, location)
+    @ccall libgeos.GEOSisValidDetail(
+        g::Ptr{GEOSGeometry},
+        flags::Cint,
+        reason::Ptr{Cstring},
+        location::Ptr{Ptr{GEOSGeometry}},
+    )::Cchar
+end
+
+function GEOSMakeValid(g)
+    @ccall libgeos.GEOSMakeValid(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSMakeValidWithParams(g, makeValidParams)
+    @ccall libgeos.GEOSMakeValidWithParams(
+        g::Ptr{GEOSGeometry},
+        makeValidParams::Ptr{GEOSMakeValidParams},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSMakeValidParams_create()
+    @ccall libgeos.GEOSMakeValidParams_create()::Ptr{GEOSMakeValidParams}
+end
+
+function GEOSMakeValidParams_destroy(parms)
+    @ccall libgeos.GEOSMakeValidParams_destroy(parms::Ptr{GEOSMakeValidParams})::Cvoid
+end
+
+function GEOSMakeValidParams_setMethod(p, method)
+    @ccall libgeos.GEOSMakeValidParams_setMethod(
+        p::Ptr{GEOSMakeValidParams},
+        method::GEOSMakeValidMethods,
+    )::Cint
+end
+
+function GEOSMakeValidParams_setKeepCollapsed(p, keepCollapsed)
+    @ccall libgeos.GEOSMakeValidParams_setKeepCollapsed(
+        p::Ptr{GEOSMakeValidParams},
+        keepCollapsed::Cint,
+    )::Cint
+end
+
+function GEOSMinimumClearance(g, d)
+    @ccall libgeos.GEOSMinimumClearance(g::Ptr{GEOSGeometry}, d::Ptr{Cdouble})::Cint
+end
+
+function GEOSMinimumClearanceLine(g)
+    @ccall libgeos.GEOSMinimumClearanceLine(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSRemoveRepeatedPoints(g, tolerance)
+    @ccall libgeos.GEOSRemoveRepeatedPoints(
+        g::Ptr{GEOSGeometry},
+        tolerance::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSArea(g, area)
+    @ccall libgeos.GEOSArea(g::Ptr{GEOSGeometry}, area::Ptr{Cdouble})::Cint
+end
+
+function GEOSLength(g, length)
+    @ccall libgeos.GEOSLength(g::Ptr{GEOSGeometry}, length::Ptr{Cdouble})::Cint
+end
+
+function GEOSGeomGetLength(g, length)
+    @ccall libgeos.GEOSGeomGetLength(g::Ptr{GEOSGeometry}, length::Ptr{Cdouble})::Cint
+end
+
+function GEOSDistance(g1, g2, dist)
+    @ccall libgeos.GEOSDistance(
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+        dist::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSDistanceWithin(g1, g2, dist)
+    @ccall libgeos.GEOSDistanceWithin(
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+        dist::Cdouble,
+    )::Cchar
+end
+
+function GEOSDistanceIndexed(g1, g2, dist)
+    @ccall libgeos.GEOSDistanceIndexed(
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+        dist::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSNearestPoints(g1, g2)
+    @ccall libgeos.GEOSNearestPoints(
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+    )::Ptr{GEOSCoordSequence}
+end
+
+function GEOSHausdorffDistance(g1, g2, dist)
+    @ccall libgeos.GEOSHausdorffDistance(
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+        dist::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSHausdorffDistanceDensify(g1, g2, densifyFrac, dist)
+    @ccall libgeos.GEOSHausdorffDistanceDensify(
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+        densifyFrac::Cdouble,
+        dist::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSFrechetDistance(g1, g2, dist)
+    @ccall libgeos.GEOSFrechetDistance(
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+        dist::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSFrechetDistanceDensify(g1, g2, densifyFrac, dist)
+    @ccall libgeos.GEOSFrechetDistanceDensify(
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+        densifyFrac::Cdouble,
+        dist::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSProject(line, point)
+    @ccall libgeos.GEOSProject(line::Ptr{GEOSGeometry}, point::Ptr{GEOSGeometry})::Cdouble
+end
+
+function GEOSInterpolate(line, d)
+    @ccall libgeos.GEOSInterpolate(line::Ptr{GEOSGeometry}, d::Cdouble)::Ptr{GEOSGeometry}
+end
+
+function GEOSProjectNormalized(line, point)
+    @ccall libgeos.GEOSProjectNormalized(
+        line::Ptr{GEOSGeometry},
+        point::Ptr{GEOSGeometry},
+    )::Cdouble
+end
+
+function GEOSInterpolateNormalized(line, proportion)
+    @ccall libgeos.GEOSInterpolateNormalized(
+        line::Ptr{GEOSGeometry},
+        proportion::Cdouble,
+    )::Ptr{GEOSGeometry}
 end
 
 function GEOSIntersection(g1, g2)
@@ -2363,12 +2684,156 @@ function GEOSUnaryUnionPrec(g, gridSize)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSCoverageUnion(g)
+    @ccall libgeos.GEOSCoverageUnion(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSClipByRect(g, xmin, ymin, xmax, ymax)
+    @ccall libgeos.GEOSClipByRect(
+        g::Ptr{GEOSGeometry},
+        xmin::Cdouble,
+        ymin::Cdouble,
+        xmax::Cdouble,
+        ymax::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSSharedPaths(g1, g2)
+    @ccall libgeos.GEOSSharedPaths(
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSBuffer(g, width, quadsegs)
+    @ccall libgeos.GEOSBuffer(
+        g::Ptr{GEOSGeometry},
+        width::Cdouble,
+        quadsegs::Cint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSBufferParams_create()
+    @ccall libgeos.GEOSBufferParams_create()::Ptr{GEOSBufferParams}
+end
+
+function GEOSBufferParams_destroy(parms)
+    @ccall libgeos.GEOSBufferParams_destroy(parms::Ptr{GEOSBufferParams})::Cvoid
+end
+
+function GEOSBufferParams_setEndCapStyle(p, style)
+    @ccall libgeos.GEOSBufferParams_setEndCapStyle(
+        p::Ptr{GEOSBufferParams},
+        style::Cint,
+    )::Cint
+end
+
+function GEOSBufferParams_setJoinStyle(p, joinStyle)
+    @ccall libgeos.GEOSBufferParams_setJoinStyle(
+        p::Ptr{GEOSBufferParams},
+        joinStyle::Cint,
+    )::Cint
+end
+
+function GEOSBufferParams_setMitreLimit(p, mitreLimit)
+    @ccall libgeos.GEOSBufferParams_setMitreLimit(
+        p::Ptr{GEOSBufferParams},
+        mitreLimit::Cdouble,
+    )::Cint
+end
+
+function GEOSBufferParams_setQuadrantSegments(p, quadSegs)
+    @ccall libgeos.GEOSBufferParams_setQuadrantSegments(
+        p::Ptr{GEOSBufferParams},
+        quadSegs::Cint,
+    )::Cint
+end
+
+function GEOSBufferParams_setSingleSided(p, singleSided)
+    @ccall libgeos.GEOSBufferParams_setSingleSided(
+        p::Ptr{GEOSBufferParams},
+        singleSided::Cint,
+    )::Cint
+end
+
+function GEOSBufferWithParams(g, p, width)
+    @ccall libgeos.GEOSBufferWithParams(
+        g::Ptr{GEOSGeometry},
+        p::Ptr{GEOSBufferParams},
+        width::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSBufferWithStyle(g, width, quadsegs, endCapStyle, joinStyle, mitreLimit)
+    @ccall libgeos.GEOSBufferWithStyle(
+        g::Ptr{GEOSGeometry},
+        width::Cdouble,
+        quadsegs::Cint,
+        endCapStyle::Cint,
+        joinStyle::Cint,
+        mitreLimit::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSOffsetCurve(g, width, quadsegs, joinStyle, mitreLimit)
+    @ccall libgeos.GEOSOffsetCurve(
+        g::Ptr{GEOSGeometry},
+        width::Cdouble,
+        quadsegs::Cint,
+        joinStyle::Cint,
+        mitreLimit::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSEnvelope(g)
+    @ccall libgeos.GEOSEnvelope(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
 function GEOSBoundary(g)
     @ccall libgeos.GEOSBoundary(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
 end
 
 function GEOSConvexHull(g)
     @ccall libgeos.GEOSConvexHull(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSConcaveHull(g, ratio, allowHoles)
+    @ccall libgeos.GEOSConcaveHull(
+        g::Ptr{GEOSGeometry},
+        ratio::Cdouble,
+        allowHoles::Cuint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSPolygonHullSimplify(g, isOuter, vertexNumFraction)
+    @ccall libgeos.GEOSPolygonHullSimplify(
+        g::Ptr{GEOSGeometry},
+        isOuter::Cuint,
+        vertexNumFraction::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
+@cenum GEOSPolygonHullParameterModes::UInt32 begin
+    GEOSHULL_PARAM_VERTEX_RATIO = 1
+    GEOSHULL_PARAM_AREA_RATIO = 2
+end
+
+function GEOSPolygonHullSimplifyMode(g, isOuter, parameterMode, parameter)
+    @ccall libgeos.GEOSPolygonHullSimplifyMode(
+        g::Ptr{GEOSGeometry},
+        isOuter::Cuint,
+        parameterMode::Cuint,
+        parameter::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSConcaveHullOfPolygons(g, lengthRatio, isTight, isHolesAllowed)
+    @ccall libgeos.GEOSConcaveHullOfPolygons(
+        g::Ptr{GEOSGeometry},
+        lengthRatio::Cdouble,
+        isTight::Cuint,
+        isHolesAllowed::Cuint,
+    )::Ptr{GEOSGeometry}
 end
 
 function GEOSMinimumRotatedRectangle(g)
@@ -2394,18 +2859,6 @@ function GEOSMinimumWidth(g)
     @ccall libgeos.GEOSMinimumWidth(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
 end
 
-function GEOSMinimumClearance(g, d)
-    @ccall libgeos.GEOSMinimumClearance(g::Ptr{GEOSGeometry}, d::Ptr{Cdouble})::Cint
-end
-
-function GEOSMinimumClearanceLine(g)
-    @ccall libgeos.GEOSMinimumClearanceLine(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
-end
-
-function GEOSCoverageUnion(g)
-    @ccall libgeos.GEOSCoverageUnion(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
-end
-
 function GEOSPointOnSurface(g)
     @ccall libgeos.GEOSPointOnSurface(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
 end
@@ -2422,18 +2875,31 @@ function GEOSMinimumBoundingCircle(g, radius, center)
     )::Ptr{GEOSGeometry}
 end
 
-function GEOSNode(g)
-    @ccall libgeos.GEOSNode(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+function GEOSDelaunayTriangulation(g, tolerance, onlyEdges)
+    @ccall libgeos.GEOSDelaunayTriangulation(
+        g::Ptr{GEOSGeometry},
+        tolerance::Cdouble,
+        onlyEdges::Cint,
+    )::Ptr{GEOSGeometry}
 end
 
-function GEOSClipByRect(g, xmin, ymin, xmax, ymax)
-    @ccall libgeos.GEOSClipByRect(
+function GEOSConstrainedDelaunayTriangulation(g)
+    @ccall libgeos.GEOSConstrainedDelaunayTriangulation(
         g::Ptr{GEOSGeometry},
-        xmin::Cdouble,
-        ymin::Cdouble,
-        xmax::Cdouble,
-        ymax::Cdouble,
     )::Ptr{GEOSGeometry}
+end
+
+function GEOSVoronoiDiagram(g, env, tolerance, onlyEdges)
+    @ccall libgeos.GEOSVoronoiDiagram(
+        g::Ptr{GEOSGeometry},
+        env::Ptr{GEOSGeometry},
+        tolerance::Cdouble,
+        onlyEdges::Cint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSNode(g)
+    @ccall libgeos.GEOSNode(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
 end
 
 function GEOSPolygonize(geoms, ngeoms)
@@ -2470,8 +2936,16 @@ function GEOSBuildArea(g)
     @ccall libgeos.GEOSBuildArea(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
 end
 
+function GEOSDensify(g, tolerance)
+    @ccall libgeos.GEOSDensify(g::Ptr{GEOSGeometry}, tolerance::Cdouble)::Ptr{GEOSGeometry}
+end
+
 function GEOSLineMerge(g)
     @ccall libgeos.GEOSLineMerge(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSLineMergeDirected(g)
+    @ccall libgeos.GEOSLineMergeDirected(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
 end
 
 function GEOSReverse(g)
@@ -2493,10 +2967,20 @@ function GEOSGeom_extractUniquePoints(g)
     @ccall libgeos.GEOSGeom_extractUniquePoints(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
 end
 
-function GEOSSharedPaths(g1, g2)
-    @ccall libgeos.GEOSSharedPaths(
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
+function GEOSHilbertCode(geom, extent, level, code)
+    @ccall libgeos.GEOSHilbertCode(
+        geom::Ptr{GEOSGeometry},
+        extent::Ptr{GEOSGeometry},
+        level::Cuint,
+        code::Ptr{Cuint},
+    )::Cint
+end
+
+function GEOSGeom_transformXY(g, callback, userdata)
+    @ccall libgeos.GEOSGeom_transformXY(
+        g::Ptr{GEOSGeometry},
+        callback::GEOSTransformXYCallback,
+        userdata::Ptr{Cvoid},
     )::Ptr{GEOSGeometry}
 end
 
@@ -2508,42 +2992,12 @@ function GEOSSnap(input, snap_target, tolerance)
     )::Ptr{GEOSGeometry}
 end
 
-function GEOSDelaunayTriangulation(g, tolerance, onlyEdges)
-    @ccall libgeos.GEOSDelaunayTriangulation(
+function GEOSGeom_setPrecision(g, gridSize, flags)
+    @ccall libgeos.GEOSGeom_setPrecision(
         g::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-        onlyEdges::Cint,
+        gridSize::Cdouble,
+        flags::Cint,
     )::Ptr{GEOSGeometry}
-end
-
-function GEOSConstrainedDelaunayTriangulation(g)
-    @ccall libgeos.GEOSConstrainedDelaunayTriangulation(
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
-end
-
-function GEOSVoronoiDiagram(g, env, tolerance, onlyEdges)
-    @ccall libgeos.GEOSVoronoiDiagram(
-        g::Ptr{GEOSGeometry},
-        env::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-        onlyEdges::Cint,
-    )::Ptr{GEOSGeometry}
-end
-
-function GEOSSegmentIntersection(ax0, ay0, ax1, ay1, bx0, by0, bx1, by1, cx, cy)
-    @ccall libgeos.GEOSSegmentIntersection(
-        ax0::Cdouble,
-        ay0::Cdouble,
-        ax1::Cdouble,
-        ay1::Cdouble,
-        bx0::Cdouble,
-        by0::Cdouble,
-        bx1::Cdouble,
-        by1::Cdouble,
-        cx::Ptr{Cdouble},
-        cy::Ptr{Cdouble},
-    )::Cint
 end
 
 function GEOSDisjoint(g1, g2)
@@ -2592,6 +3046,36 @@ function GEOSEqualsExact(g1, g2, tolerance)
         g2::Ptr{GEOSGeometry},
         tolerance::Cdouble,
     )::Cchar
+end
+
+function GEOSRelatePattern(g1, g2, pat)
+    @ccall libgeos.GEOSRelatePattern(
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+        pat::Cstring,
+    )::Cchar
+end
+
+function GEOSRelate(g1, g2)
+    unsafe_string(
+        @ccall(libgeos.GEOSRelate(g1::Ptr{GEOSGeometry}, g2::Ptr{GEOSGeometry})::Cstring)
+    )
+end
+
+function GEOSRelatePatternMatch(mat, pat)
+    @ccall libgeos.GEOSRelatePatternMatch(mat::Cstring, pat::Cstring)::Cchar
+end
+
+function GEOSRelateBoundaryNodeRule(g1, g2, bnr)
+    unsafe_string(
+        @ccall(
+            libgeos.GEOSRelateBoundaryNodeRule(
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                bnr::Cint,
+            )::Cstring
+        )
+    )
 end
 
 function GEOSPrepare(g)
@@ -2753,301 +3237,19 @@ function GEOSSTRtree_destroy(tree)
     @ccall libgeos.GEOSSTRtree_destroy(tree::Ptr{GEOSSTRtree})::Cvoid
 end
 
-function GEOSisEmpty(g)
-    @ccall libgeos.GEOSisEmpty(g::Ptr{GEOSGeometry})::Cchar
-end
-
-function GEOSisSimple(g)
-    @ccall libgeos.GEOSisSimple(g::Ptr{GEOSGeometry})::Cchar
-end
-
-function GEOSisRing(g)
-    @ccall libgeos.GEOSisRing(g::Ptr{GEOSGeometry})::Cchar
-end
-
-function GEOSHasZ(g)
-    @ccall libgeos.GEOSHasZ(g::Ptr{GEOSGeometry})::Cchar
-end
-
-function GEOSisClosed(g)
-    @ccall libgeos.GEOSisClosed(g::Ptr{GEOSGeometry})::Cchar
-end
-
-function GEOSRelatePattern(g1, g2, pat)
-    @ccall libgeos.GEOSRelatePattern(
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        pat::Cstring,
-    )::Cchar
-end
-
-function GEOSRelate(g1, g2)
-    unsafe_string(
-        @ccall(libgeos.GEOSRelate(g1::Ptr{GEOSGeometry}, g2::Ptr{GEOSGeometry})::Cstring)
-    )
-end
-
-function GEOSRelatePatternMatch(mat, pat)
-    @ccall libgeos.GEOSRelatePatternMatch(mat::Cstring, pat::Cstring)::Cchar
-end
-
-function GEOSRelateBoundaryNodeRule(g1, g2, bnr)
-    unsafe_string(
-        @ccall(
-            libgeos.GEOSRelateBoundaryNodeRule(
-                g1::Ptr{GEOSGeometry},
-                g2::Ptr{GEOSGeometry},
-                bnr::Cint,
-            )::Cstring
-        )
-    )
-end
-
-function GEOSisValid(g)
-    @ccall libgeos.GEOSisValid(g::Ptr{GEOSGeometry})::Cchar
-end
-
-function GEOSisValidReason(g)
-    unsafe_string(@ccall(libgeos.GEOSisValidReason(g::Ptr{GEOSGeometry})::Cstring))
-end
-
-function GEOSisValidDetail(g, flags, reason, location)
-    @ccall libgeos.GEOSisValidDetail(
-        g::Ptr{GEOSGeometry},
-        flags::Cint,
-        reason::Ptr{Cstring},
-        location::Ptr{Ptr{GEOSGeometry}},
-    )::Cchar
-end
-
-function GEOSMakeValid(g)
-    @ccall libgeos.GEOSMakeValid(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
-end
-
-function GEOSMakeValidWithParams(g, makeValidParams)
-    @ccall libgeos.GEOSMakeValidWithParams(
-        g::Ptr{GEOSGeometry},
-        makeValidParams::Ptr{GEOSMakeValidParams},
-    )::Ptr{GEOSGeometry}
-end
-
-function GEOSMakeValidParams_create()
-    @ccall libgeos.GEOSMakeValidParams_create()::Ptr{GEOSMakeValidParams}
-end
-
-function GEOSMakeValidParams_destroy(parms)
-    @ccall libgeos.GEOSMakeValidParams_destroy(parms::Ptr{GEOSMakeValidParams})::Cvoid
-end
-
-function GEOSMakeValidParams_setMethod(p, method)
-    @ccall libgeos.GEOSMakeValidParams_setMethod(
-        p::Ptr{GEOSMakeValidParams},
-        method::GEOSMakeValidMethods,
+function GEOSSegmentIntersection(ax0, ay0, ax1, ay1, bx0, by0, bx1, by1, cx, cy)
+    @ccall libgeos.GEOSSegmentIntersection(
+        ax0::Cdouble,
+        ay0::Cdouble,
+        ax1::Cdouble,
+        ay1::Cdouble,
+        bx0::Cdouble,
+        by0::Cdouble,
+        bx1::Cdouble,
+        by1::Cdouble,
+        cx::Ptr{Cdouble},
+        cy::Ptr{Cdouble},
     )::Cint
-end
-
-function GEOSMakeValidParams_setKeepCollapsed(p, keepCollapsed)
-    @ccall libgeos.GEOSMakeValidParams_setKeepCollapsed(
-        p::Ptr{GEOSMakeValidParams},
-        keepCollapsed::Cint,
-    )::Cint
-end
-
-function GEOSGeomType(g)
-    unsafe_string(@ccall(libgeos.GEOSGeomType(g::Ptr{GEOSGeometry})::Cstring))
-end
-
-function GEOSGeomTypeId(g)
-    @ccall libgeos.GEOSGeomTypeId(g::Ptr{GEOSGeometry})::Cint
-end
-
-function GEOSGetSRID(g)
-    @ccall libgeos.GEOSGetSRID(g::Ptr{GEOSGeometry})::Cint
-end
-
-function GEOSSetSRID(g, SRID)
-    @ccall libgeos.GEOSSetSRID(g::Ptr{GEOSGeometry}, SRID::Cint)::Cvoid
-end
-
-function GEOSGeom_getUserData(g)
-    @ccall libgeos.GEOSGeom_getUserData(g::Ptr{GEOSGeometry})::Ptr{Cvoid}
-end
-
-function GEOSGeom_setUserData(g, userData)
-    @ccall libgeos.GEOSGeom_setUserData(g::Ptr{GEOSGeometry}, userData::Ptr{Cvoid})::Cvoid
-end
-
-function GEOSGetNumGeometries(g)
-    @ccall libgeos.GEOSGetNumGeometries(g::Ptr{GEOSGeometry})::Cint
-end
-
-function GEOSGetGeometryN(g, n)
-    @ccall libgeos.GEOSGetGeometryN(g::Ptr{GEOSGeometry}, n::Cint)::Ptr{GEOSGeometry}
-end
-
-function GEOSNormalize(g)
-    @ccall libgeos.GEOSNormalize(g::Ptr{GEOSGeometry})::Cint
-end
-
-function GEOSGeom_setPrecision(g, gridSize, flags)
-    @ccall libgeos.GEOSGeom_setPrecision(
-        g::Ptr{GEOSGeometry},
-        gridSize::Cdouble,
-        flags::Cint,
-    )::Ptr{GEOSGeometry}
-end
-
-function GEOSGeom_getPrecision(g)
-    @ccall libgeos.GEOSGeom_getPrecision(g::Ptr{GEOSGeometry})::Cdouble
-end
-
-function GEOSGetNumInteriorRings(g)
-    @ccall libgeos.GEOSGetNumInteriorRings(g::Ptr{GEOSGeometry})::Cint
-end
-
-function GEOSGeomGetNumPoints(g)
-    @ccall libgeos.GEOSGeomGetNumPoints(g::Ptr{GEOSGeometry})::Cint
-end
-
-function GEOSGeomGetX(g, x)
-    @ccall libgeos.GEOSGeomGetX(g::Ptr{GEOSGeometry}, x::Ptr{Cdouble})::Cint
-end
-
-function GEOSGeomGetY(g, y)
-    @ccall libgeos.GEOSGeomGetY(g::Ptr{GEOSGeometry}, y::Ptr{Cdouble})::Cint
-end
-
-function GEOSGeomGetZ(g, z)
-    @ccall libgeos.GEOSGeomGetZ(g::Ptr{GEOSGeometry}, z::Ptr{Cdouble})::Cint
-end
-
-function GEOSGetInteriorRingN(g, n)
-    @ccall libgeos.GEOSGetInteriorRingN(g::Ptr{GEOSGeometry}, n::Cint)::Ptr{GEOSGeometry}
-end
-
-function GEOSGetExteriorRing(g)
-    @ccall libgeos.GEOSGetExteriorRing(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
-end
-
-function GEOSGetNumCoordinates(g)
-    @ccall libgeos.GEOSGetNumCoordinates(g::Ptr{GEOSGeometry})::Cint
-end
-
-function GEOSGeom_getCoordSeq(g)
-    @ccall libgeos.GEOSGeom_getCoordSeq(g::Ptr{GEOSGeometry})::Ptr{GEOSCoordSequence}
-end
-
-function GEOSGeom_getDimensions(g)
-    @ccall libgeos.GEOSGeom_getDimensions(g::Ptr{GEOSGeometry})::Cint
-end
-
-function GEOSGeom_getCoordinateDimension(g)
-    @ccall libgeos.GEOSGeom_getCoordinateDimension(g::Ptr{GEOSGeometry})::Cint
-end
-
-function GEOSGeom_getXMin(g, value)
-    @ccall libgeos.GEOSGeom_getXMin(g::Ptr{GEOSGeometry}, value::Ptr{Cdouble})::Cint
-end
-
-function GEOSGeom_getYMin(g, value)
-    @ccall libgeos.GEOSGeom_getYMin(g::Ptr{GEOSGeometry}, value::Ptr{Cdouble})::Cint
-end
-
-function GEOSGeom_getXMax(g, value)
-    @ccall libgeos.GEOSGeom_getXMax(g::Ptr{GEOSGeometry}, value::Ptr{Cdouble})::Cint
-end
-
-function GEOSGeom_getYMax(g, value)
-    @ccall libgeos.GEOSGeom_getYMax(g::Ptr{GEOSGeometry}, value::Ptr{Cdouble})::Cint
-end
-
-function GEOSGeomGetPointN(g, n)
-    @ccall libgeos.GEOSGeomGetPointN(g::Ptr{GEOSGeometry}, n::Cint)::Ptr{GEOSGeometry}
-end
-
-function GEOSGeomGetStartPoint(g)
-    @ccall libgeos.GEOSGeomGetStartPoint(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
-end
-
-function GEOSGeomGetEndPoint(g)
-    @ccall libgeos.GEOSGeomGetEndPoint(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
-end
-
-function GEOSArea(g, area)
-    @ccall libgeos.GEOSArea(g::Ptr{GEOSGeometry}, area::Ptr{Cdouble})::Cint
-end
-
-function GEOSLength(g, length)
-    @ccall libgeos.GEOSLength(g::Ptr{GEOSGeometry}, length::Ptr{Cdouble})::Cint
-end
-
-function GEOSDistance(g1, g2, dist)
-    @ccall libgeos.GEOSDistance(
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Ptr{Cdouble},
-    )::Cint
-end
-
-function GEOSDistanceWithin(g1, g2, dist)
-    @ccall libgeos.GEOSDistanceWithin(
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Cdouble,
-    )::Cchar
-end
-
-function GEOSDistanceIndexed(g1, g2, dist)
-    @ccall libgeos.GEOSDistanceIndexed(
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Ptr{Cdouble},
-    )::Cint
-end
-
-function GEOSHausdorffDistance(g1, g2, dist)
-    @ccall libgeos.GEOSHausdorffDistance(
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Ptr{Cdouble},
-    )::Cint
-end
-
-function GEOSHausdorffDistanceDensify(g1, g2, densifyFrac, dist)
-    @ccall libgeos.GEOSHausdorffDistanceDensify(
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        densifyFrac::Cdouble,
-        dist::Ptr{Cdouble},
-    )::Cint
-end
-
-function GEOSFrechetDistance(g1, g2, dist)
-    @ccall libgeos.GEOSFrechetDistance(
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Ptr{Cdouble},
-    )::Cint
-end
-
-function GEOSFrechetDistanceDensify(g1, g2, densifyFrac, dist)
-    @ccall libgeos.GEOSFrechetDistanceDensify(
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        densifyFrac::Cdouble,
-        dist::Ptr{Cdouble},
-    )::Cint
-end
-
-function GEOSGeomGetLength(g, length)
-    @ccall libgeos.GEOSGeomGetLength(g::Ptr{GEOSGeometry}, length::Ptr{Cdouble})::Cint
-end
-
-function GEOSNearestPoints(g1, g2)
-    @ccall libgeos.GEOSNearestPoints(
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Ptr{GEOSCoordSequence}
 end
 
 function GEOSOrientationIndex(Ax, Ay, Bx, By, Px, Py)
@@ -3074,6 +3276,13 @@ function GEOSWKTReader_read(reader, wkt)
         reader::Ptr{GEOSWKTReader},
         wkt::Cstring,
     )::Ptr{GEOSGeometry}
+end
+
+function GEOSWKTReader_setFixStructure(reader, doFix)
+    @ccall libgeos.GEOSWKTReader_setFixStructure(
+        reader::Ptr{GEOSWKTReader},
+        doFix::Cchar,
+    )::Cvoid
 end
 
 function GEOSWKTWriter_create()
@@ -3127,6 +3336,13 @@ end
 
 function GEOSWKBReader_destroy(reader)
     @ccall libgeos.GEOSWKBReader_destroy(reader::Ptr{GEOSWKBReader})::Cvoid
+end
+
+function GEOSWKBReader_setFixStructure(reader, doFix)
+    @ccall libgeos.GEOSWKBReader_setFixStructure(
+        reader::Ptr{GEOSWKBReader},
+        doFix::Cchar,
+    )::Cvoid
 end
 
 function GEOSWKBReader_read(reader, wkb, size)
@@ -3208,10 +3424,6 @@ function GEOSWKBWriter_setIncludeSRID(writer, writeSRID)
         writer::Ptr{GEOSWKBWriter},
         writeSRID::Cchar,
     )::Cvoid
-end
-
-function GEOSFree(buffer)
-    @ccall libgeos.GEOSFree(buffer::Ptr{Cvoid})::Cvoid
 end
 
 function GEOSGeoJSONReader_create()
@@ -3413,21 +3625,21 @@ end
 
 const GEOS_VERSION_MAJOR = 3
 
-const GEOS_VERSION_MINOR = 10
+const GEOS_VERSION_MINOR = 11
 
-const GEOS_VERSION_PATCH = 2
+const GEOS_VERSION_PATCH = 0
 
-const GEOS_VERSION = "3.10.2"
+const GEOS_VERSION = "3.11.0"
 
 const GEOS_JTS_PORT = "1.18.0"
 
 const GEOS_CAPI_VERSION_MAJOR = 1
 
-const GEOS_CAPI_VERSION_MINOR = 16
+const GEOS_CAPI_VERSION_MINOR = 17
 
 const GEOS_CAPI_VERSION_PATCH = 0
 
-const GEOS_CAPI_VERSION = "3.10.2-CAPI-1.16.0"
+const GEOS_CAPI_VERSION = "3.11.0-CAPI-1.17.0"
 
 const GEOS_CAPI_FIRST_INTERFACE = GEOS_CAPI_VERSION_MAJOR
 
