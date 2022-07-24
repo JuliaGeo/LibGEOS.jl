@@ -1,20 +1,14 @@
-GeoInterface.isgeometry(::Type{Point}) = true
-GeoInterface.isgeometry(::Type{MultiPoint}) = true
-GeoInterface.isgeometry(::Type{LineString}) = true
-GeoInterface.isgeometry(::Type{MultiLineString}) = true
-GeoInterface.isgeometry(::Type{LinearRing}) = true
-GeoInterface.isgeometry(::Type{Polygon}) = true
-GeoInterface.isgeometry(::Type{MultiPolygon}) = true
-GeoInterface.isgeometry(::Type{GeometryCollection}) = true
+GeoInterface.isgeometry(::Type{<:AbstractGeometry}) = true
 
-GeoInterface.geomtrait(geom::Point) = PointTrait()
-GeoInterface.geomtrait(geom::MultiPoint) = MultiPointTrait()
-GeoInterface.geomtrait(geom::LineString) = LineStringTrait()
-GeoInterface.geomtrait(geom::MultiLineString) = MultiLineStringTrait()
-GeoInterface.geomtrait(geom::LinearRing) = LinearRingTrait()
-GeoInterface.geomtrait(geom::Polygon) = PolygonTrait()
-GeoInterface.geomtrait(geom::MultiPolygon) = MultiPolygonTrait()
-GeoInterface.geomtrait(geom::GeometryCollection) = GeometryCollectionTrait()
+GeoInterface.geomtrait(::Point) = PointTrait()
+GeoInterface.geomtrait(::MultiPoint) = MultiPointTrait()
+GeoInterface.geomtrait(::LineString) = LineStringTrait()
+GeoInterface.geomtrait(::MultiLineString) = MultiLineStringTrait()
+GeoInterface.geomtrait(::LinearRing) = LinearRingTrait()
+GeoInterface.geomtrait(::Polygon) = PolygonTrait()
+GeoInterface.geomtrait(::MultiPolygon) = MultiPolygonTrait()
+GeoInterface.geomtrait(::GeometryCollection) = GeometryCollectionTrait()
+GeoInterface.geomtrait(geom::PreparedGeometry) = GeoInterface.geomtrait(geom.ownedby)
 
 GeoInterface.ngeom(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom.ptr) ? 0 : numGeometries(geom.ptr)
@@ -38,7 +32,76 @@ function GeoInterface.getgeom(::AbstractGeometryTrait, geom::Polygon, i)
     end
 end
 
+GeoInterface.ngeom(t::AbstractGeometryTrait, geom::PreparedGeometry) = GeoInterface.ngeom(t, geom.ownedby)
+GeoInterface.getgeom(t::AbstractGeometryTrait, geom::PreparedGeometry, i) = GeoInterface.getgeom(t, geom.ownedby, i)
+
 GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom.ptr) ? 0 : getCoordinateDimension(geom.ptr)
 GeoInterface.getcoord(::AbstractGeometryTrait, geom::AbstractGeometry, i) =
     getCoordinates(getCoordSeq(geom.ptr), 1)[i]
+
+GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) = GeoInterface.ncoord(t, geom.ownedby)
+GeoInterface.getcoord(t::AbstractGeometryTrait, geom::PreparedGeometry, i) = GeoInterface.getcoord(t, geom.ownedby, i)
+
+function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)
+    # minx, miny, maxx, maxy = getExtent(geom)
+    env = envelope(geom)
+    return Extent(X=(getXMin(env), getXMax(env)), Y=(getYMin(env), getYMax(env)))
+end
+
+function Base.convert(::Type{T}, geom::T) where {T<:AbstractGeometry}
+    return geom
+end
+
+function Base.convert(::Type{T}, geom::X) where {T<:AbstractGeometry,X}
+    return Base.convert(T, GeoInterface.geomtrait(geom), geom)
+end
+
+function Base.convert(::Type{Point}, type::PointTrait, geom)
+    return Point(GeoInterface.coordinates(geom))
+end
+function Base.convert(::Type{MultiPoint}, type::MultiPointTrait, geom)
+    return MultiPoint(GeoInterface.coordinates(geom))
+end
+function Base.convert(::Type{LineString}, type::LineStringTrait, geom)
+    return LineString(GeoInterface.coordinates(geom))
+end
+function Base.convert(::Type{MultiLineString}, type::MultiLineStringTrait, geom)
+    return MultiLineString(GeoInterface.coordinates(geom))
+end
+function Base.convert(::Type{Polygon}, type::PolygonTrait, geom)
+    return Polygon(GeoInterface.coordinates(geom))
+end
+function Base.convert(::Type{MultiPolygon}, type::MultiPolygonTrait, geom)
+    return MultiPolygon(GeoInterface.coordinates(geom))
+end
+
+function Base.convert(
+    t::Type{<:AbstractGeometry},
+    type::AbstractGeometryTrait,
+    geom,
+)
+    error(
+        "Cannot convert an object of $(typeof(geom)) with the $(typeof(type)) trait to a $t (yet). Please report an issue.",
+    )
+    return f(GeoInterface.coordinates(geom))
+end
+
+GeoInterface.distance(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = distance(a, b)
+GeoInterface.buffer(::AbstractGeometryTrait, geom::AbstractGeometry, distance) = buffer(geom, distance)
+GeoInterface.convexhull(::AbstractGeometryTrait, geom::AbstractGeometry) = convexhull(geom)
+
+GeoInterface.equals(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = equals(a, b)
+GeoInterface.disjoint(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = disjoint(a, b)
+GeoInterface.intersects(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = intersects(a, b)
+GeoInterface.touches(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = touches(a, b)
+GeoInterface.within(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = within(a, b)
+GeoInterface.contains(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = contains(a, b)
+GeoInterface.overlaps(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = overlaps(a, b)
+GeoInterface.crosses(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = crosses(a, b)
+# GeoInterface.relate(::AbstractGeometryTrait, ::AbstractGeometryTrait, a, b, relationmatrix) = relate(a, b)  # not yet implemented
+
+GeoInterface.symdifference(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = symmetricDifference(a, b)
+GeoInterface.difference(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = difference(a, b)
+GeoInterface.intersection(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = intersection(a, b)
+GeoInterface.union(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = union(a, b)

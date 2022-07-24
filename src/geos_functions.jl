@@ -1213,10 +1213,22 @@ end
 
 
 # TODO 02/2022: wait for libgeos release beyond 3.10.2 which will in include GEOSGeom_getExtent_r
-# # Finds the extent (minimum and maximum X and Y value) of the geometry
+# Note: This is not in as of the current GEOS_jll 3.10.2...
+# """
+#     getExtent(geom, context=_context)
+
+# Retrieves the extent (xmin, ymin, xmax, ymax) of the geometry
+# """
 # function getExtent(ptr::GEOSGeom, context::GEOSContext = _context)
 #     out = Vector{Float64}(undef, 4)
-#     result = GEOSGeom_getExtent_r(context.ptr, ptr, Ref(out, 1), Ref(out, 2), Ref(out, 3), Ref(out, 4))
+#     result = GEOSGeom_getExtent_r(
+#         context.ptr,
+#         ptr,
+#         Ref(out, 1),
+#         Ref(out, 2),
+#         Ref(out, 3),
+#         Ref(out, 4),
+#     )
 #     if result == 0
 #         error("LibGEOS: Error in GEOSGeom_getExtent_r")
 #     end

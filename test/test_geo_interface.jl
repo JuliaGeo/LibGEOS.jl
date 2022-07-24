@@ -5,6 +5,7 @@
     @test GeoInterface.ncoord(pt) == 2
     @test GeoInterface.getcoord(pt, 1) ≈ 1.0
     @test GeoInterface.testgeometry(pt)
+    @test GeoInterface.extent(pt) == Extent(X=(1.0, 1.0), Y=(2.0, 2.0))
 
     pt = LibGEOS.Point(1, 2)
     @test GeoInterface.coordinates(pt) ≈ [1, 2] atol = 1e-5
@@ -88,6 +89,13 @@
     ]]]
     @test GeoInterface.geomtrait(multipolygon) == MultiPolygonTrait()
     @test GeoInterface.testgeometry(multipolygon)
+    @test GeoInterface.extent(multipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
+
+    pmultipolygon = LibGEOS.prepareGeom(multipolygon)
+    @test GeoInterface.geomtrait(pmultipolygon) == MultiPolygonTrait()
+    @test GeoInterface.testgeometry(pmultipolygon)
+    @test GeoInterface.extent(pmultipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
+    LibGEOS.destroyGeom(pmultipolygon)
 
     geomcollection = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION (POLYGON ((8 2, 10 10, 8.5 1, 8 2)), POLYGON ((7 8, 10 10, 8 2, 7 8)), POLYGON ((3 8, 10 10, 7 8, 3 8)), POLYGON ((2 2, 8 2, 8.5 1, 2 2)), POLYGON ((2 2, 7 8, 8 2, 2 2)), POLYGON ((2 2, 3 8, 7 8, 2 2)), POLYGON ((0.5 9, 10 10, 3 8, 0.5 9)), POLYGON ((0.5 9, 3 8, 2 2, 0.5 9)), POLYGON ((0 0, 2 2, 8.5 1, 0 0)), POLYGON ((0 0, 0.5 9, 2 2, 0 0)))",
@@ -186,5 +194,98 @@
     @test GeoInterface.ngeom(geomcollection) == 0
     @test GeoInterface.geomtrait(geomcollection) == GeometryCollectionTrait()
     @test GeoInterface.testgeometry(geomcollection)
+
+    @testset "Conversion" begin
+        mp = LibGEOS.readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
+        @test_throws Exception convert(Polygon, mp)
+        mp2 = convert(MultiPolygon, mp)
+        @test mp2 isa MultiPolygon
+        @test mp === mp2
+
+        struct XPoint end
+        coords = [0.0, 0]
+        GeoInterface.geomtrait(::XPoint) = GeoInterface.PointTrait()
+        GeoInterface.coordinates(::XPoint) = coords
+        geom = convert(Point, XPoint())
+        @test geom isa Point
+        @test GeoInterface.coordinates(geom) == coords
+
+        struct XMultiPoint end
+        coords = [[0.0, 0], [0.0, 10]]
+        GeoInterface.geomtrait(::XMultiPoint) = GeoInterface.MultiPointTrait()
+        GeoInterface.coordinates(::XMultiPoint) = coords
+        geom = convert(MultiPoint, XMultiPoint())
+        @test geom isa MultiPoint
+        @test GeoInterface.coordinates(geom) == coords
+
+        struct XLineString end
+        coords = [[0.0, 0], [0.0, 10], [10.0, 10], [10.0, 0], [0.0, 0]]
+        GeoInterface.geomtrait(::XLineString) = GeoInterface.LineStringTrait()
+        GeoInterface.coordinates(::XLineString) = coords
+        geom = convert(LineString, XLineString())
+        @test geom isa LineString
+        @test GeoInterface.coordinates(geom) == coords
+
+        struct XMultiLineString end
+        coords = [[[0.0, 0], [0.0, 10], [10.0, 10], [10.0, 0], [0.0, 0]]]
+        GeoInterface.geomtrait(::XMultiLineString) = GeoInterface.MultiLineStringTrait()
+        GeoInterface.coordinates(::XMultiLineString) = coords
+        geom = convert(MultiLineString, XMultiLineString())
+        @test geom isa MultiLineString
+        @test GeoInterface.coordinates(geom) == coords
+
+        struct XPolygon end
+        coords = [[[0.0, 0], [0.0, 10], [10.0, 10], [10.0, 0], [0.0, 0]]]
+        GeoInterface.geomtrait(::XPolygon) = GeoInterface.PolygonTrait()
+        GeoInterface.coordinates(::XPolygon) = coords
+        geom = convert(Polygon, XPolygon())
+        @test geom isa Polygon
+        @test GeoInterface.ngeom(geom) == 1
+        @test GeoInterface.nring(geom) == 1
+        @test GeoInterface.nhole(geom) == 0
+        @test GeoInterface.coordinates(geom) == coords
+
+        pgeom = LibGEOS.prepareGeom(geom)
+        @test GeoInterface.coordinates(pgeom) == coords
+        LibGEOS.destroyGeom(pgeom)
+
+        struct XMultiPolygon end
+        coords = [[[[0.0, 0], [0.0, 10], [10.0, 10], [10.0, 0], [0.0, 0]]]]
+        GeoInterface.geomtrait(::XMultiPolygon) = GeoInterface.MultiPolygonTrait()
+        GeoInterface.coordinates(::XMultiPolygon) = coords
+        geom = convert(MultiPolygon, XMultiPolygon())
+        @test geom isa MultiPolygon
+        @test GeoInterface.coordinates(geom) == coords
+
+        struct XMesh end
+        GeoInterface.geomtrait(::XMesh) = GeoInterface.PolyhedralSurfaceTrait()
+        @test_throws Exception convert(MultiPolygon, XMesh())
+
+    end
+
+    @testset "Operations" begin
+        a, b = readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))"), readgeom("POINT(2 2)")
+
+        c = geom -> GeoInterface.coordinates(geom)
+
+        @test GeoInterface.distance(a, b) == LibGEOS.distance(a, b)
+        @test c(GeoInterface.buffer(a, 1)) == c(LibGEOS.buffer(a, 1))
+        @test c(GeoInterface.convexhull(a)) == c(LibGEOS.convexhull(a))
+
+        @test GeoInterface.equals(a, b) == LibGEOS.equals(a, b)
+        @test GeoInterface.disjoint(a, b) == LibGEOS.disjoint(a, b)
+        @test GeoInterface.intersects(a, b) == LibGEOS.intersects(a, b)
+        @test GeoInterface.touches(a, b) == LibGEOS.touches(a, b)
+        @test GeoInterface.within(a, b) == LibGEOS.within(a, b)
+        @test GeoInterface.contains(a, b) == LibGEOS.contains(a, b)
+        @test GeoInterface.overlaps(a, b) == LibGEOS.overlaps(a, b)
+        @test GeoInterface.crosses(a, b) == LibGEOS.crosses(a, b)
+
+        @test c(GeoInterface.symdifference(a, b)) == c(LibGEOS.symmetricDifference(a, b))
+        @test c(GeoInterface.difference(a, b)) == c(LibGEOS.difference(a, b))
+        @test c(GeoInterface.intersection(a, b)) == c(LibGEOS.intersection(a, b))
+        @test c(GeoInterface.union(a, b)) == c(LibGEOS.union(a, b))
+
+    end
 
 end

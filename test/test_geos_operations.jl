@@ -102,6 +102,7 @@ end
     g1 = readgeom("MULTIPOINT(0 0, 0 0, 1 1)")
     g2 = uniquePoints(g1)
     @test equals(g2, readgeom("MULTIPOINT(0 0, 1 1)"))
+    @test GeoInterface.equals(g2, readgeom("MULTIPOINT(0 0, 1 1)"))
 
     g1 = readgeom(
         "GEOMETRYCOLLECTION(MULTIPOINT(0 0, 0 0, 1 1),LINESTRING(1 1, 2 2, 2 2, 0 0),POLYGON((5 5, 0 0, 0 2, 2 2, 5 5)))",
@@ -210,7 +211,7 @@ end
     @test equals(g1, topologyPreserveSimplify(g1, 43.2))
 
     # GEOSSnapTest
-    function test_snap(g1::String, g2::String, expected::String, tol::Float64=0.0)
+    function test_snap(g1::String, g2::String, expected::String, tol::Float64 = 0.0)
         equivalent_to_wkt(snap(readgeom(g1), readgeom(g2), tol), expected)
     end
     test_snap(
@@ -384,6 +385,7 @@ end
     @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 0.1) isa
           LibGEOS.MultiPolygon
     @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 10) isa LibGEOS.Polygon
+    @test GeoInterface.buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 10) isa LibGEOS.Polygon
 
     # bufferWithStyle
     g1 = bufferWithStyle(
@@ -396,6 +398,7 @@ end
         "POLYGON((-0.1 0.0,-0.1 1.0,0.0 1.1,1.0 1.1,1.0 0.9,0.1 0.9,0.1 0.0,-0.1 0.0))",
     )
     @test equals(g1, g2)
+    @test GeoInterface.equals(g1, g2)
 
     g1 = bufferWithStyle(
         readgeom("LINESTRING(0 0,0 1,1 1)"),
