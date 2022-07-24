@@ -5,7 +5,7 @@
     @test GeoInterface.ncoord(pt) == 2
     @test GeoInterface.getcoord(pt, 1) ≈ 1.0
     @test GeoInterface.testgeometry(pt)
-    @test GeoInterface.extent(pt) == Extent(X=(1.0, 1.0), Y=(2.0, 2.0))
+    @test GeoInterface.extent(pt) == Extent(X = (1.0, 1.0), Y = (2.0, 2.0))
 
     pt = LibGEOS.Point(1, 2)
     @test GeoInterface.coordinates(pt) ≈ [1, 2] atol = 1e-5
@@ -89,12 +89,12 @@
     ]]]
     @test GeoInterface.geomtrait(multipolygon) == MultiPolygonTrait()
     @test GeoInterface.testgeometry(multipolygon)
-    @test GeoInterface.extent(multipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
+    @test GeoInterface.extent(multipolygon) == Extent(X = (0.0, 10.0), Y = (0.0, 10.0))
 
     pmultipolygon = LibGEOS.prepareGeom(multipolygon)
     @test GeoInterface.geomtrait(pmultipolygon) == MultiPolygonTrait()
     @test GeoInterface.testgeometry(pmultipolygon)
-    @test GeoInterface.extent(pmultipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
+    @test GeoInterface.extent(pmultipolygon) == Extent(X = (0.0, 10.0), Y = (0.0, 10.0))
     LibGEOS.destroyGeom(pmultipolygon)
 
     geomcollection = LibGEOS.readgeom(

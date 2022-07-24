@@ -40,9 +40,11 @@ function GeoInterface.getgeom(::AbstractGeometryTrait, geom::Polygon, i)
 end
 GeoInterface.getgeom(::AbstractPointTrait, geom::Polygon, i) = nothing
 
-GeoInterface.ngeom(t::AbstractGeometryTrait, geom::PreparedGeometry) = GeoInterface.ngeom(t, geom.ownedby)
+GeoInterface.ngeom(t::AbstractGeometryTrait, geom::PreparedGeometry) =
+    GeoInterface.ngeom(t, geom.ownedby)
 GeoInterface.ngeom(t::AbstractPointTrait, geom::PreparedGeometry) = 0
-GeoInterface.getgeom(t::AbstractGeometryTrait, geom::PreparedGeometry, i) = GeoInterface.getgeom(t, geom.ownedby, i)
+GeoInterface.getgeom(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
+    GeoInterface.getgeom(t, geom.ownedby, i)
 GeoInterface.getgeom(t::AbstractPointTrait, geom::PreparedGeometry, i) = 0
 
 GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
@@ -50,13 +52,15 @@ GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
 GeoInterface.getcoord(::AbstractGeometryTrait, geom::AbstractGeometry, i) =
     getCoordinates(getCoordSeq(geom.ptr), 1)[i]
 
-GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) = GeoInterface.ncoord(t, geom.ownedby)
-GeoInterface.getcoord(t::AbstractGeometryTrait, geom::PreparedGeometry, i) = GeoInterface.getcoord(t, geom.ownedby, i)
+GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) =
+    GeoInterface.ncoord(t, geom.ownedby)
+GeoInterface.getcoord(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
+    GeoInterface.getcoord(t, geom.ownedby, i)
 
 function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)
     # minx, miny, maxx, maxy = getExtent(geom)
     env = envelope(geom)
-    return Extent(X=(getXMin(env), getXMax(env)), Y=(getYMin(env), getYMax(env)))
+    return Extent(X = (getXMin(env), getXMax(env)), Y = (getYMin(env), getYMax(env)))
 end
 
 function Base.convert(::Type{T}, geom::T) where {T<:AbstractGeometry}
@@ -86,32 +90,94 @@ function Base.convert(::Type{MultiPolygon}, type::MultiPolygonTrait, geom)
     return MultiPolygon(GeoInterface.coordinates(geom))
 end
 
-function Base.convert(
-    t::Type{<:AbstractGeometry},
-    type::AbstractGeometryTrait,
-    geom,
-)
+function Base.convert(t::Type{<:AbstractGeometry}, type::AbstractGeometryTrait, geom)
     error(
         "Cannot convert an object of $(typeof(geom)) with the $(typeof(type)) trait to a $t (yet). Please report an issue.",
     )
     return f(GeoInterface.coordinates(geom))
 end
 
-GeoInterface.distance(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = distance(a, b)
-GeoInterface.buffer(::AbstractGeometryTrait, geom::AbstractGeometry, distance) = buffer(geom, distance)
+GeoInterface.distance(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = distance(a, b)
+GeoInterface.buffer(::AbstractGeometryTrait, geom::AbstractGeometry, distance) =
+    buffer(geom, distance)
 GeoInterface.convexhull(::AbstractGeometryTrait, geom::AbstractGeometry) = convexhull(geom)
 
-GeoInterface.equals(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = equals(a, b)
-GeoInterface.disjoint(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = disjoint(a, b)
-GeoInterface.intersects(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = intersects(a, b)
-GeoInterface.touches(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = touches(a, b)
-GeoInterface.within(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = within(a, b)
-GeoInterface.contains(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = contains(a, b)
-GeoInterface.overlaps(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = overlaps(a, b)
-GeoInterface.crosses(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = crosses(a, b)
+GeoInterface.equals(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = equals(a, b)
+GeoInterface.disjoint(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = disjoint(a, b)
+GeoInterface.intersects(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = intersects(a, b)
+GeoInterface.touches(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = touches(a, b)
+GeoInterface.within(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = within(a, b)
+GeoInterface.contains(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = contains(a, b)
+GeoInterface.overlaps(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = overlaps(a, b)
+GeoInterface.crosses(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = crosses(a, b)
 # GeoInterface.relate(::AbstractGeometryTrait, ::AbstractGeometryTrait, a, b, relationmatrix) = relate(a, b)  # not yet implemented
 
-GeoInterface.symdifference(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = symmetricDifference(a, b)
-GeoInterface.difference(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = difference(a, b)
-GeoInterface.intersection(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = intersection(a, b)
-GeoInterface.union(::AbstractGeometryTrait, ::AbstractGeometryTrait, a::AbstractGeometry, b::AbstractGeometry) = union(a, b)
+GeoInterface.symdifference(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = symmetricDifference(a, b)
+GeoInterface.difference(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = difference(a, b)
+GeoInterface.intersection(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = intersection(a, b)
+GeoInterface.union(
+    ::AbstractGeometryTrait,
+    ::AbstractGeometryTrait,
+    a::AbstractGeometry,
+    b::AbstractGeometry,
+) = union(a, b)

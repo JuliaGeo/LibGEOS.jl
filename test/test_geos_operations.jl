@@ -385,14 +385,15 @@ end
     @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 0.1) isa
           LibGEOS.MultiPolygon
     @test buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 10) isa LibGEOS.Polygon
-    @test GeoInterface.buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 10) isa LibGEOS.Polygon
+    @test GeoInterface.buffer(MultiPoint([[1.0, 1.0], [2.0, 2.0], [2.0, 0.0]]), 10) isa
+          LibGEOS.Polygon
 
     # bufferWithStyle
     g1 = bufferWithStyle(
         readgeom("LINESTRING(0 0,0 1,1 1)"),
         0.1,
-        endCapStyle=LibGEOS.GEOSBUF_CAP_FLAT,
-        joinStyle=LibGEOS.GEOSBUF_JOIN_BEVEL,
+        endCapStyle = LibGEOS.GEOSBUF_CAP_FLAT,
+        joinStyle = LibGEOS.GEOSBUF_JOIN_BEVEL,
     )
     g2 = readgeom(
         "POLYGON((-0.1 0.0,-0.1 1.0,0.0 1.1,1.0 1.1,1.0 0.9,0.1 0.9,0.1 0.0,-0.1 0.0))",
@@ -403,8 +404,8 @@ end
     g1 = bufferWithStyle(
         readgeom("LINESTRING(0 0,0 1,1 1)"),
         0.1,
-        endCapStyle=LibGEOS.GEOSBUF_CAP_SQUARE,
-        joinStyle=LibGEOS.GEOSBUF_JOIN_MITRE,
+        endCapStyle = LibGEOS.GEOSBUF_CAP_SQUARE,
+        joinStyle = LibGEOS.GEOSBUF_JOIN_MITRE,
     )
     g2 =
         readgeom("POLYGON((-0.1 -0.1,-0.1 1.1,1.1 1.1,1.1 0.9,0.1 0.9,0.1 -0.1,-0.1 -0.1))")
@@ -413,7 +414,7 @@ end
     g1 = bufferWithStyle(
         readgeom("POLYGON((-1 -1,1 -1,1 1,-1 1,-1 -1))"),
         0.2,
-        joinStyle=LibGEOS.GEOSBUF_JOIN_MITRE,
+        joinStyle = LibGEOS.GEOSBUF_JOIN_MITRE,
     )
     g2 = readgeom("POLYGON((-1.2 1.2,1.2 1.2,1.2 -1.2,-1.2 -1.2,-1.2 1.2))")
     @test equals(g1, g2)
