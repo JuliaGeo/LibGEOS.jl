@@ -1,5 +1,6 @@
 using GeoInterface, Extents
 using Test, LibGEOS
+import Aqua
 
 version = LibGEOS.GEOSversion()
 @info "GEOS version $version"
@@ -19,4 +20,5 @@ end
     include("test_regressions.jl")
     include("test_invalid_geometry.jl")
     include("test_strtree.jl")
+    Aqua.test_all(LibGEOS)
 end
