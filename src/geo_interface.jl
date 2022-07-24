@@ -12,18 +12,25 @@ GeoInterface.geomtrait(geom::PreparedGeometry) = GeoInterface.geomtrait(geom.own
 
 GeoInterface.ngeom(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom.ptr) ? 0 : numGeometries(geom.ptr)
+GeoInterface.ngeom(::AbstractPointTrait, geom::AbstractGeometry) = 0
+
 function GeoInterface.getgeom(::AbstractGeometryTrait, geom::AbstractGeometry, i)
     clone = getGeometry(geom.ptr, i)
     id = geomTypeId(clone) + 1
     0 < id <= length(geomtypes) || error("Unknown geometry type id $id")
     geomtypes[id](clone)
 end
+
+GeoInterface.getgeom(::AbstractPointTrait, geom::AbstractGeometry, i) = nothing
 GeoInterface.ngeom(::AbstractGeometryTrait, geom::Union{LineString,LinearRing}) =
     numPoints(geom.ptr)
+GeoInterface.ngeom(t::AbstractPointTrait, geom::Union{LineString,LinearRing}) = 0
 GeoInterface.getgeom(::AbstractGeometryTrait, geom::Union{LineString,LinearRing}, i) =
     Point(getPoint(geom.ptr, i))
+GeoInterface.getgeom(::AbstractPointTrait, geom::Union{LineString,LinearRing}, i) = nothing
 
 GeoInterface.ngeom(::AbstractGeometryTrait, geom::Polygon) = numInteriorRings(geom.ptr) + 1
+GeoInterface.ngeom(::AbstractPointTrait, geom::Polygon) = 0
 function GeoInterface.getgeom(::AbstractGeometryTrait, geom::Polygon, i)
     if i == 1
         LinearRing(exteriorRing(geom.ptr))
@@ -31,9 +38,12 @@ function GeoInterface.getgeom(::AbstractGeometryTrait, geom::Polygon, i)
         LinearRing(interiorRing(geom.ptr, i - 1))
     end
 end
+GeoInterface.getgeom(::AbstractPointTrait, geom::Polygon, i) = nothing
 
 GeoInterface.ngeom(t::AbstractGeometryTrait, geom::PreparedGeometry) = GeoInterface.ngeom(t, geom.ownedby)
+GeoInterface.ngeom(t::AbstractPointTrait, geom::PreparedGeometry) = 0
 GeoInterface.getgeom(t::AbstractGeometryTrait, geom::PreparedGeometry, i) = GeoInterface.getgeom(t, geom.ownedby, i)
+GeoInterface.getgeom(t::AbstractPointTrait, geom::PreparedGeometry, i) = 0
 
 GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom.ptr) ? 0 : getCoordinateDimension(geom.ptr)
