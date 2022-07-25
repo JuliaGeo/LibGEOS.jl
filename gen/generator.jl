@@ -1,22 +1,29 @@
-using Clang.LibClang
 using Clang.Generators
+using Clang
 using MacroTools
 using GEOS_jll
 using JuliaFormatter: format
 
+function return_type_is_const_char(cursor::Clang.CLFunctionDecl)
+    result_type = Clang.getCanonicalType(Clang.getCursorResultType(cursor))
+    if result_type isa CLPointer
+        destination = Clang.getPointeeType(result_type)
+        return destination isa CLChar_S && Clang.isConstQualifiedType(destination)
+    end
+    return false
+end
+
 "Functions that return a Cstring are wrapped in unsafe_string to return a String"
-function rewrite(ex::Expr)
+function rewrite(ex::Expr, cursor::Clang.CLFunctionDecl)
     if @capture(ex, function fname_(fargs__)
         @ccall lib_.cname_(cargs__)::rettype_
     end)
-
         # bind the ccall such that we can easily wrap it
         cc = :(@ccall $lib.$cname($(cargs...))::$rettype)
 
         cc′ = if rettype == :Cstring
             # do not try to free a const char *
-            # this is the only function returning such type
-            if cname == :GEOSversion
+            if return_type_is_const_char(cursor)
                 :(unsafe_string($cc))
             else
                 :(transform_c_string($cc))
@@ -37,7 +44,10 @@ end
 
 function rewrite!(dag::ExprDAG)
     for n in dag.nodes
-        map!(rewrite, n.exprs, n.exprs)
+        if !isa(n.cursor, Clang.CLFunctionDecl)
+            continue
+        end
+        map!(e -> rewrite(e, n.cursor), n.exprs, n.exprs)
     end
 end
 
