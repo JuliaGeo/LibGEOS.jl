@@ -2308,7 +2308,7 @@ function GEOSGeom_destroy(g)
 end
 
 function GEOSGeomType(g)
-    unsafe_string(@ccall(libgeos.GEOSGeomType(g::Ptr{GEOSGeometry})::Cstring))
+    transform_c_string(@ccall(libgeos.GEOSGeomType(g::Ptr{GEOSGeometry})::Cstring))
 end
 
 function GEOSGeomTypeId(g)
@@ -2454,7 +2454,7 @@ function GEOSisValid(g)
 end
 
 function GEOSisValidReason(g)
-    unsafe_string(@ccall(libgeos.GEOSisValidReason(g::Ptr{GEOSGeometry})::Cstring))
+    transform_c_string(@ccall(libgeos.GEOSisValidReason(g::Ptr{GEOSGeometry})::Cstring))
 end
 
 function GEOSisValidDetail(g, flags, reason, location)
@@ -3057,7 +3057,7 @@ function GEOSRelatePattern(g1, g2, pat)
 end
 
 function GEOSRelate(g1, g2)
-    unsafe_string(
+    transform_c_string(
         @ccall(libgeos.GEOSRelate(g1::Ptr{GEOSGeometry}, g2::Ptr{GEOSGeometry})::Cstring)
     )
 end
@@ -3067,7 +3067,7 @@ function GEOSRelatePatternMatch(mat, pat)
 end
 
 function GEOSRelateBoundaryNodeRule(g1, g2, bnr)
-    unsafe_string(
+    transform_c_string(
         @ccall(
             libgeos.GEOSRelateBoundaryNodeRule(
                 g1::Ptr{GEOSGeometry},
