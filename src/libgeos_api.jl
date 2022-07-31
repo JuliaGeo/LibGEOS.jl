@@ -1289,7 +1289,7 @@ function GEOSRelatePattern_r(handle, g1, g2, pat)
 end
 
 function GEOSRelate_r(handle, g1, g2)
-    transform_c_string(
+    string_copy_free(
         @ccall(
             libgeos.GEOSRelate_r(
                 handle::GEOSContextHandle_t,
@@ -1309,7 +1309,7 @@ function GEOSRelatePatternMatch_r(handle, mat, pat)
 end
 
 function GEOSRelateBoundaryNodeRule_r(handle, g1, g2, bnr)
-    transform_c_string(
+    string_copy_free(
         @ccall(
             libgeos.GEOSRelateBoundaryNodeRule_r(
                 handle::GEOSContextHandle_t,
@@ -1330,7 +1330,7 @@ function GEOSisValid_r(handle, g)
 end
 
 function GEOSisValidReason_r(handle, g)
-    transform_c_string(
+    string_copy_free(
         @ccall(
             libgeos.GEOSisValidReason_r(
                 handle::GEOSContextHandle_t,
@@ -1408,7 +1408,7 @@ function GEOSRemoveRepeatedPoints_r(handle, g, tolerance)
 end
 
 function GEOSGeomType_r(handle, g)
-    transform_c_string(
+    string_copy_free(
         @ccall(
             libgeos.GEOSGeomType_r(
                 handle::GEOSContextHandle_t,
@@ -1827,7 +1827,7 @@ function GEOSWKTWriter_destroy_r(handle, writer)
 end
 
 function GEOSWKTWriter_write_r(handle, writer, g)
-    transform_c_string(
+    string_copy_free(
         @ccall(
             libgeos.GEOSWKTWriter_write_r(
                 handle::GEOSContextHandle_t,
@@ -2038,7 +2038,7 @@ function GEOSGeoJSONWriter_destroy_r(handle, writer)
 end
 
 function GEOSGeoJSONWriter_writeGeometry_r(handle, writer, g, indent)
-    transform_c_string(
+    string_copy_free(
         @ccall(
             libgeos.GEOSGeoJSONWriter_writeGeometry_r(
                 handle::GEOSContextHandle_t,
@@ -2308,7 +2308,7 @@ function GEOSGeom_destroy(g)
 end
 
 function GEOSGeomType(g)
-    transform_c_string(@ccall(libgeos.GEOSGeomType(g::Ptr{GEOSGeometry})::Cstring))
+    string_copy_free(@ccall(libgeos.GEOSGeomType(g::Ptr{GEOSGeometry})::Cstring))
 end
 
 function GEOSGeomTypeId(g)
@@ -2454,7 +2454,7 @@ function GEOSisValid(g)
 end
 
 function GEOSisValidReason(g)
-    transform_c_string(@ccall(libgeos.GEOSisValidReason(g::Ptr{GEOSGeometry})::Cstring))
+    string_copy_free(@ccall(libgeos.GEOSisValidReason(g::Ptr{GEOSGeometry})::Cstring))
 end
 
 function GEOSisValidDetail(g, flags, reason, location)
@@ -3057,7 +3057,7 @@ function GEOSRelatePattern(g1, g2, pat)
 end
 
 function GEOSRelate(g1, g2)
-    transform_c_string(
+    string_copy_free(
         @ccall(libgeos.GEOSRelate(g1::Ptr{GEOSGeometry}, g2::Ptr{GEOSGeometry})::Cstring)
     )
 end
@@ -3067,7 +3067,7 @@ function GEOSRelatePatternMatch(mat, pat)
 end
 
 function GEOSRelateBoundaryNodeRule(g1, g2, bnr)
-    transform_c_string(
+    string_copy_free(
         @ccall(
             libgeos.GEOSRelateBoundaryNodeRule(
                 g1::Ptr{GEOSGeometry},
@@ -3294,7 +3294,7 @@ function GEOSWKTWriter_destroy(writer)
 end
 
 function GEOSWKTWriter_write(writer, g)
-    transform_c_string(
+    string_copy_free(
         @ccall(
             libgeos.GEOSWKTWriter_write(
                 writer::Ptr{GEOSWKTWriter},
@@ -3450,7 +3450,7 @@ function GEOSGeoJSONWriter_destroy(writer)
 end
 
 function GEOSGeoJSONWriter_writeGeometry(writer, g, indent)
-    transform_c_string(
+    string_copy_free(
         @ccall(
             libgeos.GEOSGeoJSONWriter_writeGeometry(
                 writer::Ptr{GEOSGeoJSONWriter},
@@ -3511,7 +3511,7 @@ function GEOSGeomFromWKT_r(handle, wkt)
 end
 
 function GEOSGeomToWKT_r(handle, g)
-    transform_c_string(
+    string_copy_free(
         @ccall(
             libgeos.GEOSGeomToWKT_r(
                 handle::GEOSContextHandle_t,
@@ -3577,7 +3577,7 @@ function GEOSGeomFromWKT(wkt)
 end
 
 function GEOSGeomToWKT(g)
-    transform_c_string(@ccall(libgeos.GEOSGeomToWKT(g::Ptr{GEOSGeometry})::Cstring))
+    string_copy_free(@ccall(libgeos.GEOSGeomToWKT(g::Ptr{GEOSGeometry})::Cstring))
 end
 
 function GEOS_getWKBOutputDims()

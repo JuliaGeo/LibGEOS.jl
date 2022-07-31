@@ -9,5 +9,6 @@
     polygon = LibGEOS._readgeom("POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),
         (15 15, 15 20, 20 20, 20 15, 15 15))")
     @test !LibGEOS.isValid(polygon)
-    @test LibGEOS.GEOSisValidReason_r(LibGEOS._context.ptr, polygon) == "Hole lies outside shell[15 15]"
+    @test LibGEOS.GEOSisValidReason_r(LibGEOS._context.ptr, polygon) ==
+          "Hole lies outside shell[15 15]"
 end
