@@ -26,7 +26,7 @@ function rewrite(ex::Expr, cursor::Clang.CLFunctionDecl)
             if return_type_is_const_char(cursor)
                 :(unsafe_string($cc))
             else
-                :(transform_c_string($cc))
+                :(string_copy_free($cc))
             end
         else
             cc

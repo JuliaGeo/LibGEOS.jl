@@ -92,15 +92,6 @@ export Point,
     STRtree,
     query
 
-function transform_c_string(s::Cstring)::String
-    copy = unsafe_string(s)
-    global _context
-    GEOSFree_r(_context.ptr, Ptr{Cvoid}(s))
-    return copy
-end
-
-include("libgeos_api.jl")
-
 mutable struct GEOSError <: Exception
     msg::String
 end
@@ -115,7 +106,7 @@ function geosjl_errorhandler(message::Ptr{UInt8}, userdata)
 end
 
 mutable struct GEOSContext
-    ptr::GEOSContextHandle_t
+    ptr::Ptr{Cvoid}  # GEOSContextHandle_t
 
     function GEOSContext()
         context = new(GEOS_init_r())
@@ -128,6 +119,15 @@ mutable struct GEOSContext
         context
     end
 end
+
+"Get a copy of a string from GEOS, freeing the GEOS managed memory."
+function string_copy_free(s::Cstring, context::GEOSContext = _context)::String
+    copy = unsafe_string(s)
+    GEOSFree_r(context.ptr, pointer(s))
+    return copy
+end
+
+include("libgeos_api.jl")
 
 mutable struct WKTReader
     ptr::Ptr{GEOSWKTReader}
