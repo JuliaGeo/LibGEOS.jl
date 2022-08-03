@@ -1296,7 +1296,8 @@ function GEOSRelate_r(handle, g1, g2)
                 g1::Ptr{GEOSGeometry},
                 g2::Ptr{GEOSGeometry},
             )::Cstring
-        )
+        ),
+        handle,
     )
 end
 
@@ -1317,7 +1318,8 @@ function GEOSRelateBoundaryNodeRule_r(handle, g1, g2, bnr)
                 g2::Ptr{GEOSGeometry},
                 bnr::Cint,
             )::Cstring
-        )
+        ),
+        handle,
     )
 end
 
@@ -1336,7 +1338,8 @@ function GEOSisValidReason_r(handle, g)
                 handle::GEOSContextHandle_t,
                 g::Ptr{GEOSGeometry},
             )::Cstring
-        )
+        ),
+        handle,
     )
 end
 
@@ -1414,7 +1417,8 @@ function GEOSGeomType_r(handle, g)
                 handle::GEOSContextHandle_t,
                 g::Ptr{GEOSGeometry},
             )::Cstring
-        )
+        ),
+        handle,
     )
 end
 
@@ -1834,7 +1838,8 @@ function GEOSWKTWriter_write_r(handle, writer, g)
                 writer::Ptr{GEOSWKTWriter},
                 g::Ptr{GEOSGeometry},
             )::Cstring
-        )
+        ),
+        handle,
     )
 end
 
@@ -2046,7 +2051,8 @@ function GEOSGeoJSONWriter_writeGeometry_r(handle, writer, g, indent)
                 g::Ptr{GEOSGeometry},
                 indent::Cint,
             )::Cstring
-        )
+        ),
+        handle,
     )
 end
 
@@ -3517,7 +3523,8 @@ function GEOSGeomToWKT_r(handle, g)
                 handle::GEOSContextHandle_t,
                 g::Ptr{GEOSGeometry},
             )::Cstring
-        )
+        ),
+        handle,
     )
 end
 

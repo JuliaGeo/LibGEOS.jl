@@ -121,9 +121,9 @@ mutable struct GEOSContext
 end
 
 "Get a copy of a string from GEOS, freeing the GEOS managed memory."
-function string_copy_free(s::Cstring, context::GEOSContext = _context)::String
+function string_copy_free(s::Cstring, context::Ptr{Cvoid} = _context.ptr)::String
     copy = unsafe_string(s)
-    GEOSFree_r(context.ptr, pointer(s))
+    GEOSFree_r(context, pointer(s))
     return copy
 end
 
