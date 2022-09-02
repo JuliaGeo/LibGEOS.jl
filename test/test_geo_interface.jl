@@ -1,3 +1,5 @@
+using Plots
+
 @testset "Geo interface" begin
     pt = LibGEOS.Point(1.0, 2.0)
     @test GeoInterface.coordinates(pt) ≈ [1, 2] atol = 1e-5
@@ -6,6 +8,7 @@
     @test GeoInterface.getcoord(pt, 1) ≈ 1.0
     @test GeoInterface.testgeometry(pt)
     @test GeoInterface.extent(pt) == Extent(X = (1.0, 1.0), Y = (2.0, 2.0))
+    plot(pt)
 
     pt = LibGEOS.Point(1, 2)
     @test GeoInterface.coordinates(pt) ≈ [1, 2] atol = 1e-5
@@ -27,6 +30,7 @@
     @test p isa LibGEOS.Point
     @test GeoInterface.coordinates(p) == [10, 0]
     @test GeoInterface.testgeometry(mpt)
+    plot(mpt)
 
     coords = Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2]]
     ls = LibGEOS.LineString(coords)
@@ -37,6 +41,7 @@
     @test p isa LibGEOS.Point
     @test GeoInterface.coordinates(p) == [9, 2]
     @test GeoInterface.testgeometry(ls)
+    plot(ls)
 
     ls = LibGEOS.readgeom("LINESTRING EMPTY")
     @test GeoInterface.coordinates(ls) == []
@@ -48,6 +53,7 @@
     @test GeoInterface.geomtrait(mls) == MultiLineStringTrait()
     @test GeoInterface.ngeom(mls) == 2
     @test GeoInterface.testgeometry(mls)
+    plot(mls)
 
     coords = Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]]
     lr = LibGEOS.LinearRing(coords)
@@ -58,6 +64,8 @@
     @test p isa LibGEOS.Point
     @test GeoInterface.coordinates(p) == [9, 2]
     @test GeoInterface.testgeometry(lr)
+    # Cannot convert LinearRingTrait to series data for plotting
+    # plot(lr)
 
     coords = Vector{Vector{Float64}}[
         Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]],
@@ -72,6 +80,7 @@
     @test ls isa LibGEOS.LinearRing
     @test GeoInterface.coordinates(ls) == coords[2]
     @test GeoInterface.testgeometry(polygon)
+    plot(polygon)
 
     polygon = LibGEOS.readgeom("POLYGON EMPTY")
     @test GeoInterface.coordinates(polygon) == [[]]
@@ -90,6 +99,7 @@
     @test GeoInterface.geomtrait(multipolygon) == MultiPolygonTrait()
     @test GeoInterface.testgeometry(multipolygon)
     @test GeoInterface.extent(multipolygon) == Extent(X = (0.0, 10.0), Y = (0.0, 10.0))
+    plot(multipolygon)
 
     pmultipolygon = LibGEOS.prepareGeom(multipolygon)
     @test GeoInterface.geomtrait(pmultipolygon) == MultiPolygonTrait()
@@ -167,6 +177,7 @@
     end
     @test GeoInterface.geomtrait(geomcollection) == GeometryCollectionTrait()
     @test GeoInterface.testgeometry(geomcollection)
+    plot(geomcollection)
 
     geomcollection = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION(MULTIPOINT(0 0, 0 0, 1 1),LINESTRING(1 1, 2 2, 2 2, 0 0),POLYGON((5 5, 0 0, 0 2, 2 2, 5 5)))",

@@ -181,3 +181,5 @@ GeoInterface.union(
     a::AbstractGeometry,
     b::AbstractGeometry,
 ) = union(a, b)
+
+GeoInterfaceRecipes.@enable_geo_plots AbstractGeometry

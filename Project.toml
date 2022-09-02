@@ -8,17 +8,20 @@ CEnum = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 Extents = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
 GEOS_jll = "d604d12d-fa86-5845-992e-78dc15976526"
 GeoInterface = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
+GeoInterfaceRecipes = "0329782f-3d07-4b52-b9f6-d3137cf03c7a"
 
 [compat]
 CEnum = "0.2, 0.3, 0.4"
 Extents = "0.1.1"
 GEOS_jll = "3.11"
 GeoInterface = "1"
+GeoInterfaceRecipes = "1"
 julia = "1.6"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "Test"]
+test = ["Aqua", "Plots", "Test"]
