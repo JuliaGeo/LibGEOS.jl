@@ -45,10 +45,14 @@ end
     b = LibGEOS.cloneCoordSeq(a)
     @test LibGEOS.getCoordinates(b) == LibGEOS.getCoordinates(a)
     LibGEOS.setCoordSeq!(b, 2, [3.0, 3.0, 3.0])
+    @test_throws ErrorException LibGEOS.setCoordSeq!(b, 0, [3.0, 3.0, 3.0])
+    @test_throws ErrorException LibGEOS.setCoordSeq!(b, 5, [3.0, 3.0, 3.0])
     @test LibGEOS.getCoordinates(a) ==
           Vector{Float64}[[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
     @test LibGEOS.getCoordinates(b) ==
           Vector{Float64}[[1, 2, 3], [3, 3, 3], [7, 8, 9], [10, 11, 12]]
+    @test_throws ErrorException LibGEOS.getCoordinates(b, 0)
+    @test_throws ErrorException LibGEOS.getCoordinates(b, 5)
     c = LibGEOS.createPoint(LibGEOS.createCoordSeq(Vector{Float64}[[1, 2]]))
     @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(c))[1] ≈ [1, 2] atol = 1e-5
 
@@ -179,9 +183,21 @@ end
     LibGEOS.setX!(cs_, 1, x)
     LibGEOS.setY!(cs_, 1, y)
     LibGEOS.setZ!(cs_, 1, z)
+    @test_throws ErrorException LibGEOS.setX!(cs_, 0, x)
+    @test_throws ErrorException LibGEOS.setX!(cs_, 2, x)
+    @test_throws ErrorException LibGEOS.setY!(cs_, 0, y)
+    @test_throws ErrorException LibGEOS.setY!(cs_, 2, y)
+    @test_throws ErrorException LibGEOS.setZ!(cs_, 0, z)
+    @test_throws ErrorException LibGEOS.setZ!(cs_, 2, z)
     @test LibGEOS.getX(cs_, 1) ≈ x atol = 1e-5
     @test LibGEOS.getY(cs_, 1) ≈ y atol = 1e-5
     @test LibGEOS.getZ(cs_, 1) ≈ z atol = 1e-5
+    @test_throws MethodError LibGEOS.getX(cs_, 0, x)
+    @test_throws MethodError LibGEOS.getX(cs_, 2, x)
+    @test_throws MethodError LibGEOS.getY(cs_, 0, y)
+    @test_throws MethodError LibGEOS.getY(cs_, 2, y)
+    @test_throws MethodError LibGEOS.getZ(cs_, 0, z)
+    @test_throws MethodError LibGEOS.getZ(cs_, 2, z)
 
     cs_ = LibGEOS.createCoordSeq(1, ndim = 3)
     @test LibGEOS.getSize(cs_) == 1
@@ -365,6 +381,8 @@ end
     @test !LibGEOS.isClosed(geom1)
     @test LibGEOS.geomTypeId(geom1) == LibGEOS.GEOS_LINESTRING
     @test LibGEOS.numPoints(geom1) == 3
+    @test_throws ErrorException LibGEOS.getPoint(geom1, 0)
+    @test_throws ErrorException LibGEOS.getPoint(geom1, 4)
     @test LibGEOS.geomLength(geom1) ≈ sqrt(100 + 100) atol = 1e-5
     geom2 = LibGEOS.getPoint(geom1, 1)
     @test LibGEOS.getGeomX(geom2) ≈ 0.0 atol = 1e-5
