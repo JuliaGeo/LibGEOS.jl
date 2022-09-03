@@ -241,6 +241,7 @@ getGeometries(obj::Geometry, context::GEOSContext = _context) =
 # Converts Geometry to normal form (or canonical form).
 normalize!(obj::Geometry) = normalize!(obj.ptr)
 
+interiorRing(obj::Polygon, n::Integer) = interiorRing(obj.ptr, n)
 interiorRings(obj::Polygon) = map(LinearRing, interiorRings(obj.ptr))
 exteriorRing(obj::Polygon) = LinearRing(exteriorRing(obj.ptr))
 
