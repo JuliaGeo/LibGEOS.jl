@@ -1102,6 +1102,9 @@ end
 # Return NULL on exception, Geometry must be a Polygon.
 # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
 function interiorRing(ptr::GEOSGeom, n::Integer, context::GEOSContext = _context)
+    if !(0 < n <= numInteriorRings(ptr, context))
+        error("LibGEOS: n=$n is out of bounds for Polygon with $(numInteriorRings(ptr, context)) interior ring(s)")
+    end
     result = GEOSGetInteriorRingN_r(context.ptr, ptr, n - 1)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetInteriorRingN")
