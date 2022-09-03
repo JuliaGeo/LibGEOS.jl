@@ -74,6 +74,12 @@ end
     exterior = LibGEOS.exteriorRing(polygon)
     @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(exterior)) ==
           Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]
+    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(LibGEOS.interiorRing(polygon, 1))) ==
+          Vector{Float64}[[1, 8], [2, 8], [2, 9], [1, 9], [1, 8]]
+    @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(LibGEOS.interiorRing(polygon, 2))) ==
+          Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]]
+    @test_throws ErrorException LibGEOS.interiorRing(polygon, 0)
+    @test_throws ErrorException LibGEOS.interiorRing(polygon, 3)
     interiors = LibGEOS.interiorRings(polygon)
     @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[1])) ==
           Vector{Float64}[[1, 8], [2, 8], [2, 9], [1, 9], [1, 8]]
