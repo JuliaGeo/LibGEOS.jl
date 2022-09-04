@@ -77,7 +77,9 @@ end
 # Set ordinate values in a Coordinate Sequence (Return 0 on exception)
 function setX!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext = _context)
     if !(0 < i <= getSize(ptr, context))
-        error("LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))")
+        error(
+            "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
+        )
     end
     result = GEOSCoordSeq_setX_r(context.ptr, ptr, i - 1, value)
     if result == 0
@@ -88,7 +90,9 @@ end
 
 function setY!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext = _context)
     if !(0 < i <= getSize(ptr, context))
-        error("LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))")
+        error(
+            "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
+        )
     end
     result = GEOSCoordSeq_setY_r(context.ptr, ptr, i - 1, value)
     if result == 0
@@ -99,7 +103,9 @@ end
 
 function setZ!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext = _context)
     if !(0 < i <= getSize(ptr, context))
-        error("LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))")
+        error(
+            "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
+        )
     end
     result = GEOSCoordSeq_setZ_r(context.ptr, ptr, i - 1, value)
     if result == 0
@@ -138,7 +144,9 @@ function setCoordSeq!(
     ndim = length(coords)
     @assert ndim >= 2
     if !(0 < i <= getSize(ptr, context))
-        error("LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))")
+        error(
+            "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
+        )
     end
     setX!(ptr, i, coords[1], context)
     setY!(ptr, i, coords[2], context)
@@ -201,7 +209,9 @@ end
 
 function getX(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
     if !(0 < i <= getSize(ptr, context))
-        error("LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))")
+        error(
+            "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
+        )
     end
     out = Ref{Float64}()
     result = GEOSCoordSeq_getX_r(context.ptr, ptr, i - 1, out)
@@ -224,7 +234,9 @@ end
 
 function getY(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
     if !(0 < i <= getSize(ptr, context))
-        error("LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))")
+        error(
+            "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
+        )
     end
     out = Ref{Float64}()
     result = GEOSCoordSeq_getY_r(context.ptr, ptr, i - 1, out)
@@ -247,7 +259,9 @@ end
 
 function getZ(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
     if !(0 < i <= getSize(ptr, context))
-        error("LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))")
+        error(
+            "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
+        )
     end
     out = Ref{Float64}()
     result = GEOSCoordSeq_getZ_r(context.ptr, ptr, i - 1, out)
@@ -270,7 +284,9 @@ end
 
 function getCoordinates(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
     if !(0 < i <= getSize(ptr, context))
-        error("LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))")
+        error(
+            "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
+        )
     end
     ndim = getDimensions(ptr, context)
     coord = Array{Float64}(undef, ndim)
@@ -1127,7 +1143,9 @@ end
 # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
 function interiorRing(ptr::GEOSGeom, n::Integer, context::GEOSContext = _context)
     if !(0 < n <= numInteriorRings(ptr, context))
-        error("LibGEOS: n=$n is out of bounds for Polygon with $(numInteriorRings(ptr, context)) interior ring(s)")
+        error(
+            "LibGEOS: n=$n is out of bounds for Polygon with $(numInteriorRings(ptr, context)) interior ring(s)",
+        )
     end
     result = GEOSGetInteriorRingN_r(context.ptr, ptr, n - 1)
     if result == C_NULL
@@ -1265,7 +1283,9 @@ end
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
 function getPoint(ptr::GEOSGeom, n::Integer, context::GEOSContext = _context)
     if !(0 < n <= numPoints(ptr, context))
-        error("LibGEOS: n=$n is out of bounds for LineString with numPoints=$(numPoints(ptr, context))")
+        error(
+            "LibGEOS: n=$n is out of bounds for LineString with numPoints=$(numPoints(ptr, context))",
+        )
     end
     result = GEOSGeomGetPointN_r(context.ptr, ptr, n - 1)
     if result == C_NULL
