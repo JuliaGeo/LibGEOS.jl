@@ -192,12 +192,12 @@ end
     @test LibGEOS.getX(cs_, 1) ≈ x atol = 1e-5
     @test LibGEOS.getY(cs_, 1) ≈ y atol = 1e-5
     @test LibGEOS.getZ(cs_, 1) ≈ z atol = 1e-5
-    @test_throws MethodError LibGEOS.getX(cs_, 0, x)
-    @test_throws MethodError LibGEOS.getX(cs_, 2, x)
-    @test_throws MethodError LibGEOS.getY(cs_, 0, y)
-    @test_throws MethodError LibGEOS.getY(cs_, 2, y)
-    @test_throws MethodError LibGEOS.getZ(cs_, 0, z)
-    @test_throws MethodError LibGEOS.getZ(cs_, 2, z)
+    @test_throws ErrorException LibGEOS.getX(cs_, 0)
+    @test_throws ErrorException LibGEOS.getX(cs_, 2)
+    @test_throws ErrorException LibGEOS.getY(cs_, 0)
+    @test_throws ErrorException LibGEOS.getY(cs_, 2)
+    @test_throws ErrorException LibGEOS.getZ(cs_, 0)
+    @test_throws ErrorException LibGEOS.getZ(cs_, 2)
 
     cs_ = LibGEOS.createCoordSeq(1, ndim = 3)
     @test LibGEOS.getSize(cs_) == 1
