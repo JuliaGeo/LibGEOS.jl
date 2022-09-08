@@ -90,6 +90,14 @@ end
     @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[2])) ==
           Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]]
 
+    exterior_poly = LibGEOS.createPolygon(exterior)
+    @test LibGEOS.getGeomDimensions(exterior_poly) == 2
+    @test LibGEOS.geomTypeId(exterior_poly) == LibGEOS.GEOS_POLYGON
+    @test LibGEOS.geomArea(exterior_poly) ≈ 100.0 atol = 1e-5
+    @test_throws ErrorException LibGEOS.interiorRing(exterior_poly, 1)
+    @test LibGEOS.equals(LibGEOS.exteriorRing(exterior_poly), exterior)
+
+
     # Interpolation and Projection
     ls = LibGEOS.createLineString(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2]])
     pt = LibGEOS.interpolate(ls, 2.5)

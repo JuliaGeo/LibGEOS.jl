@@ -443,6 +443,8 @@ function createPolygon(
     end
     result
 end
+createPolygon(shell::GEOSGeom, context::GEOSContext = _context) =
+    createPolygon(shell, GEOSGeom[], context)
 
 function createCollection(
     geomtype::GEOSGeomTypes,

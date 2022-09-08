@@ -76,9 +76,16 @@ mutable struct Polygon <: AbstractGeometry
     ptr::GEOSGeom
 
     function Polygon(ptr::GEOSGeom)
-        polygon = new(ptr)
-        finalizer(destroyGeom, polygon)
-        polygon
+        id = LibGEOS.geomTypeId(ptr)
+        if id == 3
+            polygon = new(ptr)
+            finalizer(destroyGeom, polygon)
+            polygon
+        elseif id == 2
+            Polygon(createPolygon(ptr))
+        else
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a polygon (yet). Please open an issue. ")
+        end
     end
     function Polygon(coords::Vector{Vector{Vector{Float64}}})
         exterior = createLinearRing(coords[1])
@@ -87,6 +94,8 @@ mutable struct Polygon <: AbstractGeometry
         finalizer(destroyGeom, polygon)
         polygon
     end
+    Polygon(ring::LinearRing) = Polygon(createPolygon(ring.ptr))
+
 
 end
 
