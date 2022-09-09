@@ -443,6 +443,7 @@ function createPolygon(
     end
     result
 end
+# convenience function to create polygon without holes
 createPolygon(shell::GEOSGeom, context::GEOSContext = _context) =
     createPolygon(shell, GEOSGeom[], context)
 
