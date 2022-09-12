@@ -77,9 +77,9 @@ mutable struct Polygon <: AbstractGeometry
     # create polygon using GEOSGeom pointer - only makes sense if pointer points to a polygon or a linear ring to start with. 
     function Polygon(ptr::GEOSGeom)
         id = LibGEOS.geomTypeId(ptr)
-        if id == 3
+        if id == GEOS_POLYGON
             polygon = new(cloneGeom(ptr))
-        elseif id == 2
+        elseif id == GEOS_LINEARRING
             polygon = new(cloneGeom(createPolygon(ptr)))
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a polygon (yet). Please open an issue if you think this conversion makes sense. ")
@@ -88,7 +88,7 @@ mutable struct Polygon <: AbstractGeometry
         polygon
     end
     # using vector of coordinates in following form:
-    # [[exterior], [hole1], [hole2], ...] where exterior and holeN are coordiantes where the first and last point are the same
+    # [[exterior], [hole1], [hole2], ...] where exterior and holeN are coordinates where the first and last point are the same
     function Polygon(coords::Vector{Vector{Vector{Float64}}})
         exterior = createLinearRing(coords[1])
         interiors = GEOSGeom[createLinearRing(lr) for lr in coords[2:end]]
@@ -99,9 +99,9 @@ mutable struct Polygon <: AbstractGeometry
     # using 1 linear ring to form polygon with no holes - linear ring will be outer boundary of polygon
     Polygon(ring::LinearRing) = Polygon(ring.ptr)
     # using multiple linear rings to form polygon with holes - exterior linear ring will be polygon boundary and list of interior linear rings will form holes
-    Polygon(exterior::LinearRing, interior::Vector{LinearRing}) = 
+    Polygon(exterior::LinearRing, holes::Vector{LinearRing}) = 
         Polygon(createPolygon(exterior.ptr, 
-                              GEOSGeom[ring.ptr for ring in interior]))
+                              GEOSGeom[ring.ptr for ring in holes]))
 end
 
 mutable struct MultiPolygon <: AbstractGeometry
