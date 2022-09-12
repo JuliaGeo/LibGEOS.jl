@@ -4,9 +4,14 @@ mutable struct Point <: AbstractGeometry
     ptr::GEOSGeom
 
     function Point(ptr::GEOSGeom)
-        point = new(ptr)
-        finalizer(destroyGeom, point)
-        point
+        id = LibGEOS.geomTypeId(ptr)
+        if id == GEOS_POINT
+            point = new(cloneGeom(ptr))
+            finalizer(destroyGeom, point)
+            point
+        else
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a point (yet). Please open an issue if you think this conversion makes sense.")
+        end
     end
     Point(coords::Vector{Float64}) = Point(createPoint(coords))
     Point(x::Real, y::Real) = Point(createPoint(x, y))
@@ -82,7 +87,7 @@ mutable struct Polygon <: AbstractGeometry
         elseif id == GEOS_LINEARRING
             polygon = new(cloneGeom(createPolygon(ptr)))
         else
-            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a polygon (yet). Please open an issue if you think this conversion makes sense. ")
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a polygon (yet). Please open an issue if you think this conversion makes sense.")
         end
         finalizer(destroyGeom, polygon)
         polygon
