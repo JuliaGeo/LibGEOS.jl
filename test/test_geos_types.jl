@@ -7,6 +7,10 @@ testValidTypeDims(point::LibGEOS.Point) =
     testValidTypeDims(point, LibGEOS.GEOS_POINT, 0)
 testValidTypeDims(multipoint::LibGEOS.MultiPoint) =
     testValidTypeDims(multipoint, LibGEOS.GEOS_MULTIPOINT, 0)
+testValidTypeDims(multipoint::LibGEOS.LineString) =
+    testValidTypeDims(multipoint, LibGEOS.GEOS_LINESTRING, 1) 
+testValidTypeDims(multipoint::LibGEOS.MultiLineString) =
+    testValidTypeDims(multipoint, LibGEOS.GEOS_MULTILINESTRING, 1)
 testValidTypeDims(ring::LibGEOS.LinearRing) =
     testValidTypeDims(ring, LibGEOS.GEOS_LINEARRING, 1)
 testValidTypeDims(poly::LibGEOS.Polygon) = 
@@ -93,6 +97,38 @@ testValidTypeDims(poly::LibGEOS.Polygon) =
         LibGEOS.destroyGeom(point_ptr)
         LibGEOS.destroyGeom(point_vec1)
         LibGEOS.destroyGeom(point_vec2)
+    end
+
+    @testset "LineString" begin
+        # Test LineString made from vectors
+        ls_coord = LibGEOS.LineString([[0.0, 0.0], [1.0, 1.0], [1.0,0.0]])
+        testValidTypeDims(ls_coord)
+        @test LibGEOS.numCoordinates(ls_coord.ptr) == 3
+        
+        # Test LineString made from linestring pointer
+        ls_ptr = LibGEOS.LineString(ls_coord.ptr)
+        testValidTypeDims(ls_ptr)
+        @test LibGEOS.equals(ls_coord, ls_ptr)
+
+        # Test LineString made from polygon pointer
+        @test_throws ErrorException LibGEOS.LineString(LibGEOS.Polygon(
+            [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]).ptr)
+    end
+
+    @testset "MultiLineString" begin
+        # Test MultiLineString made from vectors
+        mls_coord = LibGEOS.MultiLineString([[[0.0, 0.0], [1.0, 1.0], [1.0,0.0]], [[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0]]])
+        testValidTypeDims(mls_coord)
+        @test LibGEOS.numGeometries(mls_coord) == 2
+
+        # Test MultiLineString made from MultiLineString pointer
+        mls_ptr = LibGEOS.MultiLineString(mls_coord.ptr)
+        testValidTypeDims(mls_ptr)
+        @test LibGEOS.equals(mls_coord, mls_ptr)
+
+        # Test MultiLineString made from polygon pointer
+        @test_throws ErrorException LibGEOS.MultiLineString(LibGEOS.Polygon(
+            [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]).ptr)
     end
 
 
