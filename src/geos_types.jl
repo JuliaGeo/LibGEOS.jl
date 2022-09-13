@@ -100,13 +100,24 @@ end
 
 mutable struct LinearRing <: AbstractGeometry
     ptr::GEOSGeom
-
+    # create a linear ring from a linear ring pointer, otherwise error
     function LinearRing(ptr::GEOSGeom)
-        ring = new(ptr)
+        id = LibGEOS.geomTypeId(ptr)
+        if id == GEOS_LINEARRING
+            ring = new(cloneGeom(ptr))
+            finalizer(destroyGeom, ring)
+            ring
+        else
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a linear ring (yet). Please open an issue if you think this conversion makes sense.")
+        end
+    end
+    # create linear ring from a list of coordinates - 
+    # first and last coordinates must be the same
+    function LinearRing(coords::Vector{Vector{Float64}})
+        ring = new(createLinearRing(coords))
         finalizer(destroyGeom, ring)
         ring
     end
-    LinearRing(ring::Vector{Vector{Float64}}) = LinearRing(createLinearRing(ring))
 
 end
 
