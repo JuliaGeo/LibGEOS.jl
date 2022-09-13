@@ -14,6 +14,7 @@ if version != LibGEOS.GEOS_CAPI_VERSION
 end
 
 @testset "LibGEOS" begin
+    include("test_geos_types.jl")
     include("test_geos_functions.jl")
     include("test_geos_operations.jl")
     include("test_geo_interface.jl")
