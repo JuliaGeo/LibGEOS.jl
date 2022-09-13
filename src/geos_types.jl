@@ -23,9 +23,17 @@ mutable struct MultiPoint <: AbstractGeometry
     ptr::GEOSGeom
 
     function MultiPoint(ptr::GEOSGeom)
-        multipoint = new(ptr)
-        finalizer(destroyGeom, multipoint)
-        multipoint
+        id = LibGEOS.geomTypeId(ptr)
+        if id == GEOS_MULTIPOINT
+            multipoint = new(cloneGeom(ptr))
+            finalizer(destroyGeom, multipoint)
+            multipoint
+        elseif id == GEOS_POINT
+            MultiPoint(createCollection(GEOS_MULTIPOINT, 
+                                        GEOSGeom[cloneGeom(ptr)]))
+        else
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multipoint (yet). Please open an issue if you think this conversion makes sense.")
+        end
     end
     MultiPoint(multipoint::Vector{Vector{Float64}}) = MultiPoint(
         createCollection(
@@ -33,7 +41,12 @@ mutable struct MultiPoint <: AbstractGeometry
             GEOSGeom[createPoint(coords) for coords in multipoint],
         ),
     )
-
+    MultiPoint(points::Vector{LibGEOS.Point}) = MultiPoint(
+        createCollection(
+            GEOS_MULTIPOINT,
+            GEOSGeom[cloneGeom(point.ptr) for point in points],
+        ),
+    )
 end
 
 mutable struct LineString <: AbstractGeometry
