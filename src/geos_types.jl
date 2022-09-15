@@ -2,55 +2,93 @@ abstract type AbstractGeometry end
 
 mutable struct Point <: AbstractGeometry
     ptr::GEOSGeom
-
+    # create a point from a pointer - only makese sense if it is a pointer to a point, otherwise error
     function Point(ptr::GEOSGeom)
-        point = new(ptr)
-        finalizer(destroyGeom, point)
-        point
+        id = LibGEOS.geomTypeId(ptr)
+        if id == GEOS_POINT
+            point = new(cloneGeom(ptr))
+            finalizer(destroyGeom, point)
+            point
+        else
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a point (yet). Please open an issue if you think this conversion makes sense.")
+        end
     end
+    # create a point from a vector of floats
     Point(coords::Vector{Float64}) = Point(createPoint(coords))
     Point(x::Real, y::Real) = Point(createPoint(x, y))
     Point(x::Real, y::Real, z::Real) = Point(createPoint(x, y, z))
-
 end
 
 mutable struct MultiPoint <: AbstractGeometry
     ptr::GEOSGeom
-
+    # create a multipoint from a pointer - only makes sense if it is a pointer to a multipoint or to a point, otherwise error
     function MultiPoint(ptr::GEOSGeom)
-        multipoint = new(ptr)
+        id = LibGEOS.geomTypeId(ptr)
+        if id == GEOS_MULTIPOINT
+            multipoint = new(cloneGeom(ptr))
+        elseif id == GEOS_POINT
+            multipoint = new(createCollection(GEOS_MULTIPOINT, 
+                                        GEOSGeom[cloneGeom(ptr)]))
+        else
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multipoint (yet). Please open an issue if you think this conversion makes sense.")
+        end
         finalizer(destroyGeom, multipoint)
         multipoint
     end
+    # create a multipoint frome a vector of vector coordinates
     MultiPoint(multipoint::Vector{Vector{Float64}}) = MultiPoint(
         createCollection(
             GEOS_MULTIPOINT,
             GEOSGeom[createPoint(coords) for coords in multipoint],
         ),
     )
-
+    # create a multipoint from a list of points
+    MultiPoint(points::Vector{LibGEOS.Point}) = MultiPoint(
+        createCollection(
+            GEOS_MULTIPOINT,
+            GEOSGeom[point.ptr for point in points],
+        ),
+    )
 end
 
 mutable struct LineString <: AbstractGeometry
     ptr::GEOSGeom
-
+    # create a linestring from a linestring pointer, otherwise error
     function LineString(ptr::GEOSGeom)
-        line = new(ptr)
+        id = LibGEOS.geomTypeId(ptr)
+        if id == GEOS_LINESTRING
+            line = new(cloneGeom(ptr))
+            finalizer(destroyGeom, line)
+            line
+        else
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a linestring (yet). Please open an issue if you think this conversion makes sense.")
+        end
+    end
+    #create a linestring from a list of coordiantes
+    function LineString(coords::Vector{Vector{Float64}})
+        line = new(createLineString(coords))
         finalizer(destroyGeom, line)
         line
     end
-    LineString(line::Vector{Vector{Float64}}) = LineString(createLineString(line))
-
 end
 
 mutable struct MultiLineString <: AbstractGeometry
     ptr::GEOSGeom
-
+    # create a multiline string from a multilinestring or a linestring pointer, else error
     function MultiLineString(ptr::GEOSGeom)
-        multiline = new(ptr)
+        id = LibGEOS.geomTypeId(ptr)
+        if id == GEOS_MULTILINESTRING
+            multiline = new(cloneGeom(ptr))
+        elseif id == GEOS_LINESTRING
+            multiline = new(createCollection(GEOS_MULTILINESTRING, 
+                                        GEOSGeom[cloneGeom(ptr)]))
+        else
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multi-linestring (yet). Please open an issue if you think this conversion makes sense.")
+        end
         finalizer(destroyGeom, multiline)
         multiline
     end
+    # create a multilinestring from a list of linestring coordiantes
     MultiLineString(multiline::Vector{Vector{Vector{Float64}}}) = MultiLineString(
         createCollection(
             GEOS_MULTILINESTRING,
@@ -62,13 +100,24 @@ end
 
 mutable struct LinearRing <: AbstractGeometry
     ptr::GEOSGeom
-
+    # create a linear ring from a linear ring pointer, otherwise error
     function LinearRing(ptr::GEOSGeom)
-        ring = new(ptr)
+        id = LibGEOS.geomTypeId(ptr)
+        if id == GEOS_LINEARRING
+            ring = new(cloneGeom(ptr))
+            finalizer(destroyGeom, ring)
+            ring
+        else
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a linear ring (yet). Please open an issue if you think this conversion makes sense.")
+        end
+    end
+    # create linear ring from a list of coordinates - 
+    # first and last coordinates must be the same
+    function LinearRing(coords::Vector{Vector{Float64}})
+        ring = new(createLinearRing(coords))
         finalizer(destroyGeom, ring)
         ring
     end
-    LinearRing(ring::Vector{Vector{Float64}}) = LinearRing(createLinearRing(ring))
 
 end
 
@@ -82,7 +131,7 @@ mutable struct Polygon <: AbstractGeometry
         elseif id == GEOS_LINEARRING
             polygon = new(cloneGeom(createPolygon(ptr)))
         else
-            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a polygon (yet). Please open an issue if you think this conversion makes sense. ")
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a polygon (yet). Please open an issue if you think this conversion makes sense.")
         end
         finalizer(destroyGeom, polygon)
         polygon
@@ -106,12 +155,29 @@ end
 
 mutable struct MultiPolygon <: AbstractGeometry
     ptr::GEOSGeom
-
+    # create multipolygon using a multipolygon or polygon pointer, else error
     function MultiPolygon(ptr::GEOSGeom)
-        multipolygon = new(ptr)
+        id = LibGEOS.geomTypeId(ptr)
+        if id == GEOS_MULTIPOLYGON
+            multipolygon = new(cloneGeom(ptr))
+        elseif id == GEOS_POLYGON
+            multipolygon = new(createCollection(
+                                GEOS_MULTIPOLYGON,
+                                GEOSGeom[cloneGeom(ptr)]))
+        else
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multi-polygon (yet). Please open an issue if you think this conversion makes sense.")    
+        end
         finalizer(destroyGeom, multipolygon)
         multipolygon
     end
+
+    # create multipolygon from list of Polygon objects
+    MultiPolygon(polygons::Vector{Polygon}) = MultiPolygon(
+        createCollection(
+            GEOS_MULTIPOLYGON,
+            GEOSGeom[poly.ptr for poly in polygons],))
+
+    # create multipolygon using list of polygon coordinates - note that each polygon can have holes as explained above in Polygon comments
     MultiPolygon(multipolygon::Vector{Vector{Vector{Vector{Float64}}}}) = MultiPolygon(
         createCollection(
             GEOS_MULTIPOLYGON,
@@ -123,17 +189,22 @@ mutable struct MultiPolygon <: AbstractGeometry
             ],
         ),
     )
-
 end
 
 mutable struct GeometryCollection <: AbstractGeometry
     ptr::GEOSGeom
-
+    # create a geometric collection from a pointer to a geometric collection, else error
     function GeometryCollection(ptr::GEOSGeom)
-        geometrycollection = new(ptr)
-        finalizer(destroyGeom, geometrycollection)
-        geometrycollection
+        id = LibGEOS.geomTypeId(ptr)
+        if id == GEOS_GEOMETRYCOLLECTION
+            geometrycollection = new(cloneGeom(ptr))
+            finalizer(destroyGeom, geometrycollection)
+            geometrycollection
+        else
+            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a geometry collection (yet). Please open an issue if you think this conversion makes sense.")
+        end
     end
+    # create a geometric collection from a list of pointers to geometric objects
     GeometryCollection(collection::Vector{GEOSGeom}) =
         GeometryCollection(createCollection(GEOS_GEOMETRYCOLLECTION, collection))
 end
