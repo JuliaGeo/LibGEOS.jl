@@ -5,13 +5,13 @@ mutable struct Point <: AbstractGeometry
     # create a point from a pointer - only makese sense if it is a pointer to a point, otherwise error
     function Point(ptr::GEOSGeom)
         id = LibGEOS.geomTypeId(ptr)
-        if id == GEOS_POINT
+        point = if id == GEOS_POINT
             point = new(cloneGeom(ptr))
-            finalizer(destroyGeom, point)
-            point
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a point (yet). Please open an issue if you think this conversion makes sense.")
         end
+        finalizer(destroyGeom, point)
+        point
     end
     # create a point from a vector of floats
     Point(coords::Vector{Float64}) = Point(createPoint(coords))
@@ -24,10 +24,10 @@ mutable struct MultiPoint <: AbstractGeometry
     # create a multipoint from a pointer - only makes sense if it is a pointer to a multipoint or to a point, otherwise error
     function MultiPoint(ptr::GEOSGeom)
         id = LibGEOS.geomTypeId(ptr)
-        if id == GEOS_MULTIPOINT
-            multipoint = new(cloneGeom(ptr))
+        multipoint = if id == GEOS_MULTIPOINT
+            new(cloneGeom(ptr))
         elseif id == GEOS_POINT
-            multipoint = new(createCollection(GEOS_MULTIPOINT, 
+            new(createCollection(GEOS_MULTIPOINT, 
                                         GEOSGeom[cloneGeom(ptr)]))
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multipoint (yet). Please open an issue if you think this conversion makes sense.")
@@ -56,13 +56,13 @@ mutable struct LineString <: AbstractGeometry
     # create a linestring from a linestring pointer, otherwise error
     function LineString(ptr::GEOSGeom)
         id = LibGEOS.geomTypeId(ptr)
-        if id == GEOS_LINESTRING
-            line = new(cloneGeom(ptr))
-            finalizer(destroyGeom, line)
-            line
+        line = if id == GEOS_LINESTRING
+            new(cloneGeom(ptr))
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a linestring (yet). Please open an issue if you think this conversion makes sense.")
         end
+        finalizer(destroyGeom, line)
+        line
     end
     #create a linestring from a list of coordiantes
     function LineString(coords::Vector{Vector{Float64}})
@@ -77,11 +77,11 @@ mutable struct MultiLineString <: AbstractGeometry
     # create a multiline string from a multilinestring or a linestring pointer, else error
     function MultiLineString(ptr::GEOSGeom)
         id = LibGEOS.geomTypeId(ptr)
-        if id == GEOS_MULTILINESTRING
-            multiline = new(cloneGeom(ptr))
+        multiline = if id == GEOS_MULTILINESTRING
+            new(cloneGeom(ptr))
         elseif id == GEOS_LINESTRING
-            multiline = new(createCollection(GEOS_MULTILINESTRING, 
-                                        GEOSGeom[cloneGeom(ptr)]))
+            new(createCollection(GEOS_MULTILINESTRING, 
+                                 GEOSGeom[cloneGeom(ptr)]))
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multi-linestring (yet). Please open an issue if you think this conversion makes sense.")
         end
@@ -103,13 +103,13 @@ mutable struct LinearRing <: AbstractGeometry
     # create a linear ring from a linear ring pointer, otherwise error
     function LinearRing(ptr::GEOSGeom)
         id = LibGEOS.geomTypeId(ptr)
-        if id == GEOS_LINEARRING
-            ring = new(cloneGeom(ptr))
-            finalizer(destroyGeom, ring)
-            ring
+        ring = if id == GEOS_LINEARRING
+            new(cloneGeom(ptr))
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a linear ring (yet). Please open an issue if you think this conversion makes sense.")
         end
+        finalizer(destroyGeom, ring)
+        ring
     end
     # create linear ring from a list of coordinates - 
     # first and last coordinates must be the same
@@ -126,10 +126,10 @@ mutable struct Polygon <: AbstractGeometry
     # create polygon using GEOSGeom pointer - only makes sense if pointer points to a polygon or a linear ring to start with. 
     function Polygon(ptr::GEOSGeom)
         id = LibGEOS.geomTypeId(ptr)
-        if id == GEOS_POLYGON
-            polygon = new(cloneGeom(ptr))
+        polygon = if id == GEOS_POLYGON
+            new(cloneGeom(ptr))
         elseif id == GEOS_LINEARRING
-            polygon = new(cloneGeom(createPolygon(ptr)))
+            new(cloneGeom(createPolygon(ptr)))
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a polygon (yet). Please open an issue if you think this conversion makes sense.")
         end
@@ -158,11 +158,10 @@ mutable struct MultiPolygon <: AbstractGeometry
     # create multipolygon using a multipolygon or polygon pointer, else error
     function MultiPolygon(ptr::GEOSGeom)
         id = LibGEOS.geomTypeId(ptr)
-        if id == GEOS_MULTIPOLYGON
-            multipolygon = new(cloneGeom(ptr))
+        multipolygon = if id == GEOS_MULTIPOLYGON
+            new(cloneGeom(ptr))
         elseif id == GEOS_POLYGON
-            multipolygon = new(createCollection(
-                                GEOS_MULTIPOLYGON,
+            new(createCollection(GEOS_MULTIPOLYGON,
                                 GEOSGeom[cloneGeom(ptr)]))
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multi-polygon (yet). Please open an issue if you think this conversion makes sense.")    
@@ -196,13 +195,13 @@ mutable struct GeometryCollection <: AbstractGeometry
     # create a geometric collection from a pointer to a geometric collection, else error
     function GeometryCollection(ptr::GEOSGeom)
         id = LibGEOS.geomTypeId(ptr)
-        if id == GEOS_GEOMETRYCOLLECTION
-            geometrycollection = new(cloneGeom(ptr))
-            finalizer(destroyGeom, geometrycollection)
-            geometrycollection
+        geometrycollection = if id == GEOS_GEOMETRYCOLLECTION
+            new(cloneGeom(ptr))
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a geometry collection (yet). Please open an issue if you think this conversion makes sense.")
         end
+        finalizer(destroyGeom, geometrycollection)
+        geometrycollection
     end
     # create a geometric collection from a list of pointers to geometric objects
     GeometryCollection(collection::Vector{GEOSGeom}) =
