@@ -13,7 +13,8 @@ writegeom(obj::Geometry, wktwriter::WKTWriter, context::GEOSContext = _context) 
     _writegeom(obj.ptr, wktwriter, context)
 writegeom(obj::Geometry, wkbwriter::WKBWriter, context::GEOSContext = _context) =
     _writegeom(obj.ptr, wkbwriter, context)
-writegeom(obj::Geometry, context::GEOSContext = _context) = _writegeom(obj.ptr, context)
+writegeom(obj::Geometry, context::GEOSContext = _context) = 
+    _writegeom(obj.ptr, context)
 
 function geomFromGEOS(ptr::GEOSGeom, context::GEOSContext = _context)
     id = geomTypeId(ptr, context)
@@ -52,21 +53,18 @@ readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = _context) =
 # -----
 project(line::LineString, point::Point, context::GEOSContext = _context) =
     project(line.ptr, point.ptr, context)
-projectNormalized(line::LineString, point::Point,
-context::GEOSContext = _context) =
+projectNormalized(line::LineString, point::Point, context::GEOSContext = _context) =
     projectNormalized(line.ptr, point.ptr, context)
 interpolate(line::LineString, dist::Real, context::GEOSContext = _context) =
     Point(interpolate(line.ptr, dist, context), context)
-interpolateNormalized(line::LineString, dist::Real,
-context::GEOSContext = _context) =
+interpolateNormalized(line::LineString, dist::Real, context::GEOSContext = _context) =
     Point(interpolateNormalized(line.ptr, dist, context), context)
 
 # # -----
 # # Topology operations
 # # -----
 
-buffer(obj::Geometry, dist::Real, quadsegs::Integer = 8,
-context::GEOSContext = _context) =
+buffer(obj::Geometry, dist::Real, quadsegs::Integer = 8, context::GEOSContext = _context) =
     geomFromGEOS(buffer(obj.ptr, dist, quadsegs, context), context)
 bufferWithStyle(
     obj::Geometry,
@@ -75,10 +73,9 @@ bufferWithStyle(
     endCapStyle::GEOSBufCapStyles = GEOSBUF_CAP_ROUND,
     joinStyle::GEOSBufJoinStyles = GEOSBUF_JOIN_ROUND,
     mitreLimit::Real = 5.0,
-    context::GEOSContext = _context,
-) = geomFromGEOS(
-    bufferWithStyle(obj.ptr, dist, quadsegs, endCapStyle, joinStyle, mitreLimit, context), context
-)
+    context::GEOSContext = _context,) =
+    geomFromGEOS(bufferWithStyle(obj.ptr, dist, quadsegs, endCapStyle, joinStyle, mitreLimit, context), context)
+
 envelope(obj::Geometry, context::GEOSContext = _context) =
     geomFromGEOS(envelope(obj.ptr, context), context)
 envelope(obj::PreparedGeometry, context::GEOSContext = _context) =
@@ -100,9 +97,9 @@ node(obj::Geometry, context::GEOSContext = _context) =
 
 intersection(obj1::Geometry, obj2::Geometry, context::GEOSContext = _context) =
     geomFromGEOS(intersection(obj1.ptr, obj2.ptr, context), context)
-difference(obj1::Geometry, obj2::Geometry, context::GEOSContext = _context) = geomFromGEOS(difference(obj1.ptr, obj2.ptr, context), context)
-symmetricDifference(obj1::Geometry, obj2::Geometry,
-    context::GEOSContext = _context) =
+difference(obj1::Geometry, obj2::Geometry, context::GEOSContext = _context) =
+    geomFromGEOS(difference(obj1.ptr, obj2.ptr, context), context)
+symmetricDifference(obj1::Geometry, obj2::Geometry, context::GEOSContext = _context) =
     geomFromGEOS(symmetricDifference(obj1.ptr, obj2.ptr, context), context)
 union(obj1::Geometry, obj2::Geometry, context::GEOSContext = _context) =
     geomFromGEOS(union(obj1.ptr, obj2.ptr, context), context)
@@ -128,19 +125,15 @@ union(obj1::Geometry, obj2::Geometry, context::GEOSContext = _context) =
 
 simplify(obj::Geometry, tol::Real, context::GEOSContext = _context) =
     geomFromGEOS(simplify(obj.ptr, tol, context), context)
-topologyPreserveSimplify(obj::Geometry, tol::Real,
-context::GEOSContext = _context) =
+topologyPreserveSimplify(obj::Geometry, tol::Real, context::GEOSContext = _context) =
     geomFromGEOS(topologyPreserveSimplify(obj.ptr, tol, context), context)
 uniquePoints(obj::Geometry, context::GEOSContext = _context) =
     MultiPoint(uniquePoints(obj.ptr, context), context)
-delaunayTriangulationEdges(obj::Geometry, tol::Real = 0.0,
-context::GEOSContext = _context) =
+delaunayTriangulationEdges(obj::Geometry, tol::Real = 0.0, context::GEOSContext = _context) =
     MultiLineString(delaunayTriangulation(obj.ptr, tol, true, context), context)
-delaunayTriangulation(obj::Geometry, tol::Real = 0.0,
-context::GEOSContext = _context) =
+delaunayTriangulation(obj::Geometry, tol::Real = 0.0, context::GEOSContext = _context) =
     GeometryCollection(delaunayTriangulation(obj.ptr, tol, false, context), context)
-constrainedDelaunayTriangulation(obj::Geometry,
-context::GEOSContext = _context) =
+constrainedDelaunayTriangulation(obj::Geometry, context::GEOSContext = _context) =
     GeometryCollection(constrainedDelaunayTriangulation(obj.ptr, context), context)
 
 
@@ -171,8 +164,7 @@ overlaps(obj1::Geometry, obj2::Geometry, context::GEOSContext = _context) =
     overlaps(obj1.ptr, obj2.ptr, context)
 equals(obj1::Geometry, obj2::Geometry, context::GEOSContext = _context) =
     equals(obj1.ptr, obj2.ptr, context)
-equalsexact(obj1::Geometry, obj2::Geometry, tol::Real,
-context::GEOSContext = _context) =
+equalsexact(obj1::Geometry, obj2::Geometry, tol::Real, context::GEOSContext = _context) =
     equalsexact(obj1.ptr, obj2.ptr, tol, context)
 covers(obj1::Geometry, obj2::Geometry, context::GEOSContext = _context) =
     covers(obj1.ptr, obj2.ptr, context)
@@ -186,35 +178,25 @@ coveredby(obj1::Geometry, obj2::Geometry, context::GEOSContext = _context) =
 
 prepareGeom(obj::Geometry, context::GEOSContext = _context) =
     PreparedGeometry(prepareGeom(obj.ptr, context), obj)
-Base.contains(obj1::PreparedGeometry, obj2::Geometry,
-context::GEOSContext = _context) =
+Base.contains(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = _context) =
     prepcontains(obj1.ptr, obj2.ptr, context)
-containsproperly(obj1::PreparedGeometry, obj2::Geometry,
-context::GEOSContext = _context) =
+containsproperly(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = _context) =
     prepcontainsproperly(obj1.ptr, obj2.ptr, context)
-coveredby(obj1::PreparedGeometry, obj2::Geometry,
-context::GEOSContext = _context) =
+coveredby(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = _context) =
     prepcoveredby(obj1.ptr, obj2.ptr, context)
-covers(obj1::PreparedGeometry, obj2::Geometry,
-context::GEOSContext = _context)= 
+covers(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = _context)= 
     prepcovers(obj1.ptr, obj2.ptr, context)
-crosses(obj1::PreparedGeometry, obj2::Geometry,
-context::GEOSContext = _context) =
+crosses(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = _context) =
     prepcrosses(obj1.ptr, obj2.ptr, context)
-disjoint(obj1::PreparedGeometry, obj2::Geometry,
-context::GEOSContext = _context) =
+disjoint(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = _context) =
     prepdisjoint(obj1.ptr, obj2.ptr, context)
-intersects(obj1::PreparedGeometry, obj2::Geometry,
-context::GEOSContext = _context) =
+intersects(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = _context) =
     prepintersects(obj1.ptr, obj2.ptr, context)
-overlaps(obj1::PreparedGeometry, obj2::Geometry,
-context::GEOSContext = _context) =
+overlaps(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = _context) =
     prepoverlaps(obj1.ptr, obj2.ptr, context)
-touches(obj1::PreparedGeometry, obj2::Geometry,
-context::GEOSContext = _context) =
+touches(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = _context) =
     preptouches(obj1.ptr, obj2.ptr, context)
-within(obj1::PreparedGeometry, obj2::Geometry,
-context::GEOSContext = _context) =
+within(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = _context) =
     prepwithin(obj1.ptr, obj2.ptr, context)
 
 # # -----
@@ -240,7 +222,8 @@ isRing(obj::Geometry, context::GEOSContext = _context) =
     isRing(obj.ptr, context)
 isValid(obj::Geometry, context::GEOSContext = _context) =
     isValid(obj.ptr, context)
-hasZ(obj::Geometry, context::GEOSContext = _context) = hasZ(obj.ptr, context)
+hasZ(obj::Geometry, context::GEOSContext = _context) =
+    hasZ(obj.ptr, context)
 
 isClosed(obj::LineString, context::GEOSContext = _context) =
     isClosed(obj.ptr, context) # Call only on LINESTRING
@@ -370,7 +353,7 @@ function nearestPoints(obj1::Geometry, obj2::Geometry, context::GEOSContext = _c
         return Point[]
     else
         return Point[Point(getCoordinates(points, 1, context), context), 
-               Point(getCoordinates(points, 2, context), context)]
+                     Point(getCoordinates(points, 2, context), context)]
     end
 end
 
@@ -384,8 +367,8 @@ setPrecision(
     obj::Geometry,
     grid::Real;
     flags = GEOS_PREC_VALID_OUTPUT,
-    context::GEOSContext = _context,
-) = setPrecision(obj.ptr, grid::Real, flags, context)
+    context::GEOSContext = _context,) =
+    setPrecision(obj.ptr, grid::Real, flags, context)
 
 # ----
 #  Geometry information functions
