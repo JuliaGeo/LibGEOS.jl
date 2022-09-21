@@ -48,10 +48,16 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test_throws ErrorException LibGEOS.Point(LibGEOS.Polygon(
             [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]).ptr)
 
+        # Test point made with local context
+        ctx = LibGEOS.GEOSContext()
+        point_ctx = LibGEOS.Point(point2D.ptr, ctx)
+        @test LibGEOS.equals(point_ctx, point2D) 
+
         LibGEOS.destroyGeom(point2D)
         LibGEOS.destroyGeom(point3D)
         LibGEOS.destroyGeom(point_coord)
         LibGEOS.destroyGeom(point_ptr)
+        LibGEOS.destroyGeom(point_ctx)
     end
 
     @testset "MultiPoint" begin
@@ -95,6 +101,11 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test LibGEOS.numGeometries(point_coord1) == 1
         @test LibGEOS.equals(point_coord2, mpoint_coord)
 
+        # Test MultiPoint made with local context
+        ctx = LibGEOS.GEOSContext()
+        mpoint_ctx = LibGEOS.MultiPoint(mpoint_coord.ptr, ctx)
+        @test LibGEOS.equals(mpoint_ctx, mpoint_coord) 
+
         LibGEOS.destroyGeom(mpoint_coord)
         LibGEOS.destroyGeom(point1)
         LibGEOS.destroyGeom(point2)
@@ -102,6 +113,7 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         LibGEOS.destroyGeom(mpoint_ptr)
         LibGEOS.destroyGeom(point_coord1)
         LibGEOS.destroyGeom(point_coord2)
+        LibGEOS.destroyGeom(mpoint_ctx)
     end
 
     @testset "LineString" begin
@@ -119,8 +131,14 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test_throws ErrorException LibGEOS.LineString(LibGEOS.Polygon(
             [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]).ptr)
 
+        # Test LineString made with local context
+        ctx = LibGEOS.GEOSContext()
+        linestring_ctx = LibGEOS.LineString(ls_coord.ptr, ctx)
+        @test LibGEOS.equals(linestring_ctx, ls_coord) 
+
         LibGEOS.destroyGeom(ls_coord)
         LibGEOS.destroyGeom(ls_ptr)
+        LibGEOS.destroyGeom(linestring_ctx)
     end
 
     @testset "MultiLineString" begin
@@ -138,8 +156,14 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test_throws ErrorException LibGEOS.MultiLineString(LibGEOS.Polygon(
             [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]).ptr)
 
+        # Test MultiLineString made with local context
+        ctx = LibGEOS.GEOSContext()
+        multilinestring_ctx = LibGEOS.MultiLineString(mls_coord.ptr, ctx)
+        @test LibGEOS.equals(multilinestring_ctx, mls_coord) 
+
         LibGEOS.destroyGeom(mls_coord)
         LibGEOS.destroyGeom(mls_ptr)
+        LibGEOS.destroyGeom(multilinestring_ctx)
     end
 
     @testset "LinearRing" begin
@@ -158,8 +182,14 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test_throws ErrorException LibGEOS.LinearRing(LibGEOS.Polygon(
             [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]).ptr)
 
+        # Test LinearRing made with local context
+        ctx = LibGEOS.GEOSContext()
+        linearring_ctx = LibGEOS.LinearRing(lr_coord.ptr, ctx)
+        @test LibGEOS.equals(linearring_ctx, lr_coord)
+
         LibGEOS.destroyGeom(lr_coord)
         LibGEOS.destroyGeom(lr_ptr)
+        LibGEOS.destroyGeom(linearring_ctx)
     end
 
 
@@ -231,6 +261,11 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
              [[0.0, 0.0], [0.0, -1.0], [-1.0, -1.0],[-1.0, 0.0], [0.0, 0.0]]]
         @test length(LibGEOS.interiorRings(poly_rings2)) == 2
 
+        # Test Polygon made with local context
+        ctx = LibGEOS.GEOSContext()
+        poly_ctx = LibGEOS.Polygon(poly_vec.ptr, ctx)
+        @test LibGEOS.equals(poly_ctx, poly_vec)
+
         LibGEOS.destroyGeom(poly_vec)
         LibGEOS.destroyGeom(poly_ptr)
         LibGEOS.destroyGeom(ring_ext)
@@ -241,6 +276,7 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         LibGEOS.destroyGeom(ring_int2)
         LibGEOS.destroyGeom(poly_rings1)
         LibGEOS.destroyGeom(poly_rings2)
+        LibGEOS.destroyGeom(poly_ctx)
     end
 
     @testset "MultiPolygon" begin
@@ -274,12 +310,18 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         testValidTypeDims(mpoly_polylist)
         @test LibGEOS.equals(mpoly_polylist, mpoly_coord)
 
+        # Test MultiPolygon made with local context
+        ctx = LibGEOS.GEOSContext()
+        mpoly_ctx = LibGEOS.MultiPolygon(mpoly_coord.ptr, ctx)
+        @test LibGEOS.equals(mpoly_ctx, mpoly_coord)
+
         LibGEOS.destroyGeom(poly1)
         LibGEOS.destroyGeom(poly2)
         LibGEOS.destroyGeom(mpoly_coord)
         LibGEOS.destroyGeom(mpoly_ptr)
         LibGEOS.destroyGeom(mpoly_poly_ptr)
         LibGEOS.destroyGeom(mpoly_polylist)
+        LibGEOS.destroyGeom(mpoly_ctx)
     end
 
     @testset "GeometryCollections" begin
@@ -296,10 +338,16 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test LibGEOS.geomTypeId(geomcollection_ptr.ptr) == LibGEOS.GEOS_GEOMETRYCOLLECTION
         @test LibGEOS.equals(geomcol_ptr_list, geomcollection_ptr)
 
+        # Test GeomertyCollections made with local context
+        ctx = LibGEOS.GEOSContext()
+        geomcollect_ctx = LibGEOS.GeometryCollection(geomcol_ptr_list.ptr, ctx)
+        @test LibGEOS.equals(geomcollect_ctx, geomcol_ptr_list)
+
         LibGEOS.destroyGeom(point)
         LibGEOS.destroyGeom(poly)
         LibGEOS.destroyGeom(geomcol_ptr_list)
         LibGEOS.destroyGeom(geomcollection_ptr)
+        LibGEOS.destroyGeom(geomcollect_ctx)
     end
 
 end
