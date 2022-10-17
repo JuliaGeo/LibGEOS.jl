@@ -262,8 +262,10 @@ const Geometry = Union{
     GeometryCollection,
 }
 
+get_context(obj::Geometry) = obj.context
 function destroyGeom(obj::Geometry)
-    destroyGeom(obj.ptr, obj.context)
+    context = get_context(obj)
+    destroyGeom(obj.ptr, context)
     obj.ptr = C_NULL
 end
 
@@ -272,8 +274,10 @@ mutable struct PreparedGeometry{G<:AbstractGeometry} <: AbstractGeometry
     ownedby::G
 end
 
-function destroyGeom(obj::PreparedGeometry, context::GEOSContext = _context)
-    # TODO
+get_context(obj::PreparedGeometry) = get_context(obj.ownedby)
+
+function destroyGeom(obj::PreparedGeometry)
+    context = get_context(obj)
     destroyPreparedGeom(obj.ptr, context)
     obj.ptr = C_NULL
 end
