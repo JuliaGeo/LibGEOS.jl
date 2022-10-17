@@ -262,12 +262,8 @@ const Geometry = Union{
     GeometryCollection,
 }
 
-function get_context(obj)
-    @assert hasproperty(obj, :context)
-    obj.context
-end
-function destroyGeom(obj::Geometry, context::GEOSContext = get_context(obj))
-    destroyGeom(obj.ptr, context)
+function destroyGeom(obj::Geometry)
+    destroyGeom(obj.ptr, obj.context)
     obj.ptr = C_NULL
 end
 
