@@ -13,7 +13,7 @@ if version != LibGEOS.GEOS_CAPI_VERSION
     ) run_version = version gen_version = LibGEOS.GEOS_CAPI_VERSION
 end
 
-# @testset "LibGEOS" begin
+@testset "LibGEOS" begin
     include("test_geos_types.jl")
     include("test_geos_functions.jl")
     include("test_geos_operations.jl")
@@ -22,4 +22,4 @@ end
     include("test_invalid_geometry.jl")
     include("test_strtree.jl")
     Aqua.test_all(LibGEOS)
-# end
+end

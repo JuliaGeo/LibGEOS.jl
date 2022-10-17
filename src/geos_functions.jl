@@ -800,8 +800,11 @@ function prepareGeom(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-destroyPreparedGeom(ptr::Ptr{GEOSPreparedGeometry}, context::GEOSContext = _context) =
-    GEOSPreparedGeom_destroy_r(context.ptr, ptr)
+function destroyPreparedGeom(ptr::Ptr{GEOSPreparedGeometry}, context::GEOSContext = _context) =
+    GC.@preserve context begin
+        GEOSPreparedGeom_destroy_r(context.ptr, ptr)
+    end
+end
 
 function prepcontains(
     g1::Ptr{GEOSPreparedGeometry},
