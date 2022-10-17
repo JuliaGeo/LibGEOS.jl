@@ -477,8 +477,11 @@ function cloneGeom(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-destroyGeom(ptr::GEOSGeom, context::GEOSContext = _context) =
-    GEOSGeom_destroy_r(context.ptr, ptr)
+function destroyGeom(ptr::GEOSGeom, context::GEOSContext = _context)
+    GC.@preserve context begin
+        GEOSGeom_destroy_r(context.ptr, ptr)
+    end
+end
 
 # -----
 # Topology operations - return NULL on exception.
