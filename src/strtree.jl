@@ -1,3 +1,15 @@
+"""
+    STRtree(items; nodecapacity=10, context::GEOSContext=_context)
+
+Create a Sort Tile Recursive tree for fast intersection queries of objects for which an
+envelope is defined. The tree cannot be changed after its creation.
+
+## Arguments
+- `items`: The items to store in the tree.
+- `nodecapacity`: The maximum number of items that can be stored per tree node (default 10).
+- `context`: The GEOS context in which the tree should be created in. Defaults to the global
+  LibGEOS context.
+"""
 mutable struct STRtree{T}
     ptr::Ptr{GEOSSTRtree}  # void pointer to the tree
     items::T  # any geometry for which an envelope can be derived
@@ -14,6 +26,7 @@ mutable struct STRtree{T}
         return ret
     end
 end
+
 get_context(obj::STRtree) = obj.context
 
 function destroySTRtree(obj::STRtree)
@@ -23,19 +36,6 @@ function destroySTRtree(obj::STRtree)
     end
     obj.ptr = C_NULL
 end
-"""
-    STRtree(items; nodecapacity=10, context::GEOSContext=_context)
-
-Create a Sort Tile Recursive tree for fast intersection queries of objects for which an
-envelope is defined. The tree cannot be changed after its creation.
-
-## Arguments
-- `items`: The items to store in the tree.
-- `nodecapacity`: The maximum number of items that can be stored per tree node (default 10).
-- `context`: The GEOS context in which the tree should be created in. Defaults to the global
-  LibGEOS context.
-"""
-STRtree
 
 """
     query(tree::STRtree, geometry; context::GEOSContext=_context)
