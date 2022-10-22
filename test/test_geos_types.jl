@@ -351,3 +351,22 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
     end
 
 end
+
+@testset "Multi threading" begin
+    function f91(n)
+        # adapted from https://github.com/JuliaGeo/LibGEOS.jl/issues/91#issuecomment-1267732709
+        contexts = [LibGEOS.GEOSContext() for i=1:Threads.nthreads()]
+        p = [[[-1.,-1],[+1,-1],[+1,+1],[-1,+1],[-1,-1]]]
+        Threads.@threads :static for i=1:n
+            ctx = contexts[Threads.threadid()]
+            g1 = LibGEOS.Polygon(p, ctx)
+            g2 = LibGEOS.Polygon(p, ctx)
+            for j=1:n
+                LibGEOS.intersects(g1.ptr, g2.ptr, ctx)
+            end
+        end
+        GC.gc(true)
+        return nothing
+    end
+    f91(91)
+end
