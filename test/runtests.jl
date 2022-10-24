@@ -21,5 +21,6 @@ end
     include("test_regressions.jl")
     include("test_invalid_geometry.jl")
     include("test_strtree.jl")
+    include("test_misc.jl")
     Aqua.test_all(LibGEOS)
 end
