@@ -209,6 +209,13 @@ function allow_global_context!(bool::Bool)
     _GLOBAL_CONTEXT_ALLOWED[] = bool
 end
 
+function allow_global_context!(f, bool::Bool)
+    old = _GLOBAL_CONTEXT_ALLOWED[]
+    allow_global_context!(bool)
+    f()
+    allow_global_context!(old)
+end
+
 function __init__()
     _GLOBAL_CONTEXT_ALLOWED[] = true
     _GLOBAL_CONTEXT[] = GEOSContext()
