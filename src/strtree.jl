@@ -1,5 +1,5 @@
 """
-    STRtree(items; nodecapacity=10, context::GEOSContext=_context)
+    STRtree(items; nodecapacity=10, context::GEOSContext=get_global_context())
 
 Create a Sort Tile Recursive tree for fast intersection queries of objects for which an
 envelope is defined. The tree cannot be changed after its creation.
@@ -14,7 +14,7 @@ mutable struct STRtree{T}
     ptr::Ptr{GEOSSTRtree}  # void pointer to the tree
     items::T  # any geometry for which an envelope can be derived
     context::GEOSContext
-    function STRtree(items; nodecapacity = 10, context::GEOSContext = _context)
+    function STRtree(items; nodecapacity = 10, context::GEOSContext = get_global_context())
         tree = LibGEOS.GEOSSTRtree_create_r(context.ptr, nodecapacity)
         for item in items
             envptr = envelope(item).ptr
@@ -38,7 +38,7 @@ function destroySTRtree(obj::STRtree)
 end
 
 """
-    query(tree::STRtree, geometry; context::GEOSContext=_context)
+    query(tree::STRtree, geometry; context::GEOSContext=get_global_context())
 
 Returns the objects within `tree`, whose envelope intersects the envelope of `geometry`.
 

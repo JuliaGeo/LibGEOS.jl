@@ -1,17 +1,17 @@
-function _readgeom(wktstring::String, wktreader::WKTReader, context::GEOSContext = _context)
+function _readgeom(wktstring::String, wktreader::WKTReader, context::GEOSContext = get_global_context())
     result = GEOSWKTReader_read_r(context.ptr, wktreader.ptr, pointer(wktstring))
     if result == C_NULL
         error("LibGEOS: Error in GEOSWKTReader_read_r while reading $wktstring")
     end
     result
 end
-_readgeom(wktstring::String, context::GEOSContext = _context) =
+_readgeom(wktstring::String, context::GEOSContext = get_global_context()) =
     _readgeom(wktstring, WKTReader(context), context)
 
 function _readgeom(
     wkbbuffer::Vector{Cuchar},
     wkbreader::WKBReader,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSWKBReader_read_r(
         context.ptr,
@@ -24,20 +24,20 @@ function _readgeom(
     end
     result
 end
-_readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = _context) =
+_readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = get_global_context()) =
     _readgeom(wkbbuffer, WKBReader(context), context)
 
-function _writegeom(geom::GEOSGeom, wktwriter::WKTWriter, context::GEOSContext = _context)
+function _writegeom(geom::GEOSGeom, wktwriter::WKTWriter, context::GEOSContext = get_global_context())
     GEOSWKTWriter_write_r(context.ptr, wktwriter.ptr, geom)
 end
 
-function _writegeom(geom::GEOSGeom, wkbwriter::WKBWriter, context::GEOSContext = _context)
+function _writegeom(geom::GEOSGeom, wkbwriter::WKBWriter, context::GEOSContext = get_global_context())
     wkbsize = Ref{Csize_t}()
     result = GEOSWKBWriter_write_r(context.ptr, wkbwriter.ptr, geom, wkbsize)
     unsafe_wrap(Array, result, wkbsize[], own = true)
 end
 
-_writegeom(geom::GEOSGeom, context::GEOSContext = _context) =
+_writegeom(geom::GEOSGeom, context::GEOSContext = get_global_context()) =
     _writegeom(geom, WKTWriter(context), context)
 
 # -----
@@ -48,7 +48,7 @@ _writegeom(geom::GEOSGeom, context::GEOSContext = _context) =
 
 Create a Coordinate sequence with ``size'' coordinates of ``dims'' dimensions (Return NULL on exception)
 """
-function createCoordSeq(size::Integer, context::GEOSContext = _context; ndim::Integer = 2)
+function createCoordSeq(size::Integer, context::GEOSContext = get_global_context(); ndim::Integer = 2)
     @assert ndim >= 2
     result = GEOSCoordSeq_create_r(context.ptr, size, ndim)
     if result == C_NULL
@@ -58,7 +58,7 @@ function createCoordSeq(size::Integer, context::GEOSContext = _context; ndim::In
 end
 
 # Clone a Coordinate Sequence (Return NULL on exception)
-function cloneCoordSeq(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+function cloneCoordSeq(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     result = GEOSCoordSeq_clone_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSCoordSeq_clone")
@@ -66,7 +66,7 @@ function cloneCoordSeq(ptr::GEOSCoordSeq, context::GEOSContext = _context)
     result
 end
 
-function destroyCoordSeq(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+function destroyCoordSeq(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     result = GEOSCoordSeq_destroy_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSCoordSeq_destroy")
@@ -75,7 +75,7 @@ function destroyCoordSeq(ptr::GEOSCoordSeq, context::GEOSContext = _context)
 end
 
 # Set ordinate values in a Coordinate Sequence (Return 0 on exception)
-function setX!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext = _context)
+function setX!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext = get_global_context())
     if !(0 < i <= getSize(ptr, context))
         error(
             "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
@@ -88,7 +88,7 @@ function setX!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext 
     result
 end
 
-function setY!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext = _context)
+function setY!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext = get_global_context())
     if !(0 < i <= getSize(ptr, context))
         error(
             "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
@@ -101,7 +101,7 @@ function setY!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext 
     result
 end
 
-function setZ!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext = _context)
+function setZ!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext = get_global_context())
     if !(0 < i <= getSize(ptr, context))
         error(
             "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
@@ -115,7 +115,7 @@ function setZ!(ptr::GEOSCoordSeq, i::Integer, value::Real, context::GEOSContext 
 end
 
 "Get size info from a Coordinate Sequence (Return 0 on exception)"
-function getSize(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+function getSize(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     out = Ref{UInt32}()
     result = GEOSCoordSeq_getSize_r(context.ptr, ptr, out)
     if result == 0
@@ -125,7 +125,7 @@ function getSize(ptr::GEOSCoordSeq, context::GEOSContext = _context)
 end
 
 "Get dimensions info from a Coordinate Sequence (Return 0 on exception)"
-function getDimensions(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+function getDimensions(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     out = Ref{UInt32}()
     result = GEOSCoordSeq_getDimensions_r(context.ptr, ptr, out)
     if result == 0
@@ -139,7 +139,7 @@ function setCoordSeq!(
     ptr::GEOSCoordSeq,
     i::Integer,
     coords::Vector{Float64},
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     ndim = length(coords)
     @assert ndim >= 2
@@ -159,7 +159,7 @@ end
 
 Create a createCoordSeq of a single 2D coordinate
 """
-function createCoordSeq(x::Real, y::Real, context::GEOSContext = _context)
+function createCoordSeq(x::Real, y::Real, context::GEOSContext = get_global_context())
     coordinates = createCoordSeq(1, context, ndim = 2)
     setX!(coordinates, 1, x, context)
     setY!(coordinates, 1, y, context)
@@ -171,7 +171,7 @@ end
 
 Create a createCoordSeq of a single 3D coordinate
 """
-function createCoordSeq(x::Real, y::Real, z::Real, context::GEOSContext = _context)
+function createCoordSeq(x::Real, y::Real, z::Real, context::GEOSContext = get_global_context())
     coordinates = createCoordSeq(1, context, ndim = 3)
     setX!(coordinates, 1, x, context)
     setY!(coordinates, 1, y, context)
@@ -184,7 +184,7 @@ end
 
 Create a createCoordSeq of a single N dimensional coordinate
 """
-function createCoordSeq(coords::Vector{Float64}, context::GEOSContext = _context)
+function createCoordSeq(coords::Vector{Float64}, context::GEOSContext = get_global_context())
     ndim = length(coords)
     @assert ndim >= 2
     coordinates = createCoordSeq(1, context, ndim = ndim)
@@ -196,7 +196,7 @@ end
 
 Create a createCoordSeq of a multiple N dimensional coordinate
 """
-function createCoordSeq(coords::Vector{Vector{Float64}}, context::GEOSContext = _context)
+function createCoordSeq(coords::Vector{Vector{Float64}}, context::GEOSContext = get_global_context())
     ncoords = length(coords)
     @assert ncoords > 0
     ndim = length(coords[1])
@@ -207,7 +207,7 @@ function createCoordSeq(coords::Vector{Vector{Float64}}, context::GEOSContext = 
     coordinates
 end
 
-function getX(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
+function getX(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = get_global_context())
     if !(0 < i <= getSize(ptr, context))
         error(
             "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
@@ -221,7 +221,7 @@ function getX(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
     out[]
 end
 
-function getX(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+function getX(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     ncoords = getSize(ptr, context)
     xcoords = Array{Float64}(ncoords)
     start = pointer(xcoords)
@@ -232,7 +232,7 @@ function getX(ptr::GEOSCoordSeq, context::GEOSContext = _context)
     xcoords
 end
 
-function getY(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
+function getY(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = get_global_context())
     if !(0 < i <= getSize(ptr, context))
         error(
             "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
@@ -246,7 +246,7 @@ function getY(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
     out[]
 end
 
-function getY(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+function getY(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     ncoords = getSize(ptr, context)
     ycoords = Array{Float64}(ncoords)
     start = pointer(ycoords)
@@ -257,7 +257,7 @@ function getY(ptr::GEOSCoordSeq, context::GEOSContext = _context)
     ycoords
 end
 
-function getZ(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
+function getZ(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = get_global_context())
     if !(0 < i <= getSize(ptr, context))
         error(
             "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
@@ -271,7 +271,7 @@ function getZ(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
     out[]
 end
 
-function getZ(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+function getZ(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     ncoords = getSize(ptr, context)
     zcoords = Array{Float64}(ncoords)
     start = pointer(zcoords)
@@ -282,7 +282,7 @@ function getZ(ptr::GEOSCoordSeq, context::GEOSContext = _context)
     zcoords
 end
 
-function getCoordinates(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _context)
+function getCoordinates(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = get_global_context())
     if !(0 < i <= getSize(ptr, context))
         error(
             "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
@@ -300,7 +300,7 @@ function getCoordinates(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = _c
     coord
 end
 
-function getCoordinates(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+function getCoordinates(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     ndim = getDimensions(ptr, context)
     ncoords = getSize(ptr, context)
     coordseq = Vector{Float64}[]
@@ -311,7 +311,7 @@ function getCoordinates(ptr::GEOSCoordSeq, context::GEOSContext = _context)
     coordseq
 end
 
-function isCCW(ptr::GEOSCoordSeq, context::GEOSContext = _context)::Bool
+function isCCW(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())::Bool
     d = UInt8[1]
     GC.@preserve result = GEOSCoordSeq_isCCW_r(context.ptr, ptr, pointer(d))
     if result == C_NULL
@@ -326,11 +326,11 @@ end
 # (GEOSGeometry ownership is retained by caller)
 
 # Return distance of point 'p' projected on 'g' from origin of 'g'. Geometry 'g' must be a lineal geometry
-project(g::GEOSGeom, p::GEOSGeom, context::GEOSContext = _context) =
+project(g::GEOSGeom, p::GEOSGeom, context::GEOSContext = get_global_context()) =
     GEOSProject_r(context.ptr, g, p)
 
 # Return closest point to given distance within geometry (Geometry must be a LineString)
-function interpolate(ptr::GEOSGeom, d::Real, context::GEOSContext = _context)
+function interpolate(ptr::GEOSGeom, d::Real, context::GEOSContext = get_global_context())
     result = GEOSInterpolate_r(context.ptr, ptr, d)
     if result == C_NULL
         error("LibGEOS: Error in GEOSInterpolate")
@@ -338,10 +338,10 @@ function interpolate(ptr::GEOSGeom, d::Real, context::GEOSContext = _context)
     result
 end
 
-projectNormalized(g::GEOSGeom, p::GEOSGeom, context::GEOSContext = _context) =
+projectNormalized(g::GEOSGeom, p::GEOSGeom, context::GEOSContext = get_global_context()) =
     GEOSProjectNormalized_r(context.ptr, g, p)
 
-function interpolateNormalized(ptr::GEOSGeom, d::Real, context::GEOSContext = _context)
+function interpolateNormalized(ptr::GEOSGeom, d::Real, context::GEOSContext = get_global_context())
     result = GEOSInterpolateNormalized_r(context.ptr, ptr, d)
     if result == C_NULL
         error("LibGEOS: Error in GEOSInterpolateNormalized")
@@ -357,7 +357,7 @@ end
 # The user can control the accuracy of the curve approximation by specifying the number of linear segments with which to approximate a curve.
 
 # Always returns a polygon. The negative or zero-distance buffer of lines and points is always an empty Polygon.
-buffer(ptr::GEOSGeom, width::Real, quadsegs::Integer = 8, context::GEOSContext = _context) =
+buffer(ptr::GEOSGeom, width::Real, quadsegs::Integer = 8, context::GEOSContext = get_global_context()) =
     GEOSBuffer_r(context.ptr, ptr, width, Int32(quadsegs))
 
 bufferWithStyle(
@@ -367,7 +367,7 @@ bufferWithStyle(
     endCapStyle::GEOSBufCapStyles = GEOSBUF_CAP_ROUND,
     joinStyle::GEOSBufJoinStyles = GEOSBUF_JOIN_ROUND,
     mitreLimit::Real = 5.0,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 ) = GEOSBufferWithStyle_r(
     context.ptr,
     ptr,
@@ -393,40 +393,40 @@ bufferWithStyle(
 # -----
 # (GEOSCoordSequence* arguments will become ownership of the returned object.)
 
-function createPoint(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+function createPoint(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     result = GEOSGeom_createPoint_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_createPoint")
     end
     result
 end
-createPoint(x::Real, y::Real, context::GEOSContext = _context) =
+createPoint(x::Real, y::Real, context::GEOSContext = get_global_context()) =
     createPoint(createCoordSeq(x, y, context), context)
-createPoint(x::Real, y::Real, z::Real, context::GEOSContext = _context) =
+createPoint(x::Real, y::Real, z::Real, context::GEOSContext = get_global_context()) =
     createPoint(createCoordSeq(x, y, z, context), context)
-createPoint(coords::Vector{Vector{Float64}}, context::GEOSContext = _context) =
+createPoint(coords::Vector{Vector{Float64}}, context::GEOSContext = get_global_context()) =
     createPoint(createCoordSeq(coords, context), context)
-createPoint(coords::Vector{Float64}, context::GEOSContext = _context) =
+createPoint(coords::Vector{Float64}, context::GEOSContext = get_global_context()) =
     createPoint(createCoordSeq(Vector{Float64}[coords], context), context)
 
-function createLinearRing(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+function createLinearRing(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     result = GEOSGeom_createLinearRing_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_createLinearRing")
     end
     result
 end
-createLinearRing(coords::Vector{Vector{Float64}}, context::GEOSContext = _context) =
+createLinearRing(coords::Vector{Vector{Float64}}, context::GEOSContext = get_global_context()) =
     GEOSGeom_createLinearRing_r(context.ptr, createCoordSeq(coords, context))
 
-function createLineString(ptr::GEOSCoordSeq, context::GEOSContext = _context)
+function createLineString(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     result = GEOSGeom_createLineString_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_createLineString")
     end
     result
 end
-createLineString(coords::Vector{Vector{Float64}}, context::GEOSContext = _context) =
+createLineString(coords::Vector{Vector{Float64}}, context::GEOSContext = get_global_context()) =
     GEOSGeom_createLineString_r(context.ptr, createCoordSeq(coords, context))
 
 # Second argument is an array of GEOSGeometry* objects.
@@ -435,7 +435,7 @@ createLineString(coords::Vector{Vector{Float64}}, context::GEOSContext = _contex
 function createPolygon(
     shell::GEOSGeom,
     holes::Vector{GEOSGeom},
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSGeom_createPolygon_r(context.ptr, shell, pointer(holes), length(holes))
     if result == C_NULL
@@ -444,13 +444,13 @@ function createPolygon(
     result
 end
 # convenience function to create polygon without holes
-createPolygon(shell::GEOSGeom, context::GEOSContext = _context) =
+createPolygon(shell::GEOSGeom, context::GEOSContext = get_global_context()) =
     createPolygon(shell, GEOSGeom[], context)
 
 function createCollection(
     geomtype::GEOSGeomTypes,
     geoms::Vector{GEOSGeom},
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result =
         GEOSGeom_createCollection_r(context.ptr, geomtype, pointer(geoms), length(geoms))
@@ -460,7 +460,7 @@ function createCollection(
     result
 end
 
-function createEmptyCollection(geomtype::GEOSGeomTypes, context::GEOSContext = _context)
+function createEmptyCollection(geomtype::GEOSGeomTypes, context::GEOSContext = get_global_context())
     result = GEOSGeom_createEmptyCollection_r(context.ptr, geomtype)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_createEmptyCollection")
@@ -469,7 +469,7 @@ function createEmptyCollection(geomtype::GEOSGeomTypes, context::GEOSContext = _
 end
 
 # Memory management
-function cloneGeom(ptr::GEOSGeom, context::GEOSContext = _context)
+function cloneGeom(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGeom_clone_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_clone")
@@ -477,7 +477,7 @@ function cloneGeom(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-function destroyGeom(ptr::GEOSGeom, context::GEOSContext = _context)
+function destroyGeom(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     GC.@preserve context begin
         GEOSGeom_destroy_r(context.ptr, ptr)
     end
@@ -487,7 +487,7 @@ end
 # Topology operations - return NULL on exception.
 # -----
 
-function envelope(ptr::GEOSGeom, context::GEOSContext = _context)
+function envelope(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSEnvelope_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSEnvelope")
@@ -504,7 +504,7 @@ has width equal to the minimum diameter, and a longer length. If the convex hill
 degenerate (a line or point) a LINESTRING or POINT is returned. The minimum rotated rectangle can
 be used as an extremely generalized representation for the given geometry.
 """
-function minimumRotatedRectangle(ptr::GEOSGeom, context::GEOSContext = _context)
+function minimumRotatedRectangle(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSMinimumRotatedRectangle_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSMinimumRotatedRectangle")
@@ -513,7 +513,7 @@ function minimumRotatedRectangle(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 
-function intersection(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function intersection(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSIntersection_r(context.ptr, g1, g2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSIntersection")
@@ -525,7 +525,7 @@ end
 
 # Returns:
 # if the convex hull contains 3 or more points, a Polygon; 2 points, a LineString; 1 point, a Point; 0 points, an empty GeometryCollection.
-function convexhull(ptr::GEOSGeom, context::GEOSContext = _context)
+function convexhull(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSConvexHull_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSConvexHull")
@@ -533,7 +533,7 @@ function convexhull(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-function difference(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function difference(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSDifference_r(context.ptr, g1, g2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSDifference")
@@ -541,7 +541,7 @@ function difference(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-function symmetricDifference(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function symmetricDifference(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSSymDifference_r(context.ptr, g1, g2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSSymDifference")
@@ -549,7 +549,7 @@ function symmetricDifference(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = 
     result
 end
 
-function boundary(ptr::GEOSGeom, context::GEOSContext = _context)
+function boundary(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSBoundary_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSBoundary")
@@ -557,7 +557,7 @@ function boundary(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-function union(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function union(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSUnion_r(context.ptr, g1, g2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSUnion")
@@ -565,7 +565,7 @@ function union(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-function unaryUnion(ptr::GEOSGeom, context::GEOSContext = _context)
+function unaryUnion(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSUnaryUnion_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSUnaryUnion")
@@ -573,7 +573,7 @@ function unaryUnion(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-function pointOnSurface(ptr::GEOSGeom, context::GEOSContext = _context)
+function pointOnSurface(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSPointOnSurface_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSPointOnSurface")
@@ -581,7 +581,7 @@ function pointOnSurface(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-function centroid(ptr::GEOSGeom, context::GEOSContext = _context)
+function centroid(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGetCentroid_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetCentroid")
@@ -589,7 +589,7 @@ function centroid(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-function node(ptr::GEOSGeom, context::GEOSContext = _context)
+function node(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSNode_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSNode")
@@ -598,7 +598,7 @@ function node(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 # all arguments remain ownership of the caller (both Geometries and pointers)
-function polygonize(geoms::Vector{GEOSGeom}, context::GEOSContext = _context)
+function polygonize(geoms::Vector{GEOSGeom}, context::GEOSContext = get_global_context())
     result = GEOSPolygonize_r(context.ptr, pointer(geoms), length(geoms))
     if result == C_NULL
         error("LibGEOS: Error in GEOSPolygonize")
@@ -608,7 +608,7 @@ end
 # GEOSPolygonizer_getCutEdges
 # GEOSPolygonize_full
 
-function lineMerge(ptr::GEOSGeom, context::GEOSContext = _context)
+function lineMerge(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSLineMerge_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSLineMerge")
@@ -616,7 +616,7 @@ function lineMerge(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-function simplify(ptr::GEOSGeom, tol::Real, context::GEOSContext = _context)
+function simplify(ptr::GEOSGeom, tol::Real, context::GEOSContext = get_global_context())
     result = GEOSSimplify_r(context.ptr, ptr, tol)
     if result == C_NULL
         error("LibGEOS: Error in GEOSSimplify")
@@ -624,7 +624,7 @@ function simplify(ptr::GEOSGeom, tol::Real, context::GEOSContext = _context)
     result
 end
 
-function topologyPreserveSimplify(ptr::GEOSGeom, tol::Real, context::GEOSContext = _context)
+function topologyPreserveSimplify(ptr::GEOSGeom, tol::Real, context::GEOSContext = get_global_context())
     result = GEOSTopologyPreserveSimplify_r(context.ptr, ptr, tol)
     if result == C_NULL
         error("LibGEOS: Error in GEOSTopologyPreserveSimplify")
@@ -634,7 +634,7 @@ end
 
 # Return all distinct vertices of input geometry as a MULTIPOINT.
 # (Note that only 2 dimensions of the vertices are considered when testing for equality)
-function uniquePoints(ptr::GEOSGeom, context::GEOSContext = _context)
+function uniquePoints(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGeom_extractUniquePoints_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_extractUniquePoints")
@@ -649,7 +649,7 @@ end
 #  - second element is a MULTILINESTRING containing shared paths
 #    having the _opposite_ direction on the two inputs
 # (Returns NULL on exception)
-function sharedPaths(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function sharedPaths(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSSharedPaths_r(context.ptr, g1, g2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSSharedPaths")
@@ -659,7 +659,7 @@ end
 
 # Snap first geometry on to second with given tolerance
 # (Returns a newly allocated geometry, or NULL on exception)
-function snap(g1::GEOSGeom, g2::GEOSGeom, tol::Real, context::GEOSContext = _context)
+function snap(g1::GEOSGeom, g2::GEOSGeom, tol::Real, context::GEOSContext = get_global_context())
     result = GEOSSnap_r(context.ptr, g1, g2, tol)
     if result == C_NULL
         error("LibGEOS: Error in GEOSSnap")
@@ -679,7 +679,7 @@ function delaunayTriangulation(
     ptr::GEOSGeom,
     tol::Real = 0.0,
     onlyEdges::Bool = false,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSDelaunayTriangulation_r(context.ptr, ptr, tol, Int32(onlyEdges))
     if result == C_NULL
@@ -688,7 +688,7 @@ function delaunayTriangulation(
     result
 end
 
-function constrainedDelaunayTriangulation(ptr::GEOSGeom, context::GEOSContext = _context)
+function constrainedDelaunayTriangulation(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSConstrainedDelaunayTriangulation_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSConstrainedDelaunayTriangulation")
@@ -699,7 +699,7 @@ end
 # -----
 # Binary predicates - return 2 on exception, 1 on true, 0 on false
 # -----
-function disjoint(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function disjoint(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSDisjoint_r(context.ptr, g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSDisjoint")
@@ -707,7 +707,7 @@ function disjoint(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result != 0x00
 end
 
-function touches(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function touches(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSTouches_r(context.ptr, g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSTouches")
@@ -715,7 +715,7 @@ function touches(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result != 0x00
 end
 
-function intersects(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function intersects(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSIntersects_r(context.ptr, g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSIntersects")
@@ -723,7 +723,7 @@ function intersects(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result != 0x00
 end
 
-function crosses(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function crosses(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSCrosses_r(context.ptr, g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSCrosses")
@@ -731,7 +731,7 @@ function crosses(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result != 0x00
 end
 
-function within(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function within(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSWithin_r(context.ptr, g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSWithin")
@@ -739,7 +739,7 @@ function within(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result != 0x00
 end
 
-function Base.contains(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function Base.contains(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSContains_r(context.ptr, g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSContains")
@@ -747,7 +747,7 @@ function Base.contains(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _conte
     result != 0x00
 end
 
-function overlaps(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function overlaps(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSOverlaps_r(context.ptr, g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSOverlaps")
@@ -755,7 +755,7 @@ function overlaps(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result != 0x00
 end
 
-function equals(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function equals(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSEquals_r(context.ptr, g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSEquals")
@@ -763,7 +763,7 @@ function equals(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result != 0x00
 end
 
-function equalsexact(g1::GEOSGeom, g2::GEOSGeom, tol::Real, context::GEOSContext = _context)
+function equalsexact(g1::GEOSGeom, g2::GEOSGeom, tol::Real, context::GEOSContext = get_global_context())
     result = GEOSEqualsExact_r(context.ptr, g1, g2, tol)
     if result == 0x02
         error("LibGEOS: Error in GEOSEqualsExact")
@@ -771,7 +771,7 @@ function equalsexact(g1::GEOSGeom, g2::GEOSGeom, tol::Real, context::GEOSContext
     result != 0x00
 end
 
-function covers(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function covers(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSCovers_r(context.ptr, g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSCovers")
@@ -779,7 +779,7 @@ function covers(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
     result != 0x00
 end
 
-function coveredby(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function coveredby(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSCoveredBy_r(context.ptr, g1, g2)
     if result == 0x02
         error("LibGEOS: Error in GEOSCoveredBy")
@@ -792,7 +792,7 @@ end
 # -----
 
 # GEOSGeometry ownership is retained by caller
-function prepareGeom(ptr::GEOSGeom, context::GEOSContext = _context)
+function prepareGeom(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSPrepare_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSPrepare")
@@ -800,7 +800,7 @@ function prepareGeom(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-function destroyPreparedGeom(ptr::Ptr{GEOSPreparedGeometry}, context::GEOSContext = _context)
+function destroyPreparedGeom(ptr::Ptr{GEOSPreparedGeometry}, context::GEOSContext = get_global_context())
     GC.@preserve context begin
         GEOSPreparedGeom_destroy_r(context.ptr, ptr)
     end
@@ -809,7 +809,7 @@ end
 function prepcontains(
     g1::Ptr{GEOSPreparedGeometry},
     g2::GEOSGeom,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSPreparedContains_r(context.ptr, g1, g2)
     if result == 0x02
@@ -821,7 +821,7 @@ end
 function prepcontainsproperly(
     g1::Ptr{GEOSPreparedGeometry},
     g2::GEOSGeom,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSPreparedContainsProperly_r(context.ptr, g1, g2)
     if result == 0x02
@@ -833,7 +833,7 @@ end
 function prepcoveredby(
     g1::Ptr{GEOSPreparedGeometry},
     g2::GEOSGeom,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSPreparedCoveredBy_r(context.ptr, g1, g2)
     if result == 0x02
@@ -845,7 +845,7 @@ end
 function prepcovers(
     g1::Ptr{GEOSPreparedGeometry},
     g2::GEOSGeom,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSPreparedCovers_r(context.ptr, g1, g2)
     if result == 0x02
@@ -857,7 +857,7 @@ end
 function prepcrosses(
     g1::Ptr{GEOSPreparedGeometry},
     g2::GEOSGeom,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSPreparedCrosses_r(context.ptr, g1, g2)
     if result == 0x02
@@ -869,7 +869,7 @@ end
 function prepdisjoint(
     g1::Ptr{GEOSPreparedGeometry},
     g2::GEOSGeom,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSPreparedDisjoint_r(context.ptr, g1, g2)
     if result == 0x02
@@ -881,7 +881,7 @@ end
 function prepintersects(
     g1::Ptr{GEOSPreparedGeometry},
     g2::GEOSGeom,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSPreparedIntersects_r(context.ptr, g1, g2)
     if result == 0x02
@@ -893,7 +893,7 @@ end
 function prepoverlaps(
     g1::Ptr{GEOSPreparedGeometry},
     g2::GEOSGeom,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSPreparedOverlaps_r(context.ptr, g1, g2)
     if result == 0x02
@@ -905,7 +905,7 @@ end
 function preptouches(
     g1::Ptr{GEOSPreparedGeometry},
     g2::GEOSGeom,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSPreparedTouches_r(context.ptr, g1, g2)
     if result == 0x02
@@ -917,7 +917,7 @@ end
 function prepwithin(
     g1::Ptr{GEOSPreparedGeometry},
     g2::GEOSGeom,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = GEOSPreparedWithin_r(context.ptr, g1, g2)
     if result == 0x02
@@ -939,7 +939,7 @@ end
 # -----
 # Unary predicate - return 2 on exception, 1 on true, 0 on false
 # -----
-function isEmpty(ptr::GEOSGeom, context::GEOSContext = _context)
+function isEmpty(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSisEmpty_r(context.ptr, ptr)
     if result == 0x02
         error("LibGEOS: Error in GEOSisEmpty")
@@ -947,7 +947,7 @@ function isEmpty(ptr::GEOSGeom, context::GEOSContext = _context)
     result != 0x00
 end
 
-function isSimple(ptr::GEOSGeom, context::GEOSContext = _context)
+function isSimple(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSisSimple_r(context.ptr, ptr)
     if result == 0x02
         error("LibGEOS: Error in GEOSisSimple")
@@ -955,7 +955,7 @@ function isSimple(ptr::GEOSGeom, context::GEOSContext = _context)
     result != 0x00
 end
 
-function isRing(ptr::GEOSGeom, context::GEOSContext = _context)
+function isRing(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSisRing_r(context.ptr, ptr)
     if result == 0x02
         error("LibGEOS: Error in GEOSisRing")
@@ -963,7 +963,7 @@ function isRing(ptr::GEOSGeom, context::GEOSContext = _context)
     result != 0x00
 end
 
-function hasZ(ptr::GEOSGeom, context::GEOSContext = _context)
+function hasZ(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSHasZ_r(context.ptr, ptr)
     if result == 0x02
         error("LibGEOS: Error in GEOSHasZ")
@@ -972,7 +972,7 @@ function hasZ(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 # Call only on LINESTRING (return 2 on exception, 1 on true, 0 on false)
-function isClosed(ptr::GEOSGeom, context::GEOSContext = _context)
+function isClosed(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSisClosed_r(context.ptr, ptr)
     if result == 0x02
         error("LibGEOS: Error in GEOSisClosed")
@@ -998,7 +998,7 @@ end
 #     GEOSVALID_ALLOW_SELFTOUCHING_RING_FORMING_HOLE=1
 # };
 
-function isValid(ptr::GEOSGeom, context::GEOSContext = _context)
+function isValid(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSisValid_r(context.ptr, ptr)
     if result == 0x02
         error("LibGEOS: Error in GEOSisValid")
@@ -1028,7 +1028,7 @@ end
 # end
 
 # Return -1 on exception
-function geomTypeId(ptr::GEOSGeom, context::GEOSContext = _context)
+function geomTypeId(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGeomTypeId_r(context.ptr, ptr)
     if result == -1
         error("LibGEOS: Error in GEOSGeomTypeId")
@@ -1037,7 +1037,7 @@ function geomTypeId(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 # Return 0 on exception
-function getSRID(ptr::GEOSGeom, context::GEOSContext = _context)
+function getSRID(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGetSRID_r(context.ptr, ptr)
     if result == 0
         error("LibGEOS: Error in GEOSGeomTypeId")
@@ -1045,7 +1045,7 @@ function getSRID(ptr::GEOSGeom, context::GEOSContext = _context)
     result
 end
 
-setSRID(ptr::GEOSGeom, context::GEOSContext = _context) = GEOSSetSRID_r(context.ptr, ptr)
+setSRID(ptr::GEOSGeom, context::GEOSContext = get_global_context()) = GEOSSetSRID_r(context.ptr, ptr)
 
 # May be called on all geometries in GEOS 3.x, returns -1 on error and 1
 # for non-multi geometries. Older GEOS versions only accept
@@ -1053,14 +1053,14 @@ setSRID(ptr::GEOSGeom, context::GEOSContext = _context) = GEOSSetSRID_r(context.
 # when fed simple geometries, so beware if you need compatibility with
 # old GEOS versions.
 """
-    numGeometries(geom, context=_context)
+    numGeometries(geom, context=get_global_context())
 
 Returns the number of sub-geometries immediately under a
 multi-geometry or collection or 1 for a simple geometry.
 For nested collections, remember to check if returned
 sub-geometries are **themselves** also collections.
 """
-function numGeometries(ptr::GEOSGeom, context::GEOSContext = _context)
+function numGeometries(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGetNumGeometries_r(context.ptr, ptr)
     if result == -1
         error("LibGEOS: Error in GEOSGeomTypeId")
@@ -1081,7 +1081,7 @@ Returns a copy of the specified sub-geometry of a collection.
 Numbering is one-based.
 For a simple geometry, returns a copy of the input.
 """
-function getGeometry(ptr::GEOSGeom, n::Integer, context::GEOSContext = _context)
+function getGeometry(ptr::GEOSGeom, n::Integer, context::GEOSContext = get_global_context())
     n in 1:numGeometries(ptr, context) || error(
         "GEOSGetGeometryN: $(numGeometries(ptr, context)) sub-geometries in geom, therefore n should be in 1:$(numGeometries(ptr, context))",
     )
@@ -1098,12 +1098,12 @@ end
 Returns a vector of copy of the sub-geometries of a collection.
 For a simple geometry, returns the geometry in a vector of length one.
 """
-getGeometries(ptr::GEOSGeom, context::GEOSContext = _context) =
+getGeometries(ptr::GEOSGeom, context::GEOSContext = get_global_context()) =
     GEOSGeom[getGeometry(ptr, i, context) for i = 1:numGeometries(ptr, context)]
 
 # Converts Geometry to normal form (or canonical form).
 # Return -1 on exception, 0 otherwise.
-function normalize!(ptr::GEOSGeom, context::GEOSContext = _context)
+function normalize!(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSNormalize_r(context.ptr, ptr)
     if result == -1
         error("LibGEOS: Error in GEOSNormalize")
@@ -1112,7 +1112,7 @@ function normalize!(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 # Return -1 on exception
-function numInteriorRings(ptr::GEOSGeom, context::GEOSContext = _context)
+function numInteriorRings(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGetNumInteriorRings_r(context.ptr, ptr)
     if result == -1
         error("LibGEOS: Error in GEOSGetNumInteriorRings")
@@ -1121,7 +1121,7 @@ function numInteriorRings(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 # Call only on LINESTRING (returns -1 on exception)
-function numPoints(ptr::GEOSGeom, context::GEOSContext = _context)
+function numPoints(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGeomGetNumPoints_r(context.ptr, ptr)
     if result == -1
         error("LibGEOS: Error in GEOSGeomGetNumPoints")
@@ -1130,7 +1130,7 @@ function numPoints(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 # Return -1 on exception, Geometry must be a Point.
-function getGeomX(ptr::GEOSGeom, context::GEOSContext = _context)
+function getGeomX(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     out = Ref{Float64}()
     result = GEOSGeomGetX_r(context.ptr, ptr, out)
     if result == -1
@@ -1139,7 +1139,7 @@ function getGeomX(ptr::GEOSGeom, context::GEOSContext = _context)
     out[]
 end
 
-function getGeomY(ptr::GEOSGeom, context::GEOSContext = _context)
+function getGeomY(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     out = Ref{Float64}()
     result = GEOSGeomGetY_r(context.ptr, ptr, out)
     if result == -1
@@ -1150,7 +1150,7 @@ end
 
 # Return NULL on exception, Geometry must be a Polygon.
 # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
-function interiorRing(ptr::GEOSGeom, n::Integer, context::GEOSContext = _context)
+function interiorRing(ptr::GEOSGeom, n::Integer, context::GEOSContext = get_global_context())
     if !(0 < n <= numInteriorRings(ptr, context))
         error(
             "LibGEOS: n=$n is out of bounds for Polygon with $(numInteriorRings(ptr, context)) interior ring(s)",
@@ -1163,7 +1163,7 @@ function interiorRing(ptr::GEOSGeom, n::Integer, context::GEOSContext = _context
     cloneGeom(result, context)
 end
 
-function interiorRings(ptr::GEOSGeom, context::GEOSContext = _context)
+function interiorRings(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     n = numInteriorRings(ptr, context)
     if n == 0
         return GEOSGeom[]
@@ -1174,7 +1174,7 @@ end
 
 # Return NULL on exception, Geometry must be a Polygon.
 # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
-function exteriorRing(ptr::GEOSGeom, context::GEOSContext = _context)
+function exteriorRing(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGetExteriorRing_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetExteriorRing")
@@ -1183,7 +1183,7 @@ function exteriorRing(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 # Return -1 on exception
-function numCoordinates(ptr::GEOSGeom, context::GEOSContext = _context)
+function numCoordinates(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGetNumCoordinates_r(context.ptr, ptr)
     if result == -1
         error("LibGEOS: Error in GEOSGetNumCoordinates")
@@ -1192,7 +1192,7 @@ function numCoordinates(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 # Geometry must be a LineString, LinearRing or Point (Return NULL on exception)
-function getCoordSeq(ptr::GEOSGeom, context::GEOSContext = _context)
+function getCoordSeq(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGeom_getCoordSeq_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_getCoordSeq")
@@ -1202,19 +1202,19 @@ end
 # getGeomCoordinates(ptr::GEOSGeom) = getCoordinates(getCoordSeq(ptr))
 
 # Return 0 on exception (or empty geometry)
-getGeomDimensions(ptr::GEOSGeom, context::GEOSContext = _context) =
+getGeomDimensions(ptr::GEOSGeom, context::GEOSContext = get_global_context()) =
     GEOSGeom_getDimensions_r(context.ptr, ptr)
 
 # Return 2 or 3.
-getCoordinateDimension(ptr::GEOSGeom, context::GEOSContext = _context) =
+getCoordinateDimension(ptr::GEOSGeom, context::GEOSContext = get_global_context()) =
     GEOSGeom_getCoordinateDimension_r(context.ptr, ptr)
 
 """
-    getXMin(geom, context=_context)
+    getXMin(geom, context=get_global_context())
 
 Finds the minimum X value in the geometry
 """
-function getXMin(ptr::GEOSGeom, context::GEOSContext = _context)
+function getXMin(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     out = Ref{Float64}()
     result = GEOSGeom_getXMin_r(context.ptr, ptr, out)
     if result == 0
@@ -1224,11 +1224,11 @@ function getXMin(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 """
-    getYMin(geom, context=_context)
+    getYMin(geom, context=get_global_context())
 
 Finds the minimum Y value in the geometry
 """
-function getYMin(ptr::GEOSGeom, context::GEOSContext = _context)
+function getYMin(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     out = Ref{Float64}()
     result = GEOSGeom_getYMin_r(context.ptr, ptr, out)
     if result == 0
@@ -1238,11 +1238,11 @@ function getYMin(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 """
-    getXMax(geom, context=_context)
+    getXMax(geom, context=get_global_context())
 
 Finds the maximum X value in the geometry
 """
-function getXMax(ptr::GEOSGeom, context::GEOSContext = _context)
+function getXMax(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     out = Ref{Float64}()
     result = GEOSGeom_getXMax_r(context.ptr, ptr, out)
     if result == 0
@@ -1252,11 +1252,11 @@ function getXMax(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 """
-    getYMax(geom, context=_context)
+    getYMax(geom, context=get_global_context())
 
 Finds the maximum Y value in the geometry
 """
-function getYMax(ptr::GEOSGeom, context::GEOSContext = _context)
+function getYMax(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     out = Ref{Float64}()
     result = GEOSGeom_getYMax_r(context.ptr, ptr, out)
     if result == 0
@@ -1269,11 +1269,11 @@ end
 # TODO 02/2022: wait for libgeos release beyond 3.10.2 which will in include GEOSGeom_getExtent_r
 # Note: This is not in as of the current GEOS_jll 3.10.2...
 # """
-#     getExtent(geom, context=_context)
+#     getExtent(geom, context=get_global_context())
 
 # Retrieves the extent (xmin, ymin, xmax, ymax) of the geometry
 # """
-# function getExtent(ptr::GEOSGeom, context::GEOSContext = _context)
+# function getExtent(ptr::GEOSGeom, context::GEOSContext = get_global_context())
 #     out = Vector{Float64}(undef, 4)
 #     result = GEOSGeom_getExtent_r(
 #         context.ptr,
@@ -1290,7 +1290,7 @@ end
 # end
 
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
-function getPoint(ptr::GEOSGeom, n::Integer, context::GEOSContext = _context)
+function getPoint(ptr::GEOSGeom, n::Integer, context::GEOSContext = get_global_context())
     if !(0 < n <= numPoints(ptr, context))
         error(
             "LibGEOS: n=$n is out of bounds for LineString with numPoints=$(numPoints(ptr, context))",
@@ -1304,7 +1304,7 @@ function getPoint(ptr::GEOSGeom, n::Integer, context::GEOSContext = _context)
 end
 
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
-function startPoint(ptr::GEOSGeom, context::GEOSContext = _context)
+function startPoint(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGeomGetStartPoint_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeomGetStartPoint")
@@ -1313,7 +1313,7 @@ function startPoint(ptr::GEOSGeom, context::GEOSContext = _context)
 end
 
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
-function endPoint(ptr::GEOSGeom, context::GEOSContext = _context)
+function endPoint(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result = GEOSGeomGetEndPoint_r(context.ptr, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeomGetEndPoint")
@@ -1324,7 +1324,7 @@ end
 # -----
 # Misc functions
 # -----
-function geomArea(ptr::GEOSGeom, context::GEOSContext = _context)
+function geomArea(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
     result = GEOSArea_r(context.ptr, ptr, out)
@@ -1334,7 +1334,7 @@ function geomArea(ptr::GEOSGeom, context::GEOSContext = _context)
     out[]
 end
 
-function geomLength(ptr::GEOSGeom, context::GEOSContext = _context)
+function geomLength(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
     result = GEOSLength_r(context.ptr, ptr, out)
@@ -1344,7 +1344,7 @@ function geomLength(ptr::GEOSGeom, context::GEOSContext = _context)
     out[]
 end
 
-function geomDistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function geomDistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
     result = GEOSDistance_r(context.ptr, g1, g2, out)
@@ -1354,7 +1354,7 @@ function geomDistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _contex
     out[]
 end
 
-function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context)
+function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
     result = GEOSHausdorffDistance_r(context.ptr, g1, g2, out)
@@ -1368,7 +1368,7 @@ function hausdorffdistance(
     g1::GEOSGeom,
     g2::GEOSGeom,
     densifyFrac::Real,
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
@@ -1381,7 +1381,7 @@ end
 
 # Return 0 on exception, the closest points of the two geometries otherwise.
 # The first point comes from g1 geometry and the second point comes from g2.
-nearestPoints(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context) =
+nearestPoints(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context()) =
     GEOSNearestPoints_r(context.ptr, g1, g2)
 
 # -----
@@ -1393,7 +1393,7 @@ nearestPoints(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = _context) =
 
 Return the size of the geometry's precision grid, 0 for FLOATING precision.
 """
-function getPrecision(geom::GEOSGeom, context::GEOSContext = _context)
+function getPrecision(geom::GEOSGeom, context::GEOSContext = get_global_context())
     GEOSGeom_getPrecision_r(context.ptr, geom)
 end
 
@@ -1421,7 +1421,7 @@ function setPrecision(
     geom::GEOSGeom,
     gridSize::Real,
     flags::Union{GEOSPrecisionRules,Integer},
-    context::GEOSContext = _context,
+    context::GEOSContext = get_global_context(),
 )
     result = geomFromGEOS(GEOSGeom_setPrecision_r(context.ptr, geom, gridSize, flags))
     if result == C_NULL

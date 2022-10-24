@@ -8,7 +8,7 @@
 
     # round to 2 decimals
     writer = LibGEOS.WKTWriter(
-        LibGEOS._context,
+        LibGEOS.get_global_context(),
         trim = true,
         outputdim = 3,
         roundingprecision = 2,
@@ -17,7 +17,7 @@
 
     # round to 2 decimals and don't trim trailing zeros
     writer = LibGEOS.WKTWriter(
-        LibGEOS._context,
+        LibGEOS.get_global_context(),
         trim = false,
         outputdim = 3,
         roundingprecision = 2,
@@ -27,7 +27,7 @@
     # don't output the Z dimension
     p = readgeom("POINT(0.12345 2.000 0.1)")
     writer = LibGEOS.WKTWriter(
-        LibGEOS._context,
+        LibGEOS.get_global_context(),
         trim = false,
         outputdim = 2,
         roundingprecision = 2,

@@ -123,7 +123,7 @@ mutable struct GEOSContext
 end
 
 "Get a copy of a string from GEOS, freeing the GEOS managed memory."
-function string_copy_free(s::Cstring, context::Ptr{Cvoid} = _context.ptr)::String
+function string_copy_free(s::Cstring, context::Ptr{Cvoid} = get_global_context().ptr)::String
     copy = unsafe_string(s)
     GEOSFree_r(context, pointer(s))
     return copy
@@ -191,8 +191,27 @@ mutable struct WKBWriter
     end
 end
 
+const _GLOBAL_CONTEXT = Ref{GEOSContext}()
+const _GLOBAL_CONTEXT_ALLOWED = Ref(false)
+
+function get_global_context()::GEOSContext
+    if _GLOBAL_CONTEXT_ALLOWED[]
+        _GLOBAL_CONTEXT[]
+    else
+        msg = """
+        LibGEOS global context disallowed, a GEOSContext must be passed explicitly.
+        """
+        error(msg)
+    end
+end
+
+function allow_global_context!(bool::Bool)
+    _GLOBAL_CONTEXT_ALLOWED[] = bool
+end
+
 function __init__()
-    global _context = GEOSContext()
+    _GLOBAL_CONTEXT_ALLOWED[] = true
+    _GLOBAL_CONTEXT[] = GEOSContext()
 end
 
 include("geos_functions.jl")
