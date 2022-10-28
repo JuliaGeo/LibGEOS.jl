@@ -107,6 +107,20 @@ function geosjl_errorhandler(message::Ptr{UInt8}, userdata)
     end
 end
 
+"""
+
+    GEOSContext
+
+Every LibGEOS object needs to live somewhere in memory. Also many LibGEOS functions
+need scratch memory or caches to do their job.
+
+A `GEOSContext` governs such memory. Almost every function in LibGEOS accepts a `context`
+argument, that allows passing a context explicitly. If no context is passed, a global context is used.
+
+Using the global context is fine, as long as no multi threading is used. 
+If multi threading is used, the global context should be avoided and every operation should only 
+involve objects that live in the context passed to the operation.
+"""
 mutable struct GEOSContext
     ptr::Ptr{Cvoid}  # GEOSContextHandle_t
 
@@ -199,12 +213,28 @@ function get_global_context()::GEOSContext
         _GLOBAL_CONTEXT[]
     else
         msg = """
-        LibGEOS global context disallowed, a GEOSContext must be passed explicitly.
+        LibGEOS global context disallowed, a `GEOSContext` must be passed explicitly.
+        Alternatively you can allow the global context by calling:
+        `LibGEOS.allow_global_context!(true)`
         """
         error(msg)
     end
 end
 
+"""
+
+    allow_global_context!(bool::Bool)
+
+Allow (bool=true) or disallow (bool=false) using the global LibGEOS context.
+
+
+    allow_global_context!(f, bool::Bool)
+
+Call `f` with global context usage allowed according to `bool`
+
+Generally this function should only be used as a debugging tool, mostly for multithreaded programs.
+See also [`GEOSContext`](@ref).
+"""
 function allow_global_context!(bool::Bool)
     _GLOBAL_CONTEXT_ALLOWED[] = bool
 end
