@@ -1,0 +1,18 @@
+name = "LibGEOSMakie"
+uuid = "1902729b-b4d4-4bb0-ae7d-e2f19e2a15fb"
+authors = ["Jan Weidner <jw3126@gmail.com> and contributors"]
+version = "0.1.0"
+
+[deps]
+GeoInterfaceMakie = "0edc0954-3250-4c18-859d-ec71c1660c08"
+LibGEOS = "a90b1aa1-3769-5649-ba7e-abc5a9d163eb"
+
+[compat]
+julia = "1.6"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+
+[targets]
+test = ["Test", "Makie"]
