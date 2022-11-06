@@ -37,6 +37,11 @@ function destroySTRtree(obj::STRtree)
     obj.ptr = C_NULL
 end
 
+function get_context(tree::STRtree, g::Geometry)
+    ctx = get_context(tree)
+    _get_context(ctx, g)
+end
+
 """
     query(tree::STRtree, geometry; context::GEOSContext=get_global_context())
 
@@ -50,7 +55,7 @@ Returns the objects within `tree`, whose envelope intersects the envelope of `ge
 function query(
     tree::STRtree{T},
     geometry::Geometry;
-    context::GEOSContext = get_context(tree),
+    context::GEOSContext = get_context(tree, geometry),
 ) where {T}
     matches = eltype(T)[]
 
