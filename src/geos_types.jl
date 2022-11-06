@@ -292,6 +292,16 @@ const Geometry = Union{
     GeometryCollection,
 }
 
+"""
+    clone(obj::Geometry, context=get_context(obj))
+
+Create a deep copy of obj, optionally also moving it to a new context.
+"""
+function clone(obj::Geometry, context=get_context(obj))
+    G = typeof(obj)
+    GC.@preserve obj G(obj.ptr, context)::G
+end
+
 get_context(obj::Geometry) = obj.context
 function destroyGeom(obj::Geometry)
     context = get_context(obj)

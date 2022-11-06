@@ -36,4 +36,3 @@ end
     @test_throws ArgumentError LibGEOS.intersects(p1, q2)
     @test_throws ArgumentError LibGEOS.intersects(p2, q1)
 end
-

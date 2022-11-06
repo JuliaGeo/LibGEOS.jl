@@ -369,4 +369,39 @@ end
         return nothing
     end
     f91(91)
+    @testset "clone" begin
+        function f(n)
+            # adapted from https://github.com/JuliaGeo/LibGEOS.jl/issues/91#issuecomment-1267732709
+            contexts = [LibGEOS.GEOSContext() for i=1:Threads.nthreads()]
+            p = LibGEOS.Polygon([[[-1.,-1],[+1,-1],[+1,+1],[-1,+1],[-1,-1]]])
+            Threads.@threads :static for i=1:n
+                ctx = contexts[Threads.threadid()]
+                g1 = LibGEOS.clone(p,ctx)
+                g2 = LibGEOS.clone(p,ctx)
+                for j=1:n
+                    intersects(g1,g2)
+                end
+            end
+            GC.gc(true)
+            return nothing
+        end
+        f(91)
+    end
+end
+
+@testset "clone" begin
+    geos = [
+        readgeom("POINT(0 0)")
+        readgeom("MULTIPOINT(0 0, 5 0, 10 0)")
+        readgeom("LINESTRING (130 240, 650 240)")
+        readgeom("POLYGON EMPTY")
+        readgeom("POLYGON ((10 10, 20 40, 90 90, 90 10, 10 10))")
+        readgeom("MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))")
+        readgeom("GEOMETRYCOLLECTION (LINESTRING (1 2, 2 2), LINESTRING (2 1, 1 1), POLYGON ((0.5 1, 1 2, 1 1, 0.5 1)), POLYGON ((9 2, 9.5 1, 2 1, 2 2, 9 2)))")
+    ]
+    for g1 in geos
+        g2 = LibGEOS.clone(g1)
+        @test g1 !== g2
+        @test LibGEOS.equals(g1,g2)
+    end
 end
