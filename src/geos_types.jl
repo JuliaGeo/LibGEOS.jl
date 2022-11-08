@@ -1,5 +1,47 @@
 abstract type AbstractGeometry end
 
+"""
+
+    get_context(geom::AbstractGeometry)::GEOSContext
+    get_context(geometries...)::GEOSContext
+
+Return the `GEOSContext` that `geom` belongs to.
+It is also possible to pass multiple `geometries` to this function.
+In that case it is checked, that all `geometries` share the same context
+and that shared context is returned. If contexts of some geometries differ,
+an error is thrown.
+"""
+function get_context end
+function get_context(gs::AbstractVector)::GEOSContext
+    if isempty(gs)
+        get_global_context() # is this a good idea?
+    else
+        ctx = get_context(first(gs))
+        _get_context(ctx, gs)
+    end
+end
+function get_context(g1::AbstractGeometry, g2, gs...)
+    ctx = get_context(g1)
+    _get_context(ctx, g2, gs...)
+end
+function _get_context(ctx::GEOSContext, gs::AbstractVector)
+    for g in gs
+        _get_context(ctx, g)
+    end
+    ctx
+end
+function _get_context(ctx::GEOSContext, g::AbstractGeometry)
+    if ctx !== get_context(g)
+        throw(ArgumentError("Objects have distinct GEOSContext."))
+    end
+    ctx
+end
+function _get_context(ctx::GEOSContext, g, gs...)
+    _get_context(ctx, g)
+    _get_context(ctx, gs...)
+    return ctx
+end
+
 mutable struct Point <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
@@ -55,7 +97,7 @@ mutable struct MultiPoint <: AbstractGeometry
                 context),
             context)
     # create a multipoint from a list of points
-    MultiPoint(points::Vector{LibGEOS.Point}, context::GEOSContext = get_global_context()) =
+    MultiPoint(points::Vector{LibGEOS.Point}, context::GEOSContext = get_context(points)) =
         MultiPoint(
             createCollection(
                 GEOS_MULTIPOINT,
@@ -168,10 +210,10 @@ mutable struct Polygon <: AbstractGeometry
         polygon
     end
     # using 1 linear ring to form polygon with no holes - linear ring will be outer boundary of polygon
-    Polygon(ring::LinearRing, context::GEOSContext = get_global_context()) =
+    Polygon(ring::LinearRing, context::GEOSContext = get_context(ring)) =
         Polygon(ring.ptr, context)
     # using multiple linear rings to form polygon with holes - exterior linear ring will be polygon boundary and list of interior linear rings will form holes
-    Polygon(exterior::LinearRing, holes::Vector{LinearRing}, context::GEOSContext = get_global_context()) = 
+    Polygon(exterior::LinearRing, holes::Vector{LinearRing}, context::GEOSContext = get_context(exterior, holes)) = 
         Polygon(
             createPolygon(exterior.ptr,
                           GEOSGeom[ring.ptr for ring in holes],
@@ -203,7 +245,7 @@ mutable struct MultiPolygon <: AbstractGeometry
     end
 
     # create multipolygon from list of Polygon objects
-    MultiPolygon(polygons::Vector{Polygon}, context::GEOSContext = get_global_context()) =
+    MultiPolygon(polygons::Vector{Polygon}, context::GEOSContext = get_context(polygons)) =
         MultiPolygon(
             createCollection(
                 GEOS_MULTIPOLYGON,
