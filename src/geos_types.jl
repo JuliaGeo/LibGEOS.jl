@@ -1,5 +1,18 @@
 abstract type AbstractGeometry end
 
+"""
+
+    get_context(geom::AbstractGeometry)::GEOSContext
+    get_context(geometries...)::GEOSContext
+
+Return the `GEOSContext` that `geom` belongs to.
+It is also possible to pass multiple `geometries` to this function.
+In that case it is checked, that all `geometries` share the same context
+and that shared context is returned. If contexts of some geometries differ,
+an error is thrown.
+"""
+function get_context end
+
 function get_context(gs::AbstractVector)::GEOSContext
     if isempty(gs)
         get_global_context() # is this a good idea?
@@ -18,7 +31,7 @@ function _get_context(ctx::GEOSContext, gs::AbstractVector)
     end
     ctx
 end
-function _get_context(ctx::GEOSContext, g)
+function _get_context(ctx::GEOSContext, g::AbstractGeometry)
     if ctx !== get_context(g)
         throw(ArgumentError("Objects have distinct GEOSContext."))
     end
