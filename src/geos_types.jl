@@ -12,6 +12,7 @@ and that shared context is returned. If contexts of some geometries differ,
 an error is thrown.
 """
 function get_context end
+
 function get_context(gs::AbstractVector)::GEOSContext
     if isempty(gs)
         get_global_context() # is this a good idea?
@@ -303,6 +304,18 @@ const Geometry = Union{
     MultiPolygon,
     GeometryCollection,
 }
+
+"""
+    clone(obj::Geometry, context=get_context(obj))
+
+Create a deep copy of obj, optionally also moving it to a new context.
+"""
+function clone(obj::Geometry, context=get_context(obj))
+    G = typeof(obj)
+    # Note that all Geometry constructors 
+    # implicitly clone the pointer, in the following line
+    GC.@preserve obj G(obj.ptr, context)::G
+end
 
 get_context(obj::Geometry) = obj.context
 function destroyGeom(obj::Geometry)
