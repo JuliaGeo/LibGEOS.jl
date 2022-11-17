@@ -71,26 +71,26 @@ function Base.convert(::Type{T}, geom::X) where {T<:AbstractGeometry,X}
     return Base.convert(T, GeoInterface.geomtrait(geom), geom)
 end
 
-function Base.convert(::Type{Point}, type::PointTrait, geom)
+function GeoInterface.convert(::Type{Point}, type::PointTrait, geom)
     return Point(GeoInterface.coordinates(geom))
 end
-function Base.convert(::Type{MultiPoint}, type::MultiPointTrait, geom)
+function GeoInterface.convert(::Type{MultiPoint}, type::MultiPointTrait, geom)
     return MultiPoint(GeoInterface.coordinates(geom))
 end
-function Base.convert(::Type{LineString}, type::LineStringTrait, geom)
+function GeoInterface.convert(::Type{LineString}, type::LineStringTrait, geom)
     return LineString(GeoInterface.coordinates(geom))
 end
-function Base.convert(::Type{MultiLineString}, type::MultiLineStringTrait, geom)
+function GeoInterface.convert(::Type{MultiLineString}, type::MultiLineStringTrait, geom)
     return MultiLineString(GeoInterface.coordinates(geom))
 end
-function Base.convert(::Type{Polygon}, type::PolygonTrait, geom)
+function GeoInterface.convert(::Type{Polygon}, type::PolygonTrait, geom)
     return Polygon(GeoInterface.coordinates(geom))
 end
-function Base.convert(::Type{MultiPolygon}, type::MultiPolygonTrait, geom)
+function GeoInterface.convert(::Type{MultiPolygon}, type::MultiPolygonTrait, geom)
     return MultiPolygon(GeoInterface.coordinates(geom))
 end
 
-function Base.convert(t::Type{<:AbstractGeometry}, type::AbstractGeometryTrait, geom)
+function GeoInterface.convert(t::Type{<:AbstractGeometry}, type::AbstractGeometryTrait, geom)
     error(
         "Cannot convert an object of $(typeof(geom)) with the $(typeof(type)) trait to a $t (yet). Please report an issue.",
     )
