@@ -222,11 +222,11 @@ mutable struct Polygon <: AbstractGeometry
     end
     # using 1 linear ring to form polygon with no holes - linear ring will be outer boundary of polygon
     Polygon(ring::LinearRing, context::GEOSContext = get_context(ring)) =
-        Polygon(ring.ptr, context)
+        Polygon(ring, context)
     # using multiple linear rings to form polygon with holes - exterior linear ring will be polygon boundary and list of interior linear rings will form holes
     Polygon(exterior::LinearRing, holes::Vector{LinearRing}, context::GEOSContext = get_context(exterior, holes)) =
         Polygon(
-            createPolygon(exterior.ptr,
+            createPolygon(exterior,
                           GEOSGeom[ring.ptr for ring in holes],
                           context),
             context)
@@ -324,13 +324,13 @@ function clone(obj::Geometry, context=get_context(obj))
     G = typeof(obj)
     # Note that all Geometry constructors
     # implicitly clone the pointer, in the following line
-    GC.@preserve obj G(obj.ptr, context)::G
+    GC.@preserve obj G(obj, context)::G
 end
 
 get_context(obj::Geometry) = obj.context
 function destroyGeom(obj::Geometry)
     context = get_context(obj)
-    destroyGeom(obj.ptr, context)
+    destroyGeom(obj, context)
     obj.ptr = C_NULL
 end
 
@@ -343,7 +343,7 @@ get_context(obj::PreparedGeometry) = get_context(obj.ownedby)
 
 function destroyGeom(obj::PreparedGeometry)
     context = get_context(obj)
-    destroyPreparedGeom(obj.ptr, context)
+    destroyPreparedGeom(obj, context)
     obj.ptr = C_NULL
 end
 
