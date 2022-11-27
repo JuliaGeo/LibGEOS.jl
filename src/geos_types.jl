@@ -324,7 +324,7 @@ function clone(obj::Geometry, context=get_context(obj))
     G = typeof(obj)
     # Note that all Geometry constructors
     # implicitly clone the pointer, in the following line
-    GC.@preserve obj G(obj, context)::G
+    G(obj, context)::G
 end
 
 get_context(obj::Geometry) = obj.context

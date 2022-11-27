@@ -31,10 +31,9 @@ get_context(obj::STRtree) = obj.context
 
 function destroySTRtree(obj::STRtree)
     context = get_context(obj)
-    GC.@preserve context begin
-        GEOSSTRtree_destroy_r(context, obj)
-    end
+    GEOSSTRtree_destroy_r(context, obj)
     obj.ptr = C_NULL
+    return nothing
 end
 
 function get_context(tree::STRtree, g::Geometry)
@@ -68,7 +67,7 @@ function query(
     end
 
     cfun_callback = @cfunction($callback, Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}))
-    GC.@preserve context tree geometry matches begin
+    GC.@preserve matches begin
         GEOSSTRtree_query_r(
             context,
             tree,
