@@ -112,7 +112,7 @@ mutable struct MultiPoint <: AbstractGeometry
         MultiPoint(
             createCollection(
                 GEOS_MULTIPOINT,
-                GEOSGeom[point.ptr for point in points],
+                points,
                 context),
             context)
 end
@@ -227,7 +227,7 @@ mutable struct Polygon <: AbstractGeometry
     Polygon(exterior::LinearRing, holes::Vector{LinearRing}, context::GEOSContext = get_context(exterior, holes)) =
         Polygon(
             createPolygon(exterior,
-                          GEOSGeom[ring.ptr for ring in holes],
+                          holes,
                           context),
             context)
 end
@@ -260,7 +260,7 @@ mutable struct MultiPolygon <: AbstractGeometry
         MultiPolygon(
             createCollection(
                 GEOS_MULTIPOLYGON,
-                GEOSGeom[poly.ptr for poly in polygons],
+                polygons,
                 context),
             context)
 

@@ -17,8 +17,7 @@ mutable struct STRtree{T}
     function STRtree(items; nodecapacity = 10, context::GEOSContext = get_global_context())
         tree = LibGEOS.GEOSSTRtree_create_r(context, nodecapacity)
         for item in items
-            envptr = envelope(item).ptr
-            GEOSSTRtree_insert_r(context, tree, envptr, pointer_from_objref(item))
+            GEOSSTRtree_insert_r(context, tree, envelope(item), pointer_from_objref(item))
         end
         T = typeof(items)
         ret = new{T}(tree, items, context)

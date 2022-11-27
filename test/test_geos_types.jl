@@ -329,7 +329,7 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         poly = LibGEOS.Polygon([[[-2.0, -2.0], [2.0, 2.0],
                                   [-2.0, 2.0], [-2.0, -2.0]]])
         # Test GeometryCollection from list of geometry pointers
-        geomcol_ptr_list = LibGEOS.GeometryCollection([point, poly.ptr])
+        geomcol_ptr_list = LibGEOS.GeometryCollection([point, poly])
         @test LibGEOS.isValid(geomcol_ptr_list)
         @test LibGEOS.geomTypeId(geomcol_ptr_list) == LibGEOS.GEOS_GEOMETRYCOLLECTION
         #test GeometryCollection from GeometryCollection pointer
