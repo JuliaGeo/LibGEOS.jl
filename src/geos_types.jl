@@ -87,9 +87,9 @@ mutable struct MultiPoint <: AbstractGeometry
         multipoint = if id == GEOS_MULTIPOINT
             new(cloneGeom(ptr, context), context)
         elseif id == GEOS_POINT
-            new(createCollection(GEOS_MULTIPOINT, 
+            new(createCollection(GEOS_MULTIPOINT,
                                  GEOSGeom[cloneGeom(ptr, context)],
-                                 context), 
+                                 context),
                 context
                )
         else
@@ -149,8 +149,8 @@ mutable struct MultiLineString <: AbstractGeometry
         multiline = if id == GEOS_MULTILINESTRING
             new(cloneGeom(ptr, context), context)
         elseif id == GEOS_LINESTRING
-            new(createCollection(GEOS_MULTILINESTRING, 
-                                 GEOSGeom[cloneGeom(ptr, context)], 
+            new(createCollection(GEOS_MULTILINESTRING,
+                                 GEOSGeom[cloneGeom(ptr, context)],
                                  context), context)
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multi-linestring (yet).
@@ -184,7 +184,7 @@ mutable struct LinearRing <: AbstractGeometry
         finalizer(destroyGeom, ring)
         ring
     end
-    # create linear ring from a list of coordinates - 
+    # create linear ring from a list of coordinates -
     # first and last coordinates must be the same
     function LinearRing(coords::Vector{Vector{Float64}}, context::GEOSContext = get_global_context())
         ring = new(createLinearRing(coords, context), context)
@@ -197,7 +197,7 @@ end
 mutable struct Polygon <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
-    # create polygon using GEOSGeom pointer - only makes sense if pointer points to a polygon or a linear ring to start with. 
+    # create polygon using GEOSGeom pointer - only makes sense if pointer points to a polygon or a linear ring to start with.
     function Polygon(ptr::GEOSGeom, context::GEOSContext = get_global_context())
         id = LibGEOS.geomTypeId(ptr, context)
         polygon = if id == GEOS_POLYGON
@@ -224,7 +224,7 @@ mutable struct Polygon <: AbstractGeometry
     Polygon(ring::LinearRing, context::GEOSContext = get_context(ring)) =
         Polygon(ring.ptr, context)
     # using multiple linear rings to form polygon with holes - exterior linear ring will be polygon boundary and list of interior linear rings will form holes
-    Polygon(exterior::LinearRing, holes::Vector{LinearRing}, context::GEOSContext = get_context(exterior, holes)) = 
+    Polygon(exterior::LinearRing, holes::Vector{LinearRing}, context::GEOSContext = get_context(exterior, holes)) =
         Polygon(
             createPolygon(exterior.ptr,
                           GEOSGeom[ring.ptr for ring in holes],
@@ -249,7 +249,7 @@ mutable struct MultiPolygon <: AbstractGeometry
                )
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multi-polygon (yet).
-                   Please open an issue if you think this conversion makes sense.")    
+                   Please open an issue if you think this conversion makes sense.")
         end
         finalizer(destroyGeom, multipolygon)
         multipolygon
@@ -322,7 +322,7 @@ Create a deep copy of obj, optionally also moving it to a new context.
 """
 function clone(obj::Geometry, context=get_context(obj))
     G = typeof(obj)
-    # Note that all Geometry constructors 
+    # Note that all Geometry constructors
     # implicitly clone the pointer, in the following line
     GC.@preserve obj G(obj.ptr, context)::G
 end
