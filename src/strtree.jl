@@ -15,10 +15,10 @@ mutable struct STRtree{T}
     items::T  # any geometry for which an envelope can be derived
     context::GEOSContext
     function STRtree(items; nodecapacity = 10, context::GEOSContext = get_global_context())
-        tree = LibGEOS.GEOSSTRtree_create_r(context.ptr, nodecapacity)
+        tree = LibGEOS.GEOSSTRtree_create_r(context, nodecapacity)
         for item in items
             envptr = envelope(item).ptr
-            GEOSSTRtree_insert_r(context.ptr, tree, envptr, pointer_from_objref(item))
+            GEOSSTRtree_insert_r(context, tree, envptr, pointer_from_objref(item))
         end
         T = typeof(items)
         ret = new{T}(tree, items, context)
@@ -32,7 +32,7 @@ get_context(obj::STRtree) = obj.context
 function destroySTRtree(obj::STRtree)
     context = get_context(obj)
     GC.@preserve context begin
-        GEOSSTRtree_destroy_r(context.ptr, obj.ptr)
+        GEOSSTRtree_destroy_r(context, obj)
     end
     obj.ptr = C_NULL
 end
@@ -70,9 +70,9 @@ function query(
     cfun_callback = @cfunction($callback, Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}))
     GC.@preserve context tree geometry matches begin
         GEOSSTRtree_query_r(
-            context.ptr,
-            tree.ptr,
-            geometry.ptr,
+            context,
+            tree,
+            geometry,
             cfun_callback,
             pointer_from_objref(matches),
         )

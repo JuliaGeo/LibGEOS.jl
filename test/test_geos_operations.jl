@@ -353,10 +353,10 @@ end
         poly = readgeom(
             "POLYGON ((35 10, 45 45, 15 40, 10 20, 35 10),(20 30, 35 35, 30 20, 20 30))",
         )
-        @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(exteriorRing(poly).ptr)) ==
+        @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(exteriorRing(poly))) ==
               Vector{Float64}[[35, 10], [45, 45], [15, 40], [10, 20], [35, 10]]
         @test length(interiorRings(poly)) == 1
-        @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiorRing(poly, 1).ptr)) ==
+        @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiorRing(poly, 1))) ==
               Vector{Float64}[[20, 30], [35, 35], [30, 20], [20, 30]]
         @test_throws ErrorException interiorRing(poly, 0)
         @test_throws ErrorException interiorRing(poly, 2)
