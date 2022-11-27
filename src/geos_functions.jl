@@ -313,7 +313,7 @@ end
 
 function isCCW(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())::Bool
     d = UInt8[1]
-    GC.@preserve result = GEOSCoordSeq_isCCW_r(context, ptr, pointer(d))
+    result = GEOSCoordSeq_isCCW_r(context, ptr, d)
     if result == C_NULL
         error("LibGEOS: Error in GEOSInterpolateNormalized")
     end
@@ -478,9 +478,7 @@ function cloneGeom(ptr::GEOSGeom, context::GEOSContext = get_global_context())
 end
 
 function destroyGeom(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    GC.@preserve context begin
-        GEOSGeom_destroy_r(context, ptr)
-    end
+    GEOSGeom_destroy_r(context, ptr)
 end
 
 # -----
@@ -801,9 +799,7 @@ function prepareGeom(ptr::GEOSGeom, context::GEOSContext = get_global_context())
 end
 
 function destroyPreparedGeom(ptr::Ptr{GEOSPreparedGeometry}, context::GEOSContext = get_global_context())
-    GC.@preserve context begin
-        GEOSPreparedGeom_destroy_r(context, ptr)
-    end
+    GEOSPreparedGeom_destroy_r(context, ptr)
 end
 
 function prepcontains(
