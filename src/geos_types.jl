@@ -357,3 +357,12 @@ const geomtypes = [
     MultiPolygon,
     GeometryCollection,
 ]
+
+# teach ccall how to get the pointer to pass to libgeos
+# this way the Julia compiler will track the lifetimes for us
+Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::AbstractGeometry) = x.ptr
+Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::GEOSContext) = x.ptr
+Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::WKTReader) = x.ptr
+Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::WKTWriter) = x.ptr
+Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::WKBReader) = x.ptr
+Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::WKBWriter) = x.ptr
