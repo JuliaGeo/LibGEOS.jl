@@ -45,37 +45,6 @@ readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = get_global_context())
 # # Topology operations
 # # -----
 
-buffer(obj::Geometry, dist::Real, quadsegs::Integer = 8, context::GEOSContext = get_context(obj)) =
-    geomFromGEOS(buffer(obj, dist, quadsegs, context), context)
-bufferWithStyle(
-    obj::Geometry,
-    dist::Real;
-    quadsegs::Integer = 8,
-    endCapStyle::GEOSBufCapStyles = GEOSBUF_CAP_ROUND,
-    joinStyle::GEOSBufJoinStyles = GEOSBUF_JOIN_ROUND,
-    mitreLimit::Real = 5.0,
-    context::GEOSContext = get_context(obj),) =
-    geomFromGEOS(bufferWithStyle(obj, dist, quadsegs, endCapStyle, joinStyle, mitreLimit, context), context)
-
-envelope(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    geomFromGEOS(envelope(obj, context), context)
-envelope(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
-    geomFromGEOS(envelope(obj.ownedby, context), context)
-minimumRotatedRectangle(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    geomFromGEOS(minimumRotatedRectangle(obj, context), context)
-convexhull(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    geomFromGEOS(convexhull(obj, context), context)
-boundary(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    geomFromGEOS(boundary(obj, context), context)
-unaryUnion(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    geomFromGEOS(unaryUnion(obj, context), context)
-pointOnSurface(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    Point(pointOnSurface(obj, context), context)
-centroid(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    Point(centroid(obj, context), context)
-node(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    geomFromGEOS(node(obj, context), context)
-
 intersection(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
     geomFromGEOS(intersection(obj1, obj2, context), context)
 difference(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =

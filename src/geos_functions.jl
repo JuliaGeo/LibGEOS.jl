@@ -357,26 +357,26 @@ end
 # The user can control the accuracy of the curve approximation by specifying the number of linear segments with which to approximate a curve.
 
 # Always returns a polygon. The negative or zero-distance buffer of lines and points is always an empty Polygon.
-buffer(ptr::GEOSGeom, width::Real, quadsegs::Integer = 8, context::GEOSContext = get_global_context()) =
-    GEOSBuffer_r(context, ptr, width, Int32(quadsegs))
+buffer(obj::Geometry, dist::Real, quadsegs::Integer = 8, context::GEOSContext = get_context(obj)) =
+    geomFromGEOS(GEOSBuffer_r(context, obj, dist, Int32(quadsegs)), context)
 
 bufferWithStyle(
-    ptr::GEOSGeom,
-    width::Real,
+    obj::Geometry,
+    dist::Real;
     quadsegs::Integer = 8,
     endCapStyle::GEOSBufCapStyles = GEOSBUF_CAP_ROUND,
     joinStyle::GEOSBufJoinStyles = GEOSBUF_JOIN_ROUND,
     mitreLimit::Real = 5.0,
-    context::GEOSContext = get_global_context(),
-) = GEOSBufferWithStyle_r(
+    context::GEOSContext = get_context(obj),
+) = geomFromGEOS(GEOSBufferWithStyle_r(
     context,
-    ptr,
-    width,
+    obj,
+    dist,
     Int32(quadsegs),
     Int32(endCapStyle),
     Int32(joinStyle),
     mitreLimit,
-)
+), context)
 
 # GEOSBufferParams_create
 # GEOSBufferParams_destroy
@@ -485,14 +485,17 @@ end
 # Topology operations - return NULL on exception.
 # -----
 
-function envelope(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSEnvelope_r(context, ptr)
+function envelope(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSEnvelope_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSEnvelope")
     end
-    result
+    geomFromGEOS(result, context)
 end
 
+function envelope(obj::PreparedGeometry, context::GEOSContext = get_context(obj))
+    envelope(obj.ownedby, context)
+end
 
 """
     minimumRotatedRectangle(geom)
@@ -502,12 +505,12 @@ has width equal to the minimum diameter, and a longer length. If the convex hill
 degenerate (a line or point) a LINESTRING or POINT is returned. The minimum rotated rectangle can
 be used as an extremely generalized representation for the given geometry.
 """
-function minimumRotatedRectangle(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSMinimumRotatedRectangle_r(context, ptr)
+function minimumRotatedRectangle(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSMinimumRotatedRectangle_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSMinimumRotatedRectangle")
     end
-    result
+    geomFromGEOS(result, context)
 end
 
 
@@ -523,12 +526,12 @@ end
 
 # Returns:
 # if the convex hull contains 3 or more points, a Polygon; 2 points, a LineString; 1 point, a Point; 0 points, an empty GeometryCollection.
-function convexhull(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSConvexHull_r(context, ptr)
+function convexhull(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSConvexHull_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSConvexHull")
     end
-    result
+    geomFromGEOS(result, context)
 end
 
 function difference(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
@@ -547,12 +550,12 @@ function symmetricDifference(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = 
     result
 end
 
-function boundary(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSBoundary_r(context, ptr)
+function boundary(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSBoundary_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSBoundary")
     end
-    result
+    geomFromGEOS(result, context)
 end
 
 function union(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
@@ -563,36 +566,36 @@ function union(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_con
     result
 end
 
-function unaryUnion(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSUnaryUnion_r(context, ptr)
+function unaryUnion(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSUnaryUnion_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSUnaryUnion")
     end
-    result
+    geomFromGEOS(result, context)
 end
 
-function pointOnSurface(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSPointOnSurface_r(context, ptr)
+function pointOnSurface(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSPointOnSurface_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSPointOnSurface")
     end
-    result
+    Point(result, context)
 end
 
-function centroid(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSGetCentroid_r(context, ptr)
+function centroid(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSGetCentroid_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetCentroid")
     end
-    result
+    Point(result, context)
 end
 
-function node(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSNode_r(context, ptr)
+function node(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSNode_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSNode")
     end
-    result
+    geomFromGEOS(result, context)
 end
 
 # all arguments remain ownership of the caller (both Geometries and pointers)
