@@ -325,28 +325,28 @@ end
 # -----
 # (GEOSGeometry ownership is retained by caller)
 
-# Return distance of point 'p' projected on 'g' from origin of 'g'. Geometry 'g' must be a lineal geometry
-project(g::GEOSGeom, p::GEOSGeom, context::GEOSContext = get_global_context()) =
-    GEOSProject_r(context, g, p)
+# Return distance of point 'point' projected on 'line' from origin of 'line'. Geometry 'line' must be a lineal geometry
+project(line::LineString, point::Point, context::GEOSContext = get_context(line)) =
+    GEOSProject_r(context, line, point)
 
 # Return closest point to given distance within geometry (Geometry must be a LineString)
-function interpolate(ptr::GEOSGeom, d::Real, context::GEOSContext = get_global_context())
-    result = GEOSInterpolate_r(context, ptr, d)
+function interpolate(line::LineString, dist::Real, context::GEOSContext = get_context(line))
+    result = GEOSInterpolate_r(context, line, dist)
     if result == C_NULL
         error("LibGEOS: Error in GEOSInterpolate")
     end
-    result
+    Point(result, context)
 end
 
-projectNormalized(g::GEOSGeom, p::GEOSGeom, context::GEOSContext = get_global_context()) =
-    GEOSProjectNormalized_r(context, g, p)
+projectNormalized(line::LineString, point::Point, context::GEOSContext = get_context(line)) =
+    GEOSProjectNormalized_r(context, line, point)
 
-function interpolateNormalized(ptr::GEOSGeom, d::Real, context::GEOSContext = get_global_context())
-    result = GEOSInterpolateNormalized_r(context, ptr, d)
+function interpolateNormalized(line::LineString, dist::Real, context::GEOSContext = get_context(line))
+    result = GEOSInterpolateNormalized_r(context, line, dist)
     if result == C_NULL
         error("LibGEOS: Error in GEOSInterpolateNormalized")
     end
-    result
+    Point(result, context)
 end
 
 # -----
