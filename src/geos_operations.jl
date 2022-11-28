@@ -9,14 +9,7 @@ const GEOMTYPE = Dict{GEOSGeomTypes,Symbol}(
     GEOS_GEOMETRYCOLLECTION => :GeometryCollection,
 )
 
-writegeom(obj::Geometry, wktwriter::WKTWriter, context::GEOSContext = get_context(obj)) =
-    _writegeom(obj, wktwriter, context)
-writegeom(obj::Geometry, wkbwriter::WKBWriter, context::GEOSContext = get_context(obj)) =
-    _writegeom(obj, wkbwriter, context)
-writegeom(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    _writegeom(obj, context)
-
-function geomFromGEOS(ptr::GEOSGeom, context::GEOSContext = get_global_context())
+function geomFromGEOS(ptr::Geometry, context::GEOSContext = get_global_context())
     id = geomTypeId(ptr, context)
     if id == GEOS_POINT
         return Point(ptr, context)
