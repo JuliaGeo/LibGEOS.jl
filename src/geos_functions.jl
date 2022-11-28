@@ -27,18 +27,18 @@ end
 _readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = get_global_context()) =
     _readgeom(wkbbuffer, WKBReader(context), context)
 
-function _writegeom(geom::GEOSGeom, wktwriter::WKTWriter, context::GEOSContext = get_global_context())
+function writegeom(geom::Geometry, wktwriter::WKTWriter, context::GEOSContext = get_global_context())
     GEOSWKTWriter_write_r(context, wktwriter, geom)
 end
 
-function _writegeom(geom::GEOSGeom, wkbwriter::WKBWriter, context::GEOSContext = get_global_context())
+function writegeom(geom::Geometry, wkbwriter::WKBWriter, context::GEOSContext = get_global_context())
     wkbsize = Ref{Csize_t}()
     result = GEOSWKBWriter_write_r(context, wkbwriter, geom, wkbsize)
     unsafe_wrap(Array, result, wkbsize[], own = true)
 end
 
-_writegeom(geom::GEOSGeom, context::GEOSContext = get_global_context()) =
-    _writegeom(geom, WKTWriter(context), context)
+writegeom(geom::GEOSGeom, context::GEOSContext = get_global_context()) =
+    writegeom(geom, WKTWriter(context), context)
 
 # -----
 # Coordinate Sequence functions
