@@ -9,7 +9,7 @@ const GEOMTYPE = Dict{GEOSGeomTypes,Symbol}(
     GEOS_GEOMETRYCOLLECTION => :GeometryCollection,
 )
 
-function geomFromGEOS(ptr::Geometry, context::GEOSContext = get_global_context())
+function geomFromGEOS(ptr::Union{Geometry, Ptr{Cvoid}}, context::GEOSContext = get_global_context())
     id = geomTypeId(ptr, context)
     if id == GEOS_POINT
         return Point(ptr, context)
@@ -40,18 +40,6 @@ readgeom(wkbbuffer::Vector{Cuchar}, wkbreader::WKBReader, context::GEOSContext =
     geomFromGEOS(_readgeom(wkbbuffer, wkbreader, context), context)
 readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = get_global_context()) =
     readgeom(wkbbuffer, WKBReader(context), context)
-
-# -----
-# Linear referencing functions -- there are more, but these are probably sufficient for most purposes
-# -----
-project(line::LineString, point::Point, context::GEOSContext = get_context(line)) =
-    project(line, point, context)
-projectNormalized(line::LineString, point::Point, context::GEOSContext = get_context(line)) =
-    projectNormalized(line, point, context)
-interpolate(line::LineString, dist::Real, context::GEOSContext = get_context(line)) =
-    Point(interpolate(line, dist, context), context)
-interpolateNormalized(line::LineString, dist::Real, context::GEOSContext = get_context(line)) =
-    Point(interpolateNormalized(line, dist, context), context)
 
 # # -----
 # # Topology operations
