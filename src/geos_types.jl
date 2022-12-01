@@ -356,5 +356,5 @@ end
 
 function Base.hash(g::AbstractGeometry, h::UInt)
     h = hash(g.ptr, h)
-    h = hash(g.context, h)
+    h = hash(get_context(g), h)
 end
