@@ -347,3 +347,14 @@ const geomtypes = [
     MultiPolygon,
     GeometryCollection,
 ]
+
+function Base.:(==)(g1::AbstractGeometry, g2::AbstractGeometry)
+    (typeof(g1) == typeof(g2)) || return false
+    get_context(g1) == get_context(g2) || return false
+    g1.ptr == g2.ptr
+end
+
+function Base.hash(g::AbstractGeometry, h::UInt)
+    h = hash(g.ptr, h)
+    h = hash(g.context, h)
+end
