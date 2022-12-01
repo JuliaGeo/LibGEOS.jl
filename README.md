@@ -46,3 +46,8 @@ Installation
   ```julia
   pkg> test LibGEOS
   ```
+  
+  # Ecosystem
+  * Makie support for LibGEOS is available via [LibGEOSMakie.jl](https://github.com/jw3126/LibGEOSMakie.jl)
+  * LibGEOS integrates with [GeoInterface.jl](https://github.com/JuliaGeo/GeoInterface.jl) making it easy to combine LibGEOS with other geometry packages.
+  
