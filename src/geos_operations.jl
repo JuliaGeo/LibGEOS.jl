@@ -45,15 +45,6 @@ readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = get_global_context())
 # # Topology operations
 # # -----
 
-intersection(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    geomFromGEOS(intersection(obj1, obj2, context), context)
-difference(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    geomFromGEOS(difference(obj1, obj2, context), context)
-symmetricDifference(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    geomFromGEOS(symmetricDifference(obj1, obj2, context), context)
-union(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    geomFromGEOS(union(obj1, obj2, context), context)
-
 # # all arguments remain ownership of the caller (both Geometries and pointers)
 # function polygonize(geoms::Vector{GEOSGeom})
 #     result = GEOSPolygonize(pointer(geoms), length(geoms))
@@ -72,27 +63,6 @@ union(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,ob
 #     end
 #     result
 # end
-
-simplify(obj::Geometry, tol::Real, context::GEOSContext = get_context(obj)) =
-    geomFromGEOS(simplify(obj, tol, context), context)
-topologyPreserveSimplify(obj::Geometry, tol::Real, context::GEOSContext = get_context(obj)) =
-    geomFromGEOS(topologyPreserveSimplify(obj, tol, context), context)
-uniquePoints(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    MultiPoint(uniquePoints(obj, context), context)
-delaunayTriangulationEdges(obj::Geometry, tol::Real = 0.0, context::GEOSContext = get_context(obj)) =
-    MultiLineString(delaunayTriangulation(obj, tol, true, context), context)
-delaunayTriangulation(obj::Geometry, tol::Real = 0.0, context::GEOSContext = get_context(obj)) =
-    GeometryCollection(delaunayTriangulation(obj, tol, false, context), context)
-constrainedDelaunayTriangulation(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    GeometryCollection(constrainedDelaunayTriangulation(obj, context), context)
-
-
-sharedPaths(obj1::LineString, obj2::LineString, context::GEOSContext = get_context(obj1,obj2)) =
-    GeometryCollection(sharedPaths(obj1, obj2, context), context)
-
-# # Snap first geometry on to second with given tolerance
-snap(obj1::Geometry, obj2::Geometry, tol::Real, context::GEOSContext = get_context(obj1,obj2)) =
-    geomFromGEOS(snap(obj1, obj2, tol, context), context)
 
 # -----
 # Binary predicates

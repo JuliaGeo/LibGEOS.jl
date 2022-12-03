@@ -514,12 +514,12 @@ function minimumRotatedRectangle(obj::Geometry, context::GEOSContext = get_conte
 end
 
 
-function intersection(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSIntersection_r(context, g1, g2)
+function intersection(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSIntersection_r(context, obj1, obj2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSIntersection")
     end
-    result
+    geomFromGEOS(result, context)
 end
 
 # Returns a Geometry that represents the convex hull of the input geometry. The returned geometry contains the minimal number of points needed to represent the convex hull. In particular, no more than two consecutive points will be collinear.
@@ -534,20 +534,20 @@ function convexhull(obj::Geometry, context::GEOSContext = get_context(obj))
     geomFromGEOS(result, context)
 end
 
-function difference(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSDifference_r(context, g1, g2)
+function difference(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSDifference_r(context, obj1, obj2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSDifference")
     end
-    result
+    geomFromGEOS(result, context)
 end
 
-function symmetricDifference(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSSymDifference_r(context, g1, g2)
+function symmetricDifference(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSSymDifference_r(context, obj1, obj2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSSymDifference")
     end
-    result
+    geomFromGEOS(result, context)
 end
 
 function boundary(obj::Geometry, context::GEOSContext = get_context(obj))
@@ -558,12 +558,12 @@ function boundary(obj::Geometry, context::GEOSContext = get_context(obj))
     geomFromGEOS(result, context)
 end
 
-function union(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSUnion_r(context, g1, g2)
+function union(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSUnion_r(context, obj1, obj2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSUnion")
     end
-    result
+    geomFromGEOS(result, context)
 end
 
 function unaryUnion(obj::Geometry, context::GEOSContext = get_context(obj))
@@ -617,30 +617,30 @@ function lineMerge(ptr::GEOSGeom, context::GEOSContext = get_global_context())
     result
 end
 
-function simplify(ptr::GEOSGeom, tol::Real, context::GEOSContext = get_global_context())
-    result = GEOSSimplify_r(context, ptr, tol)
+function simplify(obj::Geometry, tol::Real, context::GEOSContext = get_context(obj))
+    result = GEOSSimplify_r(context, obj, tol)
     if result == C_NULL
         error("LibGEOS: Error in GEOSSimplify")
     end
-    result
+    geomFromGEOS(result)
 end
 
-function topologyPreserveSimplify(ptr::GEOSGeom, tol::Real, context::GEOSContext = get_global_context())
-    result = GEOSTopologyPreserveSimplify_r(context, ptr, tol)
+function topologyPreserveSimplify(obj::Geometry, tol::Real, context::GEOSContext = get_context(obj))
+    result = GEOSTopologyPreserveSimplify_r(context, obj, tol)
     if result == C_NULL
         error("LibGEOS: Error in GEOSTopologyPreserveSimplify")
     end
-    result
+    geomFromGEOS(result, context)
 end
 
 # Return all distinct vertices of input geometry as a MULTIPOINT.
 # (Note that only 2 dimensions of the vertices are considered when testing for equality)
-function uniquePoints(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSGeom_extractUniquePoints_r(context, ptr)
+function uniquePoints(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSGeom_extractUniquePoints_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_extractUniquePoints")
     end
-    result
+    MultiPoint(result, context)
 end
 
 # Find paths shared between the two given lineal geometries.
@@ -650,22 +650,22 @@ end
 #  - second element is a MULTILINESTRING containing shared paths
 #    having the _opposite_ direction on the two inputs
 # (Returns NULL on exception)
-function sharedPaths(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSSharedPaths_r(context, g1, g2)
+function sharedPaths(obj1::LineString, obj2::LineString, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSSharedPaths_r(context, obj1, obj2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSSharedPaths")
     end
-    result
+    GeometryCollection(result, context)
 end
 
 # Snap first geometry on to second with given tolerance
 # (Returns a newly allocated geometry, or NULL on exception)
-function snap(g1::GEOSGeom, g2::GEOSGeom, tol::Real, context::GEOSContext = get_global_context())
-    result = GEOSSnap_r(context, g1, g2, tol)
+function snap(obj1::Geometry, obj2::Geometry, tol::Real, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSSnap_r(context, obj1, obj2, tol)
     if result == C_NULL
         error("LibGEOS: Error in GEOSSnap")
     end
-    result
+    geomFromGEOS(result, context)
 end
 
 # Return a Delaunay triangulation of the vertex of the given geometry
@@ -677,24 +677,24 @@ end
 #
 # @return  a newly allocated geometry, or NULL on exception
 function delaunayTriangulation(
-    ptr::GEOSGeom,
+    obj::Geometry,
     tol::Real = 0.0,
     onlyEdges::Bool = false,
     context::GEOSContext = get_global_context(),
 )
-    result = GEOSDelaunayTriangulation_r(context, ptr, tol, Int32(onlyEdges))
+    result = GEOSDelaunayTriangulation_r(context, obj, tol, Int32(onlyEdges))
     if result == C_NULL
         error("LibGEOS: Error in GEOSDelaunayTriangulation")
     end
-    result
+    onlyEdges ? MultiLineString(result, context) : GeometryCollection(result, context)
 end
 
-function constrainedDelaunayTriangulation(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSConstrainedDelaunayTriangulation_r(context, ptr)
+function constrainedDelaunayTriangulation(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSConstrainedDelaunayTriangulation_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSConstrainedDelaunayTriangulation")
     end
-    result
+    GeometryCollection(result, context)
 end
 
 # -----
