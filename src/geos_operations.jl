@@ -64,38 +64,6 @@ readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = get_global_context())
 #     result
 # end
 
-# -----
-# Binary predicates
-# -----
-
-disjoint(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    disjoint(obj1, obj2, context)
-touches(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    touches(obj1, obj2, context)
-intersects(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    intersects(obj1, obj2, context)
-crosses(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    crosses(obj1, obj2, context)
-within(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    within(obj1, obj2, context)
-Base.contains(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    Base.contains(obj1, obj2, context)
-overlaps(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    overlaps(obj1, obj2, context)
-equalsexact(obj1::Geometry, obj2::Geometry, tol::Real, context::GEOSContext = get_context(obj1,obj2)) =
-    equalsexact(obj1, obj2, tol, context)
-covers(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    covers(obj1, obj2, context)
-coveredby(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    coveredby(obj1, obj2, context)
-
-function equals(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
-    # We don't check context here, as it is probably safe to compare objects from
-    # different contexts
-    equals(obj1, obj2, context)
-end
-
-
 # # -----
 # # Prepared Geometry Binary predicates
 # # -----

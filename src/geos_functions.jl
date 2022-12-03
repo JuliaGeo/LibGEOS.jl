@@ -700,88 +700,88 @@ end
 # -----
 # Binary predicates - return 2 on exception, 1 on true, 0 on false
 # -----
-function disjoint(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSDisjoint_r(context, g1, g2)
+function disjoint(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSDisjoint_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSDisjoint")
     end
     result != 0x00
 end
 
-function touches(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSTouches_r(context, g1, g2)
+function touches(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSTouches_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSTouches")
     end
     result != 0x00
 end
 
-function intersects(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSIntersects_r(context, g1, g2)
+function intersects(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSIntersects_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSIntersects")
     end
     result != 0x00
 end
 
-function crosses(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSCrosses_r(context, g1, g2)
+function crosses(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSCrosses_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSCrosses")
     end
     result != 0x00
 end
 
-function within(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSWithin_r(context, g1, g2)
+function within(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSWithin_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSWithin")
     end
     result != 0x00
 end
 
-function Base.contains(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSContains_r(context, g1, g2)
+function Base.contains(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSContains_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSContains")
     end
     result != 0x00
 end
 
-function overlaps(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSOverlaps_r(context, g1, g2)
+function overlaps(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSOverlaps_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSOverlaps")
     end
     result != 0x00
 end
 
-function equals(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSEquals_r(context, g1, g2)
+function equals(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSEquals_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSEquals")
     end
     result != 0x00
 end
 
-function equalsexact(g1::GEOSGeom, g2::GEOSGeom, tol::Real, context::GEOSContext = get_global_context())
-    result = GEOSEqualsExact_r(context, g1, g2, tol)
+function equalsexact(obj1::Geometry, obj2::Geometry, tol::Real, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSEqualsExact_r(context, obj1, obj2, tol)
     if result == 0x02
         error("LibGEOS: Error in GEOSEqualsExact")
     end
     result != 0x00
 end
 
-function covers(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSCovers_r(context, g1, g2)
+function covers(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSCovers_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSCovers")
     end
     result != 0x00
 end
 
-function coveredby(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSCoveredBy_r(context, g1, g2)
+function coveredby(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    result = GEOSCoveredBy_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSCoveredBy")
     end
