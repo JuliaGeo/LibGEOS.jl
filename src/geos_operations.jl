@@ -94,44 +94,6 @@ readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = get_global_context())
 # # Geometry info
 # # -----
 
-# Gets the number of sub-geometries
-numGeometries(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    numGeometries(obj, context)
-
-# # Call only on GEOMETRYCOLLECTION or MULTI*
-# # (Return a pointer to the internal Geometry. Return NULL on exception.)
-# # Returned object is a pointer to internal storage:
-# # it must NOT be destroyed directly.
-# # Up to GEOS 3.2.0 the input geometry must be a Collection, in
-# # later version it doesn't matter (i.e. getGeometryN(0) for a single will return the input).
-# function getGeometry(ptr::GEOSGeom, n::Integer)
-#     result = GEOSGetGeometryN(ptr, Int32(n-1))
-#     if result == C_NULL
-#         error("LibGEOS: Error in GEOSGetGeometryN")
-#     end
-#     result
-# end
-# getGeometries(ptr::GEOSGeom) = GEOSGeom[getGeometry(ptr, i) for i=1:numGeometries(ptr)]
-# Gets sub-geomtry at index n or a vector of all sub-geometries
-getGeometry(obj::Geometry, n::Integer, context::GEOSContext = get_context(obj)) =
-    geomFromGEOS(getGeometry(obj, n, context), context)
-getGeometries(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    [geomFromGEOS(gptr, context) for gptr in getGeometries(obj, context)]
-
-# Converts Geometry to normal form (or canonical form).
-normalize!(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    normalize!(obj, context)
-
-# LinearRings in Polygons
-numInteriorRings(obj::Polygon, context::GEOSContext = get_context(obj)) =
-    numInteriorRings(obj, context)
-interiorRing(obj::Polygon, n::Integer, context::GEOSContext = get_context(obj)) =
-    LinearRing(interiorRing(obj, n, context), context)
-interiorRings(obj::Polygon, context::GEOSContext = get_context(obj)) =
-    map(LinearRing, interiorRings(obj, context))
-exteriorRing(obj::Polygon, context::GEOSContext = get_context(obj)) =
-    LinearRing(exteriorRing(obj, context), context)
-
 # # Geometry must be a LineString, LinearRing or Point (Return NULL on exception)
 # function getCoordSeq(ptr::GEOSGeom)
 #     result = GEOSGeom_getCoordSeq(ptr)
@@ -156,13 +118,6 @@ exteriorRing(obj::Polygon, context::GEOSContext = get_context(obj)) =
 #     end
 #     result
 # end
-
-numPoints(obj::LineString, context::GEOSContext = get_context(obj)) =
-    numPoints(obj, context) # Call only on LINESTRING
-startPoint(obj::LineString, context::GEOSContext = get_context(obj)) =
-    Point(startPoint(obj, context), context) # Call only on LINESTRING
-endPoint(obj::LineString, context::GEOSContext = get_context(obj)) =
-    Point(endPoint(obj, context), context) # Call only on LINESTRING
 
 # # -----
 # # Misc functions
