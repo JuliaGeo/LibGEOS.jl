@@ -626,12 +626,12 @@ end
 # GEOSPolygonizer_getCutEdges
 # GEOSPolygonize_full
 
-function lineMerge(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSLineMerge_r(context, ptr)
+function lineMerge(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSLineMerge_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSLineMerge")
     end
-    result
+    LineString(result, context)
 end
 
 function simplify(obj::Geometry, tol::Real, context::GEOSContext = get_context(obj))
@@ -1055,8 +1055,8 @@ end
 # end
 
 # Return -1 on exception
-function geomTypeId(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSGeomTypeId_r(context, ptr)
+function geomTypeId(obj::Union{Geometry, Ptr{Cvoid}}, context::GEOSContext = get_global_context())
+    result = GEOSGeomTypeId_r(context, obj)
     if result == -1
         error("LibGEOS: Error in GEOSGeomTypeId")
     end
@@ -1064,15 +1064,15 @@ function geomTypeId(ptr::GEOSGeom, context::GEOSContext = get_global_context())
 end
 
 # Return 0 on exception
-function getSRID(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSGetSRID_r(context, ptr)
+function getSRID(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSGetSRID_r(context, obj)
     if result == 0
         error("LibGEOS: Error in GEOSGeomTypeId")
     end
     result
 end
 
-setSRID(ptr::GEOSGeom, context::GEOSContext = get_global_context()) = GEOSSetSRID_r(context, ptr)
+setSRID(obj::Geometry, context::GEOSContext = get_context(obj)) = GEOSSetSRID_r(context, obj)
 
 # May be called on all geometries in GEOS 3.x, returns -1 on error and 1
 # for non-multi geometries. Older GEOS versions only accept
@@ -1317,17 +1317,17 @@ end
 # end
 
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
-function getPoint(ptr::GEOSGeom, n::Integer, context::GEOSContext = get_global_context())
-    if !(0 < n <= numPoints(ptr, context))
+function getPoint(obj::LineString, n::Integer, context::GEOSContext = get_context(obj))
+    if !(0 < n <= numPoints(obj, context))
         error(
-            "LibGEOS: n=$n is out of bounds for LineString with numPoints=$(numPoints(ptr, context))",
+            "LibGEOS: n=$n is out of bounds for LineString with numPoints=$(numPoints(obj, context))",
         )
     end
-    result = GEOSGeomGetPointN_r(context, ptr, n - 1)
+    result = GEOSGeomGetPointN_r(context, obj, n - 1)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeomGetPointN")
     end
-    result
+    Point(result, context)
 end
 
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
