@@ -65,35 +65,6 @@ readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = get_global_context())
 # end
 
 # # -----
-# # STRtree functions
-# # -----
-# # GEOSSTRtree_create
-# # GEOSSTRtree_insert
-# # GEOSSTRtree_query
-# # GEOSSTRtree_iterate
-# # GEOSSTRtree_remove
-# # GEOSSTRtree_destroy
-
-# # -----
-# # Unary predicate - return 2 on exception, 1 on true, 0 on false
-# # -----
-isEmpty(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    isEmpty(obj, context)
-isEmpty(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
-    isEmpty(obj.ownedby, context)
-isSimple(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    isSimple(obj, context)
-isRing(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    isRing(obj, context)
-isValid(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    isValid(obj, context)
-hasZ(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    hasZ(obj, context)
-
-isClosed(obj::LineString, context::GEOSContext = get_context(obj)) =
-    isClosed(obj, context) # Call only on LINESTRING
-
-# # -----
 # # Dimensionally Extended 9 Intersection Model related
 # # -----
 
