@@ -264,7 +264,7 @@ end
     # GEOSDistanceTest
     geom1_ = LibGEOS.readgeom("POINT(10 10)")
     geom2_ = LibGEOS.readgeom("POINT(3 6)")
-    @test LibGEOS.geomDistance(geom1_, geom2_) ≈ 8.06225774829855 atol = 1e-12
+    @test LibGEOS.distance(geom1_, geom2_) ≈ 8.06225774829855 atol = 1e-12
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
@@ -420,14 +420,15 @@ end
     # GEOSNearestPointsTest
     geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
     geom2_ = LibGEOS.readgeom("POLYGON EMPTY")
-    @test LibGEOS.nearestPoints(geom1_, geom2_) == C_NULL
+    @test LibGEOS.nearestPoints(geom1_, geom2_) == Point[]
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
     geom1_ = LibGEOS.readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
     geom2_ = LibGEOS.readgeom("POLYGON((8 8, 9 9, 9 10, 8 8))")
     coords_ = LibGEOS.nearestPoints(geom1_, geom2_)
-    @test LibGEOS.getSize(coords_) == 2
+    @test coords_ isa Vector{Point}
+    @test length(coords_) == 2
     @test GeoInterface.coordinates(coords_[1]) ≈ [5.0, 5.0] atol = 1e-5
     @test GeoInterface.coordinates(coords_[2]) ≈ [8.0, 8.0] atol = 1e-5
     LibGEOS.destroyGeom(geom1_)

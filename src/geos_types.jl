@@ -240,7 +240,7 @@ mutable struct MultiPolygon <: AbstractGeometry
         elseif id == GEOS_POLYGON
             new(createCollection(
                     GEOS_MULTIPOLYGON,
-                    cloneGeom(obj, context),
+                    [cloneGeom(obj, context)],
                     context),
                 context
                )

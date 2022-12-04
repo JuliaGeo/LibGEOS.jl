@@ -45,13 +45,14 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test LibGEOS.equals(point_ptr, point2D)
 
         # Test point made from polygon pointer --> should not work
-        @test_throws ErrorException LibGEOS.Point(LibGEOS.Polygon(
+        @test_throws MethodError LibGEOS.Point(LibGEOS.Polygon(
             [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]))
 
         # Test point made with local context
         ctx = LibGEOS.GEOSContext()
         point_ctx = LibGEOS.Point(point2D, ctx)
-        @test LibGEOS.equals(point_ctx, point2D)
+        # Objects have distinct GEOSContext.
+        @test_throws ArgumentError LibGEOS.equals(point_ctx, point2D)
 
         LibGEOS.destroyGeom(point2D)
         LibGEOS.destroyGeom(point3D)
@@ -90,7 +91,7 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
                              Point(0.0, 0.0))
 
         # Test MultiPoint made from Polygon pointer
-        @test_throws ErrorException LibGEOS.MultiPoint(LibGEOS.Polygon(
+        @test_throws MethodError LibGEOS.MultiPoint(LibGEOS.Polygon(
             [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]))
 
         # Test MultiPoint made from vector of 1 point and 2 points
@@ -104,7 +105,8 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         # Test MultiPoint made with local context
         ctx = LibGEOS.GEOSContext()
         mpoint_ctx = LibGEOS.MultiPoint(mpoint_coord, ctx)
-        @test LibGEOS.equals(mpoint_ctx, mpoint_coord)
+        # Objects have distinct GEOSContext.
+        @test_throws ArgumentError LibGEOS.equals(mpoint_ctx, mpoint_coord)
 
         LibGEOS.destroyGeom(mpoint_coord)
         LibGEOS.destroyGeom(point1)
@@ -128,13 +130,14 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test LibGEOS.equals(ls_coord, ls_ptr)
 
         # Test LineString made from polygon pointer
-        @test_throws ErrorException LibGEOS.LineString(LibGEOS.Polygon(
+        @test_throws MethodError LibGEOS.LineString(LibGEOS.Polygon(
             [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]))
 
         # Test LineString made with local context
         ctx = LibGEOS.GEOSContext()
         linestring_ctx = LibGEOS.LineString(ls_coord, ctx)
-        @test LibGEOS.equals(linestring_ctx, ls_coord)
+        # Objects have distinct GEOSContext.
+        @test_throws ArgumentError LibGEOS.equals(linestring_ctx, ls_coord)
 
         LibGEOS.destroyGeom(ls_coord)
         LibGEOS.destroyGeom(ls_ptr)
@@ -153,13 +156,14 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test LibGEOS.equals(mls_coord, mls_ptr)
 
         # Test MultiLineString made from polygon pointer
-        @test_throws ErrorException LibGEOS.MultiLineString(LibGEOS.Polygon(
+        @test_throws MethodError LibGEOS.MultiLineString(LibGEOS.Polygon(
             [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]))
 
         # Test MultiLineString made with local context
         ctx = LibGEOS.GEOSContext()
         multilinestring_ctx = LibGEOS.MultiLineString(mls_coord, ctx)
-        @test LibGEOS.equals(multilinestring_ctx, mls_coord)
+        # Objects have distinct GEOSContext.
+        @test_throws ArgumentError LibGEOS.equals(multilinestring_ctx, mls_coord)
 
         LibGEOS.destroyGeom(mls_coord)
         LibGEOS.destroyGeom(mls_ptr)
@@ -179,13 +183,14 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test LibGEOS.equals(lr_ptr, lr_coord)
 
         # Test LinearRing made from polygon pointer
-        @test_throws ErrorException LibGEOS.LinearRing(LibGEOS.Polygon(
+        @test_throws MethodError LibGEOS.LinearRing(LibGEOS.Polygon(
             [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]))
 
         # Test LinearRing made with local context
         ctx = LibGEOS.GEOSContext()
         linearring_ctx = LibGEOS.LinearRing(lr_coord, ctx)
-        @test LibGEOS.equals(linearring_ctx, lr_coord)
+        # Objects have distinct GEOSContext.
+        @test_throws ArgumentError LibGEOS.equals(linearring_ctx, lr_coord)
 
         LibGEOS.destroyGeom(lr_coord)
         LibGEOS.destroyGeom(lr_ptr)
@@ -227,7 +232,7 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
 
         # Test polygon made from point pointer
         point = LibGEOS.Point(1.0, 2.0)
-        @test_throws ErrorException LibGEOS.Polygon(point)
+        @test_throws MethodError LibGEOS.Polygon(point)
 
         # Test polygon made from 1 linear ring
         poly_ring = LibGEOS.Polygon(ring_ext)
@@ -264,7 +269,8 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         # Test Polygon made with local context
         ctx = LibGEOS.GEOSContext()
         poly_ctx = LibGEOS.Polygon(poly_vec, ctx)
-        @test LibGEOS.equals(poly_ctx, poly_vec)
+        # Objects have distinct GEOSContext.
+        @test_throws ArgumentError LibGEOS.equals(poly_ctx, poly_vec)
 
         LibGEOS.destroyGeom(poly_vec)
         LibGEOS.destroyGeom(poly_ptr)
@@ -303,7 +309,7 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test LibGEOS.equals(LibGEOS.getGeometry(mpoly_poly_ptr, 1), poly1)
 
         # Test multipolygon made from point pointer --> should finalizer
-        @test_throws ErrorException LibGEOS.MultiPolygon(LibGEOS.Point(1.0, 2.0))
+        @test_throws MethodError LibGEOS.MultiPolygon(LibGEOS.Point(1.0, 2.0))
 
         # Test multipolygon made from list of polygons
         mpoly_polylist = LibGEOS.MultiPolygon([poly1, poly2])
@@ -313,7 +319,8 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         # Test MultiPolygon made with local context
         ctx = LibGEOS.GEOSContext()
         mpoly_ctx = LibGEOS.MultiPolygon(mpoly_coord, ctx)
-        @test LibGEOS.equals(mpoly_ctx, mpoly_coord)
+        # Objects have distinct GEOSContext.
+        @test_throws ArgumentError LibGEOS.equals(mpoly_ctx, mpoly_coord)
 
         LibGEOS.destroyGeom(poly1)
         LibGEOS.destroyGeom(poly2)
