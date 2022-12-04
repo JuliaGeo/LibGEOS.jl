@@ -26,6 +26,8 @@ mutable struct STRtree{T}
     end
 end
 
+Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::STRtree) = x.ptr
+
 get_context(obj::STRtree) = obj.context
 
 function destroySTRtree(obj::STRtree)
