@@ -15,10 +15,7 @@ GeoInterface.ngeom(::AbstractGeometryTrait, geom::AbstractGeometry) =
 GeoInterface.ngeom(::AbstractPointTrait, geom::AbstractGeometry) = 0
 
 function GeoInterface.getgeom(::AbstractGeometryTrait, geom::AbstractGeometry, i)
-    clone = getGeometry(geom, i)
-    id = geomTypeId(clone) + 1
-    0 < id <= length(geomtypes) || error("Unknown geometry type id $id")
-    geomtypes[id](clone)
+    getGeometry(geom, i)
 end
 
 GeoInterface.getgeom(::AbstractPointTrait, geom::AbstractGeometry, i) = nothing

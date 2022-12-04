@@ -46,14 +46,6 @@ end
 # # GEOSPolygonizer_getCutEdges
 # # GEOSPolygonize_full
 
-# function lineMerge(ptr::GEOSGeom)
-#     result = GEOSLineMerge(ptr)
-#     if result == C_NULL
-#         error("LibGEOS: Error in GEOSLineMerge")
-#     end
-#     result
-# end
-
 # # -----
 # # Dimensionally Extended 9 Intersection Model related
 # # -----
@@ -85,14 +77,5 @@ end
 # # -----
 
 # # getGeomCoordinates(ptr::GEOSGeom) = getCoordinates(getCoordSeq(ptr))
-
-# # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
-# function getPoint(ptr::GEOSGeom, n::Integer)
-#     result = GEOSGeomGetPointN(ptr, Int32(n-1))
-#     if result == C_NULL
-#         error("LibGEOS: Error in GEOSGeomGetPointN")
-#     end
-#     result
-# end
 
 # TODO 02/2022: wait for libgeos release beyond 3.10.2 which will in include GEOSGeom_getExtent_r
