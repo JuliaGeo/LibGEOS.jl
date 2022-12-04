@@ -1212,13 +1212,13 @@ getCoordinateDimension(ptr::GEOSGeom, context::GEOSContext = get_global_context(
     GEOSGeom_getCoordinateDimension_r(context, ptr)
 
 """
-    getXMin(geom, context=get_global_context())
+    getXMin(obj::Geometry, context::GEOSContext = get_context(obj))
 
 Finds the minimum X value in the geometry
 """
-function getXMin(ptr::GEOSGeom, context::GEOSContext = get_global_context())
+function getXMin(obj::Geometry, context::GEOSContext = get_context(obj))
     out = Ref{Float64}()
-    result = GEOSGeom_getXMin_r(context, ptr, out)
+    result = GEOSGeom_getXMin_r(context, obj, out)
     if result == 0
         error("LibGEOS: Error in GEOSGeom_getXMin_r")
     end
@@ -1226,13 +1226,13 @@ function getXMin(ptr::GEOSGeom, context::GEOSContext = get_global_context())
 end
 
 """
-    getYMin(geom, context=get_global_context())
+    getYMin(obj::Geometry, context::GEOSContext = get_context(obj))
 
 Finds the minimum Y value in the geometry
 """
-function getYMin(ptr::GEOSGeom, context::GEOSContext = get_global_context())
+function getYMin(obj::Geometry, context::GEOSContext = get_context(obj))
     out = Ref{Float64}()
-    result = GEOSGeom_getYMin_r(context, ptr, out)
+    result = GEOSGeom_getYMin_r(context, obj, out)
     if result == 0
         error("LibGEOS: Error in GEOSGeom_getYMin_r")
     end
@@ -1240,13 +1240,13 @@ function getYMin(ptr::GEOSGeom, context::GEOSContext = get_global_context())
 end
 
 """
-    getXMax(geom, context=get_global_context())
+    getXMax(obj::Geometry, context::GEOSContext = get_context(obj))
 
 Finds the maximum X value in the geometry
 """
-function getXMax(ptr::GEOSGeom, context::GEOSContext = get_global_context())
+function getXMax(obj::Geometry, context::GEOSContext = get_context(obj))
     out = Ref{Float64}()
-    result = GEOSGeom_getXMax_r(context, ptr, out)
+    result = GEOSGeom_getXMax_r(context, obj, out)
     if result == 0
         error("LibGEOS: Error in GEOSGeom_getXMax_r")
     end
@@ -1254,13 +1254,13 @@ function getXMax(ptr::GEOSGeom, context::GEOSContext = get_global_context())
 end
 
 """
-    getYMax(geom, context=get_global_context())
+    getYMax(obj::Geometry, context::GEOSContext = get_context(obj))
 
 Finds the maximum Y value in the geometry
 """
-function getYMax(ptr::GEOSGeom, context::GEOSContext = get_global_context())
+function getYMax(obj::Geometry, context::GEOSContext = get_context(obj))
     out = Ref{Float64}()
-    result = GEOSGeom_getYMax_r(context, ptr, out)
+    result = GEOSGeom_getYMax_r(context, obj, out)
     if result == 0
         error("LibGEOS: Error in GEOSGeom_getYMax_r")
     end
@@ -1326,40 +1326,40 @@ end
 # -----
 # Misc functions
 # -----
-function geomArea(ptr::GEOSGeom, context::GEOSContext = get_global_context())
+function area(obj::Geometry, context::GEOSContext = get_context(obj))
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
-    result = GEOSArea_r(context, ptr, out)
+    result = GEOSArea_r(context, obj, out)
     if result == 0
         error("LibGEOS: Error in GEOSArea")
     end
     out[]
 end
 
-function geomLength(ptr::GEOSGeom, context::GEOSContext = get_global_context())
+function geomLength(obj::Geometry, context::GEOSContext = get_context(obj))
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
-    result = GEOSLength_r(context, ptr, out)
+    result = GEOSLength_r(context, obj, out)
     if result == 0
         error("LibGEOS: Error in GEOSLength")
     end
     out[]
 end
 
-function geomDistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
+function distance(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
-    result = GEOSDistance_r(context, g1, g2, out)
+    result = GEOSDistance_r(context, obj1, obj2, out)
     if result == 0
         error("LibGEOS: Error in GEOSDistance")
     end
     out[]
 end
 
-function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context())
+function hausdorffdistance(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
-    result = GEOSHausdorffDistance_r(context, g1, g2, out)
+    result = GEOSHausdorffDistance_r(context, obj1, obj2, out)
     if result == 0
         error("LibGEOS: Error in GEOSHausdorffDistance")
     end
@@ -1367,52 +1367,62 @@ function hausdorffdistance(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = ge
 end
 
 function hausdorffdistance(
-    g1::GEOSGeom,
-    g2::GEOSGeom,
+    obj1::Geometry,
+    obj2::Geometry,
     densifyFrac::Real,
-    context::GEOSContext = get_global_context(),
+    context::GEOSContext = get_context(obj1,obj2),
 )
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
-    result = GEOSHausdorffDistanceDensify_r(context, g1, g2, densifyFrac, out)
+    result = GEOSHausdorffDistanceDensify_r(context, obj1, obj2, densifyFrac, out)
     if result == 0
         error("LibGEOS: Error in GEOSHausdorffDistanceDensify")
     end
     out[]
 end
 
-# Return 0 on exception, the closest points of the two geometries otherwise.
+# Returns the closest points of the two geometries.
 # The first point comes from g1 geometry and the second point comes from g2.
-nearestPoints(g1::GEOSGeom, g2::GEOSGeom, context::GEOSContext = get_global_context()) =
-    GEOSNearestPoints_r(context, g1, g2)
+# Return 0 on exception, the closest points of the two geometries otherwise.
+function nearestPoints(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+    points = GEOSNearestPoints_r(context, obj1, obj2)
+    if points == C_NULL
+        return Point[]
+    else
+        return Point[Point(getCoordinates(points, 1, context), context),
+                     Point(getCoordinates(points, 2, context), context)]
+    end
+end
 
 # -----
 # Precision functions
 # -----
 
 """
-    getPrecision(geom)
+    getPrecision(obj::Geometry, context::GEOSContext = get_context(obj))
 
 Return the size of the geometry's precision grid, 0 for FLOATING precision.
 """
-function getPrecision(geom::GEOSGeom, context::GEOSContext = get_global_context())
-    GEOSGeom_getPrecision_r(context, geom)
+function getPrecision(obj::Geometry, context::GEOSContext = get_context(obj))
+    GEOSGeom_getPrecision_r(context, obj)
 end
 
 """
-    setPrecision(geom, gridSize; flags = GEOS_PREC_VALID_OUTPUT)
+    setPrecision(obj::Geometry, grid;
+        flags = GEOS_PREC_VALID_OUTPUT,
+        context::GEOSContext = get_context(obj))
 
 Change the rounding precision on a geometry. This will affect the precision of the existing geometry as well as any geometries derived from this geometry using overlay functions. The output will be a valid GEOSGeometry.
 
-Note that operations will always be performed in the precision of the geometry with higher precision (smaller "gridSize"). That same precision will be attached to the operation outputs.
+Note that operations will always be performed in the precision of the geometry with higher precision (smaller "grid"). That same precision will be attached to the operation outputs.
 
 In the Default and `GEOS_PREC_KEEP_COLLAPSED` modes invalid input may cause an error to occur, unless the invalidity is below the scale of the requested precision
 
 There are only 3 modes. The `GEOS_PREC_NO_TOPO` mode takes precedence over `GEOS_PREC_KEEP_COLLAPSED`. So the combination `GEOS_PREC_NO_TOPO || GEOS_PREC_KEEP_COLLAPSED` has the same semantics as `GEOS_PREC_NO_TOPO`
 
 # Parameters
-* `g`	Input geometry
-* `gridSize`	cell size of grid to round coordinates to, or 0 for FLOATING precision
+* `obj`	Input geometry
+* `grid`	cell size of grid to round coordinates to, or 0 for FLOATING precision
 * `flags`	The bitwise OR of members of the `GEOSPrecisionRules` enum
 
 # Returns
@@ -1420,12 +1430,12 @@ The precision reduced result. Caller must free with `GEOSGeom_destroy()` NULL on
 
 """
 function setPrecision(
-    geom::GEOSGeom,
-    gridSize::Real,
-    flags::Union{GEOSPrecisionRules,Integer},
-    context::GEOSContext = get_global_context(),
+    obj::Geometry,
+    grid::Real;
+    flags::Union{GEOSPrecisionRules,Integer} = GEOS_PREC_VALID_OUTPUT,
+    context::GEOSContext = get_context(obj),
 )
-    result = geomFromGEOS(GEOSGeom_setPrecision_r(context, geom, gridSize, flags))
+    result = geomFromGEOS(GEOSGeom_setPrecision_r(context, obj, grid, flags), context)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_setPrecision_r")
     end
