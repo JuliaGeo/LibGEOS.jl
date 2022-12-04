@@ -1055,15 +1055,15 @@ setSRID(ptr::GEOSGeom, context::GEOSContext = get_global_context()) = GEOSSetSRI
 # when fed simple geometries, so beware if you need compatibility with
 # old GEOS versions.
 """
-    numGeometries(geom, context=get_global_context())
+    numGeometries(obj::Geometry, context::GEOSContext = get_context(obj))
 
 Returns the number of sub-geometries immediately under a
 multi-geometry or collection or 1 for a simple geometry.
 For nested collections, remember to check if returned
 sub-geometries are **themselves** also collections.
 """
-function numGeometries(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSGetNumGeometries_r(context, ptr)
+function numGeometries(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSGetNumGeometries_r(context, obj)
     if result == -1
         error("LibGEOS: Error in GEOSGeomTypeId")
     end
@@ -1077,36 +1077,36 @@ end
 # Up to GEOS 3.2.0 the input geometry must be a Collection, in
 # later version it doesn't matter (i.e. getGeometryN(0) for a single will return the input).
 """
-    getGeometry(geom, n)
+    getGeometry(obj::Geometry, n::Integer, context::GEOSContext = get_context(obj))
 
 Returns a copy of the specified sub-geometry of a collection.
 Numbering is one-based.
 For a simple geometry, returns a copy of the input.
 """
-function getGeometry(ptr::GEOSGeom, n::Integer, context::GEOSContext = get_global_context())
-    n in 1:numGeometries(ptr, context) || error(
-        "GEOSGetGeometryN: $(numGeometries(ptr, context)) sub-geometries in geom, therefore n should be in 1:$(numGeometries(ptr, context))",
+function getGeometry(obj::Geometry, n::Integer, context::GEOSContext = get_context(obj))
+    n in 1:numGeometries(obj, context) || error(
+        "GEOSGetGeometryN: $(numGeometries(obj, context)) sub-geometries in geom, therefore n should be in 1:$(numGeometries(obj, context))",
     )
-    result = GEOSGetGeometryN_r(context, ptr, n - 1)
+    result = GEOSGetGeometryN_r(context, obj, n - 1)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetGeometryN")
     end
-    cloneGeom(result, context)
+    geomFromGEOS(cloneGeom(result, context), context)
 end
 
 """
-    getGeometries(geom)
+    getGeometries(obj::Geometry, context::GEOSContext = get_context(obj))
 
-Returns a vector of copy of the sub-geometries of a collection.
+Returns a vector of copies of the sub-geometries of a collection.
 For a simple geometry, returns the geometry in a vector of length one.
 """
-getGeometries(ptr::GEOSGeom, context::GEOSContext = get_global_context()) =
-    GEOSGeom[getGeometry(ptr, i, context) for i = 1:numGeometries(ptr, context)]
+getGeometries(obj::Geometry, context::GEOSContext = get_context(obj)) =
+    [getGeometry(obj, i, context) for i = 1:numGeometries(obj, context)]
 
 # Converts Geometry to normal form (or canonical form).
 # Return -1 on exception, 0 otherwise.
-function normalize!(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSNormalize_r(context, ptr)
+function normalize!(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSNormalize_r(context, obj)
     if result == -1
         error("LibGEOS: Error in GEOSNormalize")
     end
@@ -1114,8 +1114,8 @@ function normalize!(ptr::GEOSGeom, context::GEOSContext = get_global_context())
 end
 
 # Return -1 on exception
-function numInteriorRings(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSGetNumInteriorRings_r(context, ptr)
+function numInteriorRings(obj::Polygon, context::GEOSContext = get_context(obj))
+    result = GEOSGetNumInteriorRings_r(context, obj)
     if result == -1
         error("LibGEOS: Error in GEOSGetNumInteriorRings")
     end
@@ -1123,8 +1123,8 @@ function numInteriorRings(ptr::GEOSGeom, context::GEOSContext = get_global_conte
 end
 
 # Call only on LINESTRING (returns -1 on exception)
-function numPoints(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSGeomGetNumPoints_r(context, ptr)
+function numPoints(obj::LineString, context::GEOSContext = get_context(obj))
+    result = GEOSGeomGetNumPoints_r(context, obj)
     if result == -1
         error("LibGEOS: Error in GEOSGeomGetNumPoints")
     end
@@ -1152,36 +1152,36 @@ end
 
 # Return NULL on exception, Geometry must be a Polygon.
 # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
-function interiorRing(ptr::GEOSGeom, n::Integer, context::GEOSContext = get_global_context())
-    if !(0 < n <= numInteriorRings(ptr, context))
+function interiorRing(obj::Polygon, n::Integer, context::GEOSContext = get_context(obj))
+    if !(0 < n <= numInteriorRings(obj, context))
         error(
-            "LibGEOS: n=$n is out of bounds for Polygon with $(numInteriorRings(ptr, context)) interior ring(s)",
+            "LibGEOS: n=$n is out of bounds for Polygon with $(numInteriorRings(obj, context)) interior ring(s)",
         )
     end
-    result = GEOSGetInteriorRingN_r(context, ptr, n - 1)
+    result = GEOSGetInteriorRingN_r(context, obj, n - 1)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetInteriorRingN")
     end
-    cloneGeom(result, context)
+    LinearRing(cloneGeom(result, context), context)
 end
 
-function interiorRings(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    n = numInteriorRings(ptr, context)
+function interiorRings(obj::Polygon, context::GEOSContext = get_context(obj))
+    n = numInteriorRings(obj, context)
     if n == 0
-        return GEOSGeom[]
+        return LinearRing[]
     else
-        return GEOSGeom[interiorRing(ptr, i, context) for i = 1:n]
+        return LinearRing[interiorRing(obj, i, context) for i = 1:n]
     end
 end
 
 # Return NULL on exception, Geometry must be a Polygon.
 # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
-function exteriorRing(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSGetExteriorRing_r(context, ptr)
+function exteriorRing(obj::Polygon, context::GEOSContext = get_context(obj))
+    result = GEOSGetExteriorRing_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetExteriorRing")
     end
-    cloneGeom(result, context)
+    LinearRing(cloneGeom(result, context), context)
 end
 
 # Return -1 on exception
@@ -1306,21 +1306,21 @@ function getPoint(ptr::GEOSGeom, n::Integer, context::GEOSContext = get_global_c
 end
 
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
-function startPoint(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSGeomGetStartPoint_r(context, ptr)
+function startPoint(obj::LineString, context::GEOSContext = get_context(obj))
+    result = GEOSGeomGetStartPoint_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeomGetStartPoint")
     end
-    result
+    Point(result, context)
 end
 
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
-function endPoint(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSGeomGetEndPoint_r(context, ptr)
+function endPoint(obj::LineString, context::GEOSContext = get_context(obj))
+    result = GEOSGeomGetEndPoint_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeomGetEndPoint")
     end
-    result
+    Point(result, context)
 end
 
 # -----
