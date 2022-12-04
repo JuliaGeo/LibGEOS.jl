@@ -322,12 +322,14 @@ function getCoordinates(ptr::GEOSCoordSeq, context::GEOSContext = get_global_con
 end
 
 function isCCW(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())::Bool
-    d = UInt8[1]
-    result = GEOSCoordSeq_isCCW_r(context, ptr, d)
-    if result == C_NULL
-        error("LibGEOS: Error in GEOSInterpolateNormalized")
+    d = [0x02]
+    GC.@preserve d begin
+        result = GEOSCoordSeq_isCCW_r(context, ptr, pointer(d))
+        if result == C_NULL
+            error("LibGEOS: Error in GEOSInterpolateNormalized")
+        end
+        Bool(d[1])
     end
-    Bool(d[1])
 end
 
 # -----
@@ -454,7 +456,7 @@ function createPolygon(
     result
 end
 # convenience function to create polygon without holes
-createPolygon(shell::GEOSGeom, context::GEOSContext = get_global_context()) =
+createPolygon(shell::Union{LinearRing,GEOSGeom}, context::GEOSContext = get_global_context()) =
     createPolygon(shell, GEOSGeom[], context)
 
 function createCollection(
@@ -827,8 +829,8 @@ function prepareGeom(obj::Geometry, context::GEOSContext = get_context(obj))
     PreparedGeometry(result, obj)
 end
 
-function destroyPreparedGeom(ptr::Ptr{GEOSPreparedGeometry}, context::GEOSContext = get_global_context())
-    GEOSPreparedGeom_destroy_r(context, ptr)
+function destroyPreparedGeom(obj::PreparedGeometry, context::GEOSContext = get_global_context())
+    GEOSPreparedGeom_destroy_r(context, obj)
 end
 
 function Base.contains(

@@ -53,7 +53,7 @@ end
           Vector{Float64}[[1, 2, 3], [3, 3, 3], [7, 8, 9], [10, 11, 12]]
     @test_throws ErrorException LibGEOS.getCoordinates(b, 0)
     @test_throws ErrorException LibGEOS.getCoordinates(b, 5)
-    c = LibGEOS.Point(LibGEOS.createCoordSeq(Vector{Float64}[[1, 2]]))
+    c = LibGEOS.Point(1, 2)
     @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(c))[1] ≈ [1, 2] atol = 1e-5
 
     # isCCW
@@ -90,7 +90,7 @@ end
     @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[2])) ==
           Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]]
 
-    exterior_poly = LibGEOS.createPolygon(exterior)
+    exterior_poly = LibGEOS.Polygon(exterior)
     @test LibGEOS.getGeomDimensions(exterior_poly) == 2
     @test LibGEOS.geomTypeId(exterior_poly) == LibGEOS.GEOS_POLYGON
     @test LibGEOS.area(exterior_poly) ≈ 100.0 atol = 1e-5
@@ -99,16 +99,16 @@ end
 
 
     # Interpolation and Projection
-    ls = LibGEOS.createLineString(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2]])
+    ls = LibGEOS.LineString(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2]])
     pt = LibGEOS.interpolate(ls, 2.5)
     coords = LibGEOS.getCoordinates(LibGEOS.getCoordSeq(pt))
     @test length(coords) == 1
     @test coords[1] ≈ [8.5, 2.0] atol = 1e-5
-    p1 = LibGEOS.createPoint(Float64[10, 1])
-    p2 = LibGEOS.createPoint(Float64[9, 1])
-    p3 = LibGEOS.createPoint(Float64[10, 0])
-    p4 = LibGEOS.createPoint(Float64[9, 2])
-    p5 = LibGEOS.createPoint(Float64[8.7, 1.5])
+    p1 = Point(10, 1)
+    p2 = Point(9, 1)
+    p3 = Point(10, 0)
+    p4 = Point(9, 2)
+    p5 = Point(8.7, 1.5)
     dist = LibGEOS.project(ls, p1)
     @test dist ≈ 1 atol = 1e-5
     @test LibGEOS.equals(LibGEOS.interpolate(ls, dist), p2)
@@ -428,11 +428,12 @@ end
     geom2_ = LibGEOS.readgeom("POLYGON((8 8, 9 9, 9 10, 8 8))")
     coords_ = LibGEOS.nearestPoints(geom1_, geom2_)
     @test LibGEOS.getSize(coords_) == 2
-    @test LibGEOS.getCoordinates(coords_, 1)[1:2] ≈ [5.0, 5.0] atol = 1e-5
-    @test LibGEOS.getCoordinates(coords_, 2)[1:2] ≈ [8.0, 8.0] atol = 1e-5
+    @test GeoInterface.coordinates(coords_[1]) ≈ [5.0, 5.0] atol = 1e-5
+    @test GeoInterface.coordinates(coords_[2]) ≈ [8.0, 8.0] atol = 1e-5
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
-    LibGEOS.destroyCoordSeq(coords_)
+    LibGEOS.destroyGeom(coords_[1])
+    LibGEOS.destroyGeom(coords_[2])
 
     # GEOSNodeTest
     geom1_ = LibGEOS.readgeom("LINESTRING(0 0, 10 10, 10 0, 0 10)")
@@ -528,7 +529,7 @@ end
     geom1_ = LibGEOS.readgeom("POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))")
     geom2_ = LibGEOS.readgeom("POLYGON((2 2, 2 3, 3 3, 3 2, 2 2))")
     prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-    @test LibGEOS.prepcontainsproperly(prepGeom1_, geom2_)
+    @test LibGEOS.containsproperly(prepGeom1_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyPreparedGeom(prepGeom1_)
@@ -536,7 +537,7 @@ end
     geom1_ = LibGEOS.readgeom("POLYGON((2 2, 2 3, 3 3, 3 2, 2 2))")
     geom2_ = LibGEOS.readgeom("POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))")
     prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-    @test !LibGEOS.prepcontainsproperly(prepGeom1_, geom2_)
+    @test !LibGEOS.containsproperly(prepGeom1_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyPreparedGeom(prepGeom1_)
@@ -544,7 +545,7 @@ end
     geom1_ = LibGEOS.readgeom("LINESTRING(0 0, 10 10)")
     geom2_ = LibGEOS.readgeom("LINESTRING(0 10, 10 0)")
     prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-    @test LibGEOS.prepintersects(prepGeom1_, geom2_)
+    @test LibGEOS.intersects(prepGeom1_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyPreparedGeom(prepGeom1_)
@@ -552,7 +553,7 @@ end
     geom1_ = LibGEOS.readgeom("POLYGON((0 0, 0 10, 10 11, 10 0, 0 0))")
     geom2_ = LibGEOS.readgeom("POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))")
     prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-    @test LibGEOS.prepcovers(prepGeom1_, geom2_)
+    @test LibGEOS.covers(prepGeom1_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyPreparedGeom(prepGeom1_)
@@ -560,7 +561,7 @@ end
     geom1_ = LibGEOS.readgeom("POLYGON((0 0, 0 10, 10 11, 10 0, 0 0))")
     geom2_ = LibGEOS.readgeom("POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))")
     prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-    @test LibGEOS.prepcontains(prepGeom1_, geom2_)
+    @test LibGEOS.contains(prepGeom1_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyPreparedGeom(prepGeom1_)
