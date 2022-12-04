@@ -793,132 +793,132 @@ end
 # -----
 
 # GEOSGeometry ownership is retained by caller
-function prepareGeom(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSPrepare_r(context, ptr)
+function prepareGeom(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSPrepare_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSPrepare")
     end
-    result
+    PreparedGeometry(result, obj)
 end
 
 function destroyPreparedGeom(ptr::Ptr{GEOSPreparedGeometry}, context::GEOSContext = get_global_context())
     GEOSPreparedGeom_destroy_r(context, ptr)
 end
 
-function prepcontains(
-    g1::Ptr{GEOSPreparedGeometry},
-    g2::GEOSGeom,
-    context::GEOSContext = get_global_context(),
+function Base.contains(
+    obj1::PreparedGeometry,
+    obj2::Geometry,
+    context::GEOSContext = get_context(obj1,obj2)
 )
-    result = GEOSPreparedContains_r(context, g1, g2)
+    result = GEOSPreparedContains_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedContains")
     end
     result != 0x00
 end
 
-function prepcontainsproperly(
-    g1::Ptr{GEOSPreparedGeometry},
-    g2::GEOSGeom,
-    context::GEOSContext = get_global_context(),
+function containsproperly(
+    obj1::PreparedGeometry,
+    obj2::Geometry,
+    context::GEOSContext = get_context(obj1,obj2)
 )
-    result = GEOSPreparedContainsProperly_r(context, g1, g2)
+    result = GEOSPreparedContainsProperly_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedContainsProperly")
     end
     result != 0x00
 end
 
-function prepcoveredby(
-    g1::Ptr{GEOSPreparedGeometry},
-    g2::GEOSGeom,
-    context::GEOSContext = get_global_context(),
+function coveredby(
+    obj1::PreparedGeometry,
+    obj2::Geometry,
+    context::GEOSContext = get_context(obj1,obj2)
 )
-    result = GEOSPreparedCoveredBy_r(context, g1, g2)
+    result = GEOSPreparedCoveredBy_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedCoveredBy")
     end
     result != 0x00
 end
 
-function prepcovers(
-    g1::Ptr{GEOSPreparedGeometry},
-    g2::GEOSGeom,
-    context::GEOSContext = get_global_context(),
+function covers(
+    obj1::PreparedGeometry,
+    obj2::Geometry,
+    context::GEOSContext = get_context(obj1,obj2)
 )
-    result = GEOSPreparedCovers_r(context, g1, g2)
+    result = GEOSPreparedCovers_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedCovers")
     end
     result != 0x00
 end
 
-function prepcrosses(
-    g1::Ptr{GEOSPreparedGeometry},
-    g2::GEOSGeom,
-    context::GEOSContext = get_global_context(),
+function crosses(
+    obj1::PreparedGeometry,
+    obj2::Geometry,
+    context::GEOSContext = get_context(obj1,obj2)
 )
-    result = GEOSPreparedCrosses_r(context, g1, g2)
+    result = GEOSPreparedCrosses_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedCrosses")
     end
     result != 0x00
 end
 
-function prepdisjoint(
-    g1::Ptr{GEOSPreparedGeometry},
-    g2::GEOSGeom,
-    context::GEOSContext = get_global_context(),
+function disjoint(
+    obj1::PreparedGeometry,
+    obj2::Geometry,
+    context::GEOSContext = get_context(obj1,obj2)
 )
-    result = GEOSPreparedDisjoint_r(context, g1, g2)
+    result = GEOSPreparedDisjoint_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedDisjoint")
     end
     result != 0x00
 end
 
-function prepintersects(
-    g1::Ptr{GEOSPreparedGeometry},
-    g2::GEOSGeom,
-    context::GEOSContext = get_global_context(),
+function intersects(
+    obj1::PreparedGeometry,
+    obj2::Geometry,
+    context::GEOSContext = get_context(obj1,obj2)
 )
-    result = GEOSPreparedIntersects_r(context, g1, g2)
+    result = GEOSPreparedIntersects_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedIntersects")
     end
     result != 0x00
 end
 
-function prepoverlaps(
-    g1::Ptr{GEOSPreparedGeometry},
-    g2::GEOSGeom,
-    context::GEOSContext = get_global_context(),
+function overlaps(
+    obj1::PreparedGeometry,
+    obj2::Geometry,
+    context::GEOSContext = get_context(obj1,obj2)
 )
-    result = GEOSPreparedOverlaps_r(context, g1, g2)
+    result = GEOSPreparedOverlaps_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedOverlaps")
     end
     result != 0x00
 end
 
-function preptouches(
-    g1::Ptr{GEOSPreparedGeometry},
-    g2::GEOSGeom,
-    context::GEOSContext = get_global_context(),
+function touches(
+    obj1::PreparedGeometry,
+    obj2::Geometry,
+    context::GEOSContext = get_context(obj1,obj2)
 )
-    result = GEOSPreparedTouches_r(context, g1, g2)
+    result = GEOSPreparedTouches_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedTouches")
     end
     result != 0x00
 end
 
-function prepwithin(
-    g1::Ptr{GEOSPreparedGeometry},
-    g2::GEOSGeom,
-    context::GEOSContext = get_global_context(),
+function within(
+    obj1::PreparedGeometry,
+    obj2::Geometry,
+    context::GEOSContext = get_context(obj1,obj2)
 )
-    result = GEOSPreparedWithin_r(context, g1, g2)
+    result = GEOSPreparedWithin_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSPreparedWithin")
     end
