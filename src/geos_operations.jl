@@ -65,33 +65,6 @@ readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = get_global_context())
 # end
 
 # # -----
-# # Prepared Geometry Binary predicates
-# # -----
-
-prepareGeom(obj::Geometry, context::GEOSContext = get_context(obj)) =
-    PreparedGeometry(prepareGeom(obj, context), obj)
-Base.contains(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    prepcontains(obj1, obj2, context)
-containsproperly(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    prepcontainsproperly(obj1, obj2, context)
-coveredby(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    prepcoveredby(obj1, obj2, context)
-covers(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))=
-    prepcovers(obj1, obj2, context)
-crosses(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    prepcrosses(obj1, obj2, context)
-disjoint(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    prepdisjoint(obj1, obj2, context)
-intersects(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    prepintersects(obj1, obj2, context)
-overlaps(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    prepoverlaps(obj1, obj2, context)
-touches(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    preptouches(obj1, obj2, context)
-within(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2)) =
-    prepwithin(obj1, obj2, context)
-
-# # -----
 # # STRtree functions
 # # -----
 # # GEOSSTRtree_create
