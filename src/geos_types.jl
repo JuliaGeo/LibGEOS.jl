@@ -328,11 +328,6 @@ function clone(obj::Geometry, context=get_context(obj))
 end
 
 get_context(obj::Geometry) = obj.context
-function destroyGeom(obj::Geometry)
-    context = get_context(obj)
-    destroyGeom(obj, context)
-    obj.ptr = C_NULL
-end
 
 mutable struct PreparedGeometry{G<:AbstractGeometry} <: AbstractGeometry
     ptr::Ptr{GEOSPreparedGeometry}
@@ -340,12 +335,6 @@ mutable struct PreparedGeometry{G<:AbstractGeometry} <: AbstractGeometry
 end
 
 get_context(obj::PreparedGeometry) = get_context(obj.ownedby)
-
-function destroyGeom(obj::PreparedGeometry)
-    context = get_context(obj)
-    destroyPreparedGeom(obj, context)
-    obj.ptr = C_NULL
-end
 
 const geomtypes = [
     Point,
