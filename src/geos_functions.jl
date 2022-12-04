@@ -1157,18 +1157,18 @@ function numPoints(obj::LineString, context::GEOSContext = get_context(obj))
 end
 
 # Return -1 on exception, Geometry must be a Point.
-function getGeomX(ptr::GEOSGeom, context::GEOSContext = get_global_context())
+function getGeomX(obj::Point, context::GEOSContext = get_context(obj))
     out = Ref{Float64}()
-    result = GEOSGeomGetX_r(context, ptr, out)
+    result = GEOSGeomGetX_r(context, obj, out)
     if result == -1
         error("LibGEOS: Error in GEOSGeomGetX")
     end
     out[]
 end
 
-function getGeomY(ptr::GEOSGeom, context::GEOSContext = get_global_context())
+function getGeomY(obj::Point, context::GEOSContext = get_context(obj))
     out = Ref{Float64}()
-    result = GEOSGeomGetY_r(context, ptr, out)
+    result = GEOSGeomGetY_r(context, obj, out)
     if result == -1
         error("LibGEOS: Error in GEOSGeomGetY")
     end
@@ -1210,8 +1210,8 @@ function exteriorRing(obj::Polygon, context::GEOSContext = get_context(obj))
 end
 
 # Return -1 on exception
-function numCoordinates(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSGetNumCoordinates_r(context, ptr)
+function numCoordinates(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSGetNumCoordinates_r(context, obj)
     if result == -1
         error("LibGEOS: Error in GEOSGetNumCoordinates")
     end
@@ -1219,8 +1219,8 @@ function numCoordinates(ptr::GEOSGeom, context::GEOSContext = get_global_context
 end
 
 # Geometry must be a LineString, LinearRing or Point (Return NULL on exception)
-function getCoordSeq(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSGeom_getCoordSeq_r(context, ptr)
+function getCoordSeq(obj::Union{LineString, LinearRing, Point}, context::GEOSContext = get_context(obj))
+    result = GEOSGeom_getCoordSeq_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_getCoordSeq")
     end
@@ -1229,8 +1229,8 @@ end
 # getGeomCoordinates(ptr::GEOSGeom) = getCoordinates(getCoordSeq(ptr))
 
 # Return 0 on exception (or empty geometry)
-getGeomDimensions(ptr::GEOSGeom, context::GEOSContext = get_global_context()) =
-    GEOSGeom_getDimensions_r(context, ptr)
+getGeomDimensions(obj::Geometry, context::GEOSContext = get_context(obj)) =
+    GEOSGeom_getDimensions_r(context, obj)
 
 # Return 2 or 3.
 getCoordinateDimension(obj::Geometry, context::GEOSContext = get_context(obj)) =
