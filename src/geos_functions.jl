@@ -459,11 +459,11 @@ createPolygon(shell::GEOSGeom, context::GEOSContext = get_global_context()) =
 
 function createCollection(
     geomtype::GEOSGeomTypes,
-    geoms::Vector{GEOSGeom},
+    geoms::AbstractVector,
     context::GEOSContext = get_global_context(),
 )
     result =
-        GEOSGeom_createCollection_r(context, geomtype, pointer(geoms), length(geoms))
+        GEOSGeom_createCollection_r(context, geomtype, geoms, length(geoms))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_createCollection")
     end
