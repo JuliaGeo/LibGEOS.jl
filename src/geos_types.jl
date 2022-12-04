@@ -88,7 +88,7 @@ mutable struct MultiPoint <: AbstractGeometry
             new(cloneGeom(ptr, context), context)
         elseif id == GEOS_POINT
             new(createCollection(GEOS_MULTIPOINT,
-                                 GEOSGeom[cloneGeom(ptr, context)],
+                                 [cloneGeom(ptr, context)],
                                  context),
                 context
                )
@@ -150,7 +150,7 @@ mutable struct MultiLineString <: AbstractGeometry
             new(cloneGeom(ptr, context), context)
         elseif id == GEOS_LINESTRING
             new(createCollection(GEOS_MULTILINESTRING,
-                                 GEOSGeom[cloneGeom(ptr, context)],
+                                 [cloneGeom(ptr, context)],
                                  context), context)
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multi-linestring (yet).
@@ -243,7 +243,7 @@ mutable struct MultiPolygon <: AbstractGeometry
         elseif id == GEOS_POLYGON
             new(createCollection(
                     GEOS_MULTIPOLYGON,
-                    GEOSGeom[cloneGeom(ptr, context)],
+                    cloneGeom(ptr, context),
                     context),
                 context
                )
@@ -283,10 +283,10 @@ mutable struct GeometryCollection <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a geometric collection from a pointer to a geometric collection, else error
-    function GeometryCollection(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-        id = LibGEOS.geomTypeId(ptr, context)
+    function GeometryCollection(obj::GEOSGeom, context::GEOSContext = get_global_context())
+        id = LibGEOS.geomTypeId(obj, context)
         geometrycollection = if id == GEOS_GEOMETRYCOLLECTION
-            new(cloneGeom(ptr, context), context)
+            new(cloneGeom(obj, context), context)
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a geometry collection (yet).
                    Please open an issue if you think this conversion makes sense.")
@@ -295,7 +295,7 @@ mutable struct GeometryCollection <: AbstractGeometry
         geometrycollection
     end
     # create a geometric collection from a list of pointers to geometric objects
-    GeometryCollection(collection::Vector{GEOSGeom}, context::GEOSContext = get_global_context()) =
+    GeometryCollection(collection::AbstractVector, context::GEOSContext = get_global_context()) =
         GeometryCollection(
             createCollection(
                 GEOS_GEOMETRYCOLLECTION,
