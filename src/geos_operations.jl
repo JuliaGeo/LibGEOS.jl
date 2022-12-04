@@ -84,21 +84,7 @@ end
 # # Geometry info
 # # -----
 
-# # Geometry must be a LineString, LinearRing or Point (Return NULL on exception)
-# function getCoordSeq(ptr::GEOSGeom)
-#     result = GEOSGeom_getCoordSeq(ptr)
-#     if result == C_NULL
-#         error("LibGEOS: Error in GEOSGeom_getCoordSeq")
-#     end
-#     result
-# end
 # # getGeomCoordinates(ptr::GEOSGeom) = getCoordinates(getCoordSeq(ptr))
-
-# # Return 0 on exception (or empty geometry)
-# getGeomDimensions(ptr::GEOSGeom) = GEOSGeom_getDimensions(ptr)
-
-# # Return 2 or 3.
-# getCoordinateDimension(ptr::GEOSGeom) = int(GEOSGeom_getCoordinateDimension(ptr))
 
 # # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
 # function getPoint(ptr::GEOSGeom, n::Integer)
