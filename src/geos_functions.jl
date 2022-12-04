@@ -27,18 +27,28 @@ end
 _readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = get_global_context()) =
     _readgeom(wkbbuffer, WKBReader(context), context)
 
-function writegeom(geom::Geometry, wktwriter::WKTWriter, context::GEOSContext = get_global_context())
-    GEOSWKTWriter_write_r(context, wktwriter, geom)
+readgeom(wktstring::String, wktreader::WKTReader, context::GEOSContext = get_global_context()) =
+    geomFromGEOS(_readgeom(wktstring, wktreader, context), context)
+readgeom(wktstring::String, context::GEOSContext = get_global_context()) =
+    readgeom(wktstring, WKTReader(context), context)
+
+readgeom(wkbbuffer::Vector{Cuchar}, wkbreader::WKBReader, context::GEOSContext = get_global_context()) =
+    geomFromGEOS(_readgeom(wkbbuffer, wkbreader, context), context)
+readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = get_global_context()) =
+    readgeom(wkbbuffer, WKBReader(context), context)
+
+function writegeom(obj::Geometry, wktwriter::WKTWriter, context::GEOSContext = get_context(obj))
+    GEOSWKTWriter_write_r(context, wktwriter, obj)
 end
 
-function writegeom(geom::Geometry, wkbwriter::WKBWriter, context::GEOSContext = get_global_context())
+function writegeom(obj::Geometry, wkbwriter::WKBWriter, context::GEOSContext = get_context(obj))
     wkbsize = Ref{Csize_t}()
-    result = GEOSWKBWriter_write_r(context, wkbwriter, geom, wkbsize)
+    result = GEOSWKBWriter_write_r(context, wkbwriter, obj, wkbsize)
     unsafe_wrap(Array, result, wkbsize[], own = true)
 end
 
-writegeom(geom::GEOSGeom, context::GEOSContext = get_global_context()) =
-    writegeom(geom, WKTWriter(context), context)
+writegeom(obj::Geometry, context::GEOSContext = get_context(obj)) =
+    writegeom(obj, WKTWriter(context), context)
 
 # -----
 # Coordinate Sequence functions
@@ -1223,8 +1233,8 @@ getGeomDimensions(ptr::GEOSGeom, context::GEOSContext = get_global_context()) =
     GEOSGeom_getDimensions_r(context, ptr)
 
 # Return 2 or 3.
-getCoordinateDimension(ptr::GEOSGeom, context::GEOSContext = get_global_context()) =
-    GEOSGeom_getCoordinateDimension_r(context, ptr)
+getCoordinateDimension(obj::Geometry, context::GEOSContext = get_context(obj)) =
+    GEOSGeom_getCoordinateDimension_r(context, obj)
 
 """
     getXMin(obj::Geometry, context::GEOSContext = get_context(obj))

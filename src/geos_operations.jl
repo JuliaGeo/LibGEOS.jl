@@ -31,16 +31,6 @@ function geomFromGEOS(ptr::Union{Geometry, Ptr{Cvoid}}, context::GEOSContext = g
     end
 end
 
-readgeom(wktstring::String, wktreader::WKTReader, context::GEOSContext = get_global_context()) =
-    geomFromGEOS(_readgeom(wktstring, wktreader, context), context)
-readgeom(wktstring::String, context::GEOSContext = get_global_context()) =
-    readgeom(wktstring, WKTReader(context), context)
-
-readgeom(wkbbuffer::Vector{Cuchar}, wkbreader::WKBReader, context::GEOSContext = get_global_context()) =
-    geomFromGEOS(_readgeom(wkbbuffer, wkbreader, context), context)
-readgeom(wkbbuffer::Vector{Cuchar}, context::GEOSContext = get_global_context()) =
-    readgeom(wkbbuffer, WKBReader(context), context)
-
 # # -----
 # # Topology operations
 # # -----
