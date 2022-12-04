@@ -1,5 +1,5 @@
 function _readgeom(wktstring::String, wktreader::WKTReader, context::GEOSContext = get_global_context())
-    result = GEOSWKTReader_read_r(context, wktreader, pointer(wktstring))
+    result = GEOSWKTReader_read_r(context, wktreader, wktstring)
     if result == C_NULL
         error("LibGEOS: Error in GEOSWKTReader_read_r while reading $wktstring")
     end
@@ -16,7 +16,7 @@ function _readgeom(
     result = GEOSWKBReader_read_r(
         context,
         wkbreader,
-        pointer(wkbbuffer),
+        wkbbuffer,
         length(wkbbuffer),
     )
     if result == C_NULL
@@ -233,7 +233,7 @@ end
 
 function getX(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     ncoords = getSize(ptr, context)
-    xcoords = Array{Float64}(ncoords)
+    xcoords = Array{Float64}(undef, ncoords)
     start = pointer(xcoords)
     floatsize = sizeof(Float64)
     for i = 0:ncoords-1
@@ -258,7 +258,7 @@ end
 
 function getY(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     ncoords = getSize(ptr, context)
-    ycoords = Array{Float64}(ncoords)
+    ycoords = Array{Float64}(undef, ncoords)
     start = pointer(ycoords)
     floatsize = sizeof(Float64)
     for i = 0:ncoords-1
@@ -283,7 +283,7 @@ end
 
 function getZ(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     ncoords = getSize(ptr, context)
-    zcoords = Array{Float64}(ncoords)
+    zcoords = Array{Float64}(undef, ncoords)
     start = pointer(zcoords)
     floatsize = sizeof(Float64)
     for i = 0:ncoords-1
@@ -443,11 +443,11 @@ createLineString(coords::Vector{Vector{Float64}}, context::GEOSContext = get_glo
 # The caller remains owner of the array, but pointed-to
 # objects become ownership of the returned GEOSGeometry.
 function createPolygon(
-    shell::GEOSGeom,
-    holes::Vector{GEOSGeom},
+    shell::Union{LinearRing,GEOSGeom},
+    holes::AbstractVector,
     context::GEOSContext = get_global_context(),
 )
-    result = GEOSGeom_createPolygon_r(context, shell, pointer(holes), length(holes))
+    result = GEOSGeom_createPolygon_r(context, shell, holes, length(holes))
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_createPolygon")
     end
@@ -479,7 +479,8 @@ function createEmptyCollection(geomtype::GEOSGeomTypes, context::GEOSContext = g
 end
 
 # Memory management
-function cloneGeom(ptr::GEOSGeom, context::GEOSContext = get_global_context())
+# cloneGeom result needs to be wrapped in Geometry type
+function cloneGeom(ptr::Union{Geometry,GEOSGeom}, context::GEOSContext = get_global_context())
     result = GEOSGeom_clone_r(context, ptr)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeom_clone")
@@ -1148,7 +1149,7 @@ function numInteriorRings(obj::Polygon, context::GEOSContext = get_context(obj))
 end
 
 # Call only on LINESTRING (returns -1 on exception)
-function numPoints(obj::LineString, context::GEOSContext = get_context(obj))
+function numPoints(obj::Union{LineString,LinearRing}, context::GEOSContext = get_context(obj))
     result = GEOSGeomGetNumPoints_r(context, obj)
     if result == -1
         error("LibGEOS: Error in GEOSGeomGetNumPoints")
@@ -1317,7 +1318,7 @@ end
 # end
 
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
-function getPoint(obj::LineString, n::Integer, context::GEOSContext = get_context(obj))
+function getPoint(obj::Union{LineString,LinearRing}, n::Integer, context::GEOSContext = get_context(obj))
     if !(0 < n <= numPoints(obj, context))
         error(
             "LibGEOS: n=$n is out of bounds for LineString with numPoints=$(numPoints(obj, context))",
@@ -1331,7 +1332,7 @@ function getPoint(obj::LineString, n::Integer, context::GEOSContext = get_contex
 end
 
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
-function startPoint(obj::LineString, context::GEOSContext = get_context(obj))
+function startPoint(obj::Union{LineString,LinearRing}, context::GEOSContext = get_context(obj))
     result = GEOSGeomGetStartPoint_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeomGetStartPoint")
@@ -1340,7 +1341,7 @@ function startPoint(obj::LineString, context::GEOSContext = get_context(obj))
 end
 
 # Call only on LINESTRING, and must be freed by caller (Returns NULL on exception)
-function endPoint(obj::LineString, context::GEOSContext = get_context(obj))
+function endPoint(obj::Union{LineString,LinearRing}, context::GEOSContext = get_context(obj))
     result = GEOSGeomGetEndPoint_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGeomGetEndPoint")

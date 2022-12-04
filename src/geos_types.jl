@@ -57,10 +57,10 @@ mutable struct Point <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a point from a pointer - only makese sense if it is a pointer to a point, otherwise error
-    function Point(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-        id = LibGEOS.geomTypeId(ptr, context)
+    function Point(obj::Union{Point,GEOSGeom}, context::GEOSContext = get_global_context())
+        id = LibGEOS.geomTypeId(obj, context)
         point = if id == GEOS_POINT
-            point = new(cloneGeom(ptr, context), context)
+            point = new(cloneGeom(obj, context), context)
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a point (yet).
                    Please open an issue if you think this conversion makes sense.")
@@ -82,13 +82,13 @@ mutable struct MultiPoint <: AbstractGeometry
     context::GEOSContext
     # create a multipoint from a pointer - only makes sense if it is a pointer to a multipoint
     # or to a point, otherwise error
-    function MultiPoint(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-        id = LibGEOS.geomTypeId(ptr, context)
+    function MultiPoint(obj::Union{Point,MultiPoint,GEOSGeom}, context::GEOSContext = get_global_context())
+        id = LibGEOS.geomTypeId(obj, context)
         multipoint = if id == GEOS_MULTIPOINT
-            new(cloneGeom(ptr, context), context)
+            new(cloneGeom(obj, context), context)
         elseif id == GEOS_POINT
             new(createCollection(GEOS_MULTIPOINT,
-                                 [cloneGeom(ptr, context)],
+                                 [cloneGeom(obj, context)],
                                  context),
                 context
                )
@@ -121,10 +121,10 @@ mutable struct LineString <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a linestring from a linestring pointer, otherwise error
-    function LineString(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-        id = LibGEOS.geomTypeId(ptr, context)
+    function LineString(obj::Union{LineString,GEOSGeom}, context::GEOSContext = get_global_context())
+        id = LibGEOS.geomTypeId(obj, context)
         line = if id == GEOS_LINESTRING
-            new(cloneGeom(ptr, context), context)
+            new(cloneGeom(obj, context), context)
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a linestring (yet).
                    Please open an issue if you think this conversion makes sense.")
@@ -144,13 +144,13 @@ mutable struct MultiLineString <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a multiline string from a multilinestring or a linestring pointer, else error
-    function MultiLineString(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-        id = LibGEOS.geomTypeId(ptr, context)
+    function MultiLineString(obj::Union{LineString,MultiLineString,GEOSGeom}, context::GEOSContext = get_global_context())
+        id = LibGEOS.geomTypeId(obj, context)
         multiline = if id == GEOS_MULTILINESTRING
-            new(cloneGeom(ptr, context), context)
+            new(cloneGeom(obj, context), context)
         elseif id == GEOS_LINESTRING
             new(createCollection(GEOS_MULTILINESTRING,
-                                 [cloneGeom(ptr, context)],
+                                 [cloneGeom(obj, context)],
                                  context), context)
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multi-linestring (yet).
@@ -173,10 +173,10 @@ mutable struct LinearRing <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a linear ring from a linear ring pointer, otherwise error
-    function LinearRing(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-        id = LibGEOS.geomTypeId(ptr, context)
+    function LinearRing(obj::Union{LinearRing,GEOSGeom}, context::GEOSContext = get_global_context())
+        id = LibGEOS.geomTypeId(obj, context)
         ring = if id == GEOS_LINEARRING
-            new(cloneGeom(ptr, context), context)
+            new(cloneGeom(obj, context), context)
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a linear ring (yet).
                    Please open an issue if you think this conversion makes sense.")
@@ -198,12 +198,12 @@ mutable struct Polygon <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create polygon using GEOSGeom pointer - only makes sense if pointer points to a polygon or a linear ring to start with.
-    function Polygon(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-        id = LibGEOS.geomTypeId(ptr, context)
+    function Polygon(obj::Union{Polygon,LinearRing,GEOSGeom}, context::GEOSContext = get_global_context())
+        id = LibGEOS.geomTypeId(obj, context)
         polygon = if id == GEOS_POLYGON
-            new(cloneGeom(ptr, context), context)
+            new(cloneGeom(obj, context), context)
         elseif id == GEOS_LINEARRING
-            new(cloneGeom(createPolygon(ptr, context), context), context)
+            new(cloneGeom(createPolygon(obj, context), context), context)
         else
             error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a polygon (yet).
                    Please open an issue if you think this conversion makes sense.")
@@ -236,14 +236,14 @@ mutable struct MultiPolygon <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create multipolygon using a multipolygon or polygon pointer, else error
-    function MultiPolygon(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-        id = LibGEOS.geomTypeId(ptr, context)
+    function MultiPolygon(obj::Union{Polygon,MultiPolygon,GEOSGeom}, context::GEOSContext = get_global_context())
+        id = LibGEOS.geomTypeId(obj, context)
         multipolygon = if id == GEOS_MULTIPOLYGON
-            new(cloneGeom(ptr, context), context)
+            new(cloneGeom(obj, context), context)
         elseif id == GEOS_POLYGON
             new(createCollection(
                     GEOS_MULTIPOLYGON,
-                    cloneGeom(ptr, context),
+                    cloneGeom(obj, context),
                     context),
                 context
                )
@@ -283,7 +283,7 @@ mutable struct GeometryCollection <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a geometric collection from a pointer to a geometric collection, else error
-    function GeometryCollection(obj::GEOSGeom, context::GEOSContext = get_global_context())
+    function GeometryCollection(obj::Union{GeometryCollection,GEOSGeom}, context::GEOSContext = get_global_context())
         id = LibGEOS.geomTypeId(obj, context)
         geometrycollection = if id == GEOS_GEOMETRYCOLLECTION
             new(cloneGeom(obj, context), context)

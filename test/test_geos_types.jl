@@ -341,7 +341,8 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         # Test GeomertyCollections made with local context
         ctx = LibGEOS.GEOSContext()
         geomcollect_ctx = LibGEOS.GeometryCollection(geomcol_ptr_list, ctx)
-        @test LibGEOS.equals(geomcollect_ctx, geomcol_ptr_list)
+        # Objects have distinct GEOSContext.
+        @test_throws ArgumentError LibGEOS.equals(geomcollect_ctx, geomcol_ptr_list)
 
         LibGEOS.destroyGeom(point)
         LibGEOS.destroyGeom(poly)

@@ -53,7 +53,7 @@ end
           Vector{Float64}[[1, 2, 3], [3, 3, 3], [7, 8, 9], [10, 11, 12]]
     @test_throws ErrorException LibGEOS.getCoordinates(b, 0)
     @test_throws ErrorException LibGEOS.getCoordinates(b, 5)
-    c = LibGEOS.createPoint(LibGEOS.createCoordSeq(Vector{Float64}[[1, 2]]))
+    c = LibGEOS.Point(LibGEOS.createCoordSeq(Vector{Float64}[[1, 2]]))
     @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(c))[1] ≈ [1, 2] atol = 1e-5
 
     # isCCW
@@ -64,17 +64,17 @@ end
     @test !LibGEOS.isCCW(a)
 
     # Polygons and Holes
-    shell = LibGEOS.createLinearRing(
+    shell = LibGEOS.LinearRing(
         Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]],
     )
     hole1 =
-        LibGEOS.createLinearRing(Vector{Float64}[[1, 8], [2, 8], [2, 9], [1, 9], [1, 8]])
+        LibGEOS.LinearRing(Vector{Float64}[[1, 8], [2, 8], [2, 9], [1, 9], [1, 8]])
     hole2 =
-        LibGEOS.createLinearRing(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]])
-    polygon = LibGEOS.createPolygon(shell, LibGEOS.GEOSGeom[hole1, hole2])
+        LibGEOS.LinearRing(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]])
+    polygon = LibGEOS.Polygon(shell, [hole1, hole2])
     @test LibGEOS.getGeomDimensions(polygon) == 2
     @test LibGEOS.geomTypeId(polygon) == LibGEOS.GEOS_POLYGON
-    @test LibGEOS.geomArea(polygon) ≈ 98.0 atol = 1e-5
+    @test LibGEOS.area(polygon) ≈ 98.0 atol = 1e-5
     exterior = LibGEOS.exteriorRing(polygon)
     @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(exterior)) ==
           Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]
@@ -93,7 +93,7 @@ end
     exterior_poly = LibGEOS.createPolygon(exterior)
     @test LibGEOS.getGeomDimensions(exterior_poly) == 2
     @test LibGEOS.geomTypeId(exterior_poly) == LibGEOS.GEOS_POLYGON
-    @test LibGEOS.geomArea(exterior_poly) ≈ 100.0 atol = 1e-5
+    @test LibGEOS.area(exterior_poly) ≈ 100.0 atol = 1e-5
     @test_throws ErrorException LibGEOS.interiorRing(exterior_poly, 1)
     @test LibGEOS.equals(LibGEOS.exteriorRing(exterior_poly), exterior)
 
