@@ -680,13 +680,21 @@ function delaunayTriangulation(
     obj::Geometry,
     tol::Real = 0.0,
     onlyEdges::Bool = false,
-    context::GEOSContext = get_global_context(),
+    context::GEOSContext = get_context(obj),
 )
     result = GEOSDelaunayTriangulation_r(context, obj, tol, Int32(onlyEdges))
     if result == C_NULL
         error("LibGEOS: Error in GEOSDelaunayTriangulation")
     end
     onlyEdges ? MultiLineString(result, context) : GeometryCollection(result, context)
+end
+
+function delaunayTriangulationEdges(
+    obj::Geometry,
+    tol::Real = 0.0,
+    context::GEOSContext = get_context(obj),
+)
+    delaunayTriangulation(obj, tol, true, context)
 end
 
 function constrainedDelaunayTriangulation(obj::Geometry, context::GEOSContext = get_context(obj))

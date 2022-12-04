@@ -51,19 +51,10 @@ export Point,
     overlaps,
     equals,
     equalsexact,
+    containsproperly,
     covers,
     coveredby,
     prepareGeom,
-    prepcontains,
-    prepcontainsproperly,
-    prepcoveredby,
-    prepcovers,
-    prepcrosses,
-    prepdisjoint,
-    prepintersects,
-    prepoverlaps,
-    preptouches,
-    prepwithin,
     isEmpty,
     isSimple,
     isRing,
@@ -251,8 +242,8 @@ function __init__()
     _GLOBAL_CONTEXT[] = GEOSContext()
 end
 
-include("geos_functions.jl")
 include("geos_types.jl")
+include("geos_functions.jl")
 include("geos_operations.jl")
 include("geo_interface.jl")
 include("strtree.jl")
