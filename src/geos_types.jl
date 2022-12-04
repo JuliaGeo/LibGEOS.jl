@@ -220,9 +220,6 @@ mutable struct Polygon <: AbstractGeometry
         finalizer(destroyGeom, polygon)
         polygon
     end
-    # using 1 linear ring to form polygon with no holes - linear ring will be outer boundary of polygon
-    Polygon(ring::LinearRing, context::GEOSContext = get_context(ring)) =
-        Polygon(ring, context)
     # using multiple linear rings to form polygon with holes - exterior linear ring will be polygon boundary and list of interior linear rings will form holes
     Polygon(exterior::LinearRing, holes::Vector{LinearRing}, context::GEOSContext = get_context(exterior, holes)) =
         Polygon(
