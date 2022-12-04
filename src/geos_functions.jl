@@ -938,32 +938,35 @@ end
 # -----
 # Unary predicate - return 2 on exception, 1 on true, 0 on false
 # -----
-function isEmpty(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSisEmpty_r(context, ptr)
+function isEmpty(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSisEmpty_r(context, obj)
     if result == 0x02
         error("LibGEOS: Error in GEOSisEmpty")
     end
     result != 0x00
 end
 
-function isSimple(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSisSimple_r(context, ptr)
+isEmpty(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
+    isEmpty(obj.ownedby, context)
+
+function isSimple(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSisSimple_r(context, obj)
     if result == 0x02
         error("LibGEOS: Error in GEOSisSimple")
     end
     result != 0x00
 end
 
-function isRing(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSisRing_r(context, ptr)
+function isRing(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSisRing_r(context, obj)
     if result == 0x02
         error("LibGEOS: Error in GEOSisRing")
     end
     result != 0x00
 end
 
-function hasZ(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSHasZ_r(context, ptr)
+function hasZ(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSHasZ_r(context, obj)
     if result == 0x02
         error("LibGEOS: Error in GEOSHasZ")
     end
@@ -971,8 +974,8 @@ function hasZ(ptr::GEOSGeom, context::GEOSContext = get_global_context())
 end
 
 # Call only on LINESTRING (return 2 on exception, 1 on true, 0 on false)
-function isClosed(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSisClosed_r(context, ptr)
+function isClosed(obj::LineString, context::GEOSContext = get_context(obj))
+    result = GEOSisClosed_r(context, obj)
     if result == 0x02
         error("LibGEOS: Error in GEOSisClosed")
     end
@@ -997,8 +1000,8 @@ end
 #     GEOSVALID_ALLOW_SELFTOUCHING_RING_FORMING_HOLE=1
 # };
 
-function isValid(ptr::GEOSGeom, context::GEOSContext = get_global_context())
-    result = GEOSisValid_r(context, ptr)
+function isValid(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSisValid_r(context, obj)
     if result == 0x02
         error("LibGEOS: Error in GEOSisValid")
     end
