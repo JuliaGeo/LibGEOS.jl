@@ -56,23 +56,31 @@ end
     ctx1 = LibGEOS.GEOSContext()
     ctx2 = LibGEOS.GEOSContext()
     test_hash_eq(ctx1, ctx2)
+    pt1 = readgeom("POINT(0.12345 2.000 0.1)")
+    pt2 = readgeom("POINT(0.12345 2.000 0.10000001)")
+    @test GeoInterface.coordinates(pt1) != GeoInterface.coordinates(pt2)
+    @test pt1 != pt2
 
-    geos = [
-        readgeom("POINT(0.12345 2.000 0.1)"),
-        readgeom("POINT(0.12345 2.000 0.10000001)"),
-        readgeom("POLYGON EMPTY"),
-        readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))"),
-        readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))"),
-        readgeom("POLYGON((1 1,1 2,2 2,2.00000001 1,1 1))"),
-        readgeom("LINESTRING (130 240, 650 240)"),
-        readgeom("LINESTRING (130 240, -650 240)"),
-    ]
-    for g1 in geos
-        for g2 in geos
-            if g1 === g2
-                continue
-            end
-            test_hash_eq(g1, g2)
-        end
-    end
+    # geos = [
+    #     readgeom("POINT(0.12345 2.000 0.1)"),
+    #     readgeom("POINT(0.12345 2.000 0.10000001)"),
+    #     readgeom("POLYGON EMPTY"),
+    #     readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))"),
+    #     readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))"),
+    #     readgeom("POLYGON((1 1,1 2,2 2,2.00000001 1,1 1))"),
+    #     readgeom("LINESTRING (130 240, 650 240)"),
+    #     readgeom("LINESTRING (130 240, -650 240)"),
+    # ]
+    # for g1 in geos
+    #     for g2 in geos
+    #         if g1 === g2
+    #             continue
+    #         end
+    #         test_hash_eq(g1, g2)
+    #     end
+    # end
+    # for g in geos
+    #     @test g == LibGEOS.clone(g)
+    #     @test isequal(g, LibGEOS.clone(g))
+    # end
 end

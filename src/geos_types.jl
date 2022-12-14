@@ -350,11 +350,13 @@ const geomtypes = [
 
 function Base.:(==)(g1::AbstractGeometry, g2::AbstractGeometry)
     (typeof(g1) == typeof(g2)) || return false
-    get_context(g1) == get_context(g2) || return false
-    g1.ptr == g2.ptr
+    if g1.ptr == g2.ptr
+        return true
+    else
+        return GeoInterface.coordinates(g1) == GeoInterface.coordinates(g2)
+    end
 end
 
 function Base.hash(g::AbstractGeometry, h::UInt)
-    h = hash(g.ptr, h)
-    h = hash(get_context(g), h)
+    hash(GeoInterface.coordinates(g), h)
 end
