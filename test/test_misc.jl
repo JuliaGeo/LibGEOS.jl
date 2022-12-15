@@ -36,3 +36,25 @@ end
     @test_throws ArgumentError LibGEOS.intersects(p1, q2)
     @test_throws ArgumentError LibGEOS.intersects(p2, q1)
 end
+
+@testset "show it like you build it" begin
+    for geo in [
+        readgeom("POINT(0 0)")
+        readgeom("MULTIPOINT(0 0, 5 0, 10 0)")
+        readgeom("LINESTRING (130 240, 650 240)")
+        readgeom("POLYGON EMPTY")
+        readgeom("POLYGON ((10 10, 20 40, 90 90, 90 10, 10 10))")
+        readgeom("MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))")
+        readgeom("GEOMETRYCOLLECTION (LINESTRING (1 2, 2 2), LINESTRING (2 1, 1 1), POLYGON ((0.5 1, 1 2, 1 1, 0.5 1)), POLYGON ((9 2, 9.5 1, 2 1, 2 2, 9 2)))")
+        ]
+        geo2 = readgeom(sprint(show, geo))
+        @test LibGEOS.equals(geo, geo2)
+    end
+    p = Polygon([[[0.0, 0.0] for _ in 1:10000]])
+    buf = IOBuffer()
+    print(IOContext(buf, :compact=>true), p)
+    seekstart(buf)
+    s = read(buf, String)
+    @test length(s) < 30
+    @test occursin("Polygon(...)", s)
+end

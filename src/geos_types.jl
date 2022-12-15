@@ -1,5 +1,15 @@
 abstract type AbstractGeometry end
 
+function Base.show(io::IO, geo::AbstractGeometry)
+    compact = get(io, :compact, false)
+    if compact
+        print(io, typeof(geo), "(...)")
+    else
+        s = writegeom(geo)
+        print(io, s)
+    end
+end
+
 """
 
     get_context(geom::AbstractGeometry)::GEOSContext
