@@ -37,50 +37,64 @@ end
     @test_throws ArgumentError LibGEOS.intersects(p2, q1)
 end
 
-function test_hash_eq(obj1, obj2)
-
-    @test obj1 == obj1
-    @test isequal(obj1, obj1)
-    @test hash(obj1) === hash(obj1)
-
-    @test obj1 == deepcopy(obj1)
-    @test isequal(obj1, deepcopy(obj1))
-    @test hash(obj1) === hash(deepcopy(obj1))
-
-    @test obj1 != obj2
-    @test !isequal(obj1, obj2)
-    @test hash(obj1) != hash(obj2)
-end
-
 @testset "hash eq" begin
     ctx1 = LibGEOS.GEOSContext()
     ctx2 = LibGEOS.GEOSContext()
-    test_hash_eq(ctx1, ctx2)
+    @test ctx1 != ctx2
+    @test ctx1 == ctx1
+    @test hash(ctx1) != hash(ctx2)
     pt1 = readgeom("POINT(0.12345 2.000 0.1)")
     pt2 = readgeom("POINT(0.12345 2.000 0.10000001)")
     @test GeoInterface.coordinates(pt1) != GeoInterface.coordinates(pt2)
     @test pt1 != pt2
+    @test !isequal(pt1, pt2)
+    @test readgeom("LINESTRING (130 240, 650 240)") != readgeom("LINESTRING (130 240, -650 240)")
 
-    # geos = [
-    #     readgeom("POINT(0.12345 2.000 0.1)"),
-    #     readgeom("POINT(0.12345 2.000 0.10000001)"),
-    #     readgeom("POLYGON EMPTY"),
-    #     readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))"),
-    #     readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))"),
-    #     readgeom("POLYGON((1 1,1 2,2 2,2.00000001 1,1 1))"),
-    #     readgeom("LINESTRING (130 240, 650 240)"),
-    #     readgeom("LINESTRING (130 240, -650 240)"),
-    # ]
-    # for g1 in geos
-    #     for g2 in geos
-    #         if g1 === g2
-    #             continue
-    #         end
-    #         test_hash_eq(g1, g2)
-    #     end
-    # end
-    # for g in geos
-    #     @test g == LibGEOS.clone(g)
-    #     @test isequal(g, LibGEOS.clone(g))
-    # end
+    geos = [
+        readgeom("POINT(0.12345 2.000 0.1)"),
+        readgeom("POINT(0.12345 2.000 0.10000001)"),
+        readgeom("POLYGON EMPTY"),
+        readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))"),
+        readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))"),
+        readgeom("POLYGON((1 1,1 2,2 2,2.1 1,1 1))"),
+        readgeom("LINESTRING (130 240, 650 240)"),
+    ]
+    for g1 in geos
+        for g2 in geos
+            if g1 === g2
+                @test g1 == g2
+                @test isequal(g1,g2)
+            else
+                @test g1 != g2
+                @test !isequal(g1,g2)
+            end
+        end
+    end
+    for g in geos
+        @test g == LibGEOS.clone(g)
+        @test isequal(g, LibGEOS.clone(g))
+        @test hash(g) == hash(LibGEOS.clone(g))
+    end
+end
+
+@testset "show it like you build it" begin
+    for geo in [
+        readgeom("POINT(0 0)")
+        readgeom("MULTIPOINT(0 0, 5 0, 10 0)")
+        readgeom("LINESTRING (130 240, 650 240)")
+        readgeom("POLYGON EMPTY")
+        readgeom("POLYGON ((10 10, 20 40, 90 90, 90 10, 10 10))")
+        readgeom("MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))")
+        readgeom("GEOMETRYCOLLECTION (LINESTRING (1 2, 2 2), LINESTRING (2 1, 1 1), POLYGON ((0.5 1, 1 2, 1 1, 0.5 1)), POLYGON ((9 2, 9.5 1, 2 1, 2 2, 9 2)))")
+        ]
+        geo2 = readgeom(sprint(show, geo))
+        @test LibGEOS.equals(geo, geo2)
+    end
+    p = Polygon([[[0.0, 0.0] for _ in 1:10000]])
+    buf = IOBuffer()
+    print(IOContext(buf, :compact=>true), p)
+    seekstart(buf)
+    s = read(buf, String)
+    @test length(s) < 30
+    @test occursin("Polygon(...)", s)
 end
