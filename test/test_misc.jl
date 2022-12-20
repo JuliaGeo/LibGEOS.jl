@@ -1,5 +1,6 @@
 using Test
 using LibGEOS
+import GeoInterface
 
 @testset "allow_global_context!" begin
     Point(1,2,3)
@@ -44,20 +45,22 @@ end
     @test ctx1 == ctx1
     @test hash(ctx1) != hash(ctx2)
     pt1 = readgeom("POINT(0.12345 2.000 0.1)")
-    pt2 = readgeom("POINT(0.12345 2.000 0.10000001)")
-    @test GeoInterface.coordinates(pt1) != GeoInterface.coordinates(pt2)
+    pt2 = readgeom("POINT(0.12345 2.000 0.2)")
     @test pt1 != pt2
     @test !isequal(pt1, pt2)
     @test readgeom("LINESTRING (130 240, 650 240)") != readgeom("LINESTRING (130 240, -650 240)")
 
     geos = [
         readgeom("POINT(0.12345 2.000 0.1)"),
-        readgeom("POINT(0.12345 2.000 0.10000001)"),
+        readgeom("POINT(0.12345 2.000 0.2)"),
         readgeom("POLYGON EMPTY"),
         readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))"),
         readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))"),
         readgeom("POLYGON((1 1,1 2,2 2,2.1 1,1 1))"),
         readgeom("LINESTRING (130 240, 650 240)"),
+        readgeom("MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))"),
+        readgeom("GEOMETRYCOLLECTION (LINESTRING (1 2, 2 2), LINESTRING (2 1, 1 1), POLYGON ((0.5 1, 1 2, 1 1, 0.5 1)), POLYGON ((9 2, 9.5 1, 2 1, 2 2, 9 2)))"),
+        readgeom("MULTIPOINT(0 0, 5 0, 10 0)"),
     ]
     for g1 in geos
         for g2 in geos

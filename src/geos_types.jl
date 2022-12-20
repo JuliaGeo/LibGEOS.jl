@@ -360,11 +360,11 @@ const geomtypes = [
 
 function Base.:(==)(g1::AbstractGeometry, g2::AbstractGeometry)
     (typeof(g1) == typeof(g2)) || return false
-    if g1.ptr == g2.ptr
-        return true
-    else
-        return GeoInterface.coordinates(g1) == GeoInterface.coordinates(g2)
-    end
+    equals(g1,g2)
+end
+
+function Base.:(==)(pt1::Point, pt2::Point)
+    GeoInterface.coordinates(pt1) == GeoInterface.coordinates(pt2)
 end
 
 function Base.hash(g::AbstractGeometry, h::UInt)
