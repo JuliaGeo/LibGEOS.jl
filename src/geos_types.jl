@@ -368,5 +368,8 @@ function Base.:(==)(g1::AbstractGeometry, g2::AbstractGeometry)
 end
 
 function Base.hash(g::AbstractGeometry, h::UInt)
-    hash(GeoInterface.coordinates(g), h)
+    # since (==) is only up to a certain tolerance in LibGEOS
+    # hash must be constant in order to satisfy the hash invariant:
+    # g1 == g2 implies hash(g1,h) == hash(g2,h)
+    h
 end
