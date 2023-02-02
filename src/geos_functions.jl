@@ -534,7 +534,7 @@ function minimumRotatedRectangle(obj::Geometry, context::GEOSContext = get_conte
 end
 
 
-function intersection(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function intersection(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSIntersection_r(context, obj1, obj2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSIntersection")
@@ -554,7 +554,7 @@ function convexhull(obj::Geometry, context::GEOSContext = get_context(obj))
     geomFromGEOS(result, context)
 end
 
-function difference(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function difference(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSDifference_r(context, obj1, obj2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSDifference")
@@ -562,7 +562,7 @@ function difference(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_c
     geomFromGEOS(result, context)
 end
 
-function symmetricDifference(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function symmetricDifference(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSSymDifference_r(context, obj1, obj2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSSymDifference")
@@ -578,7 +578,7 @@ function boundary(obj::Geometry, context::GEOSContext = get_context(obj))
     geomFromGEOS(result, context)
 end
 
-function union(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function union(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSUnion_r(context, obj1, obj2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSUnion")
@@ -670,7 +670,7 @@ end
 #  - second element is a MULTILINESTRING containing shared paths
 #    having the _opposite_ direction on the two inputs
 # (Returns NULL on exception)
-function sharedPaths(obj1::LineString, obj2::LineString, context::GEOSContext = get_context(obj1,obj2))
+function sharedPaths(obj1::LineString, obj2::LineString, context::GEOSContext = get_context(obj1))
     result = GEOSSharedPaths_r(context, obj1, obj2)
     if result == C_NULL
         error("LibGEOS: Error in GEOSSharedPaths")
@@ -680,7 +680,7 @@ end
 
 # Snap first geometry on to second with given tolerance
 # (Returns a newly allocated geometry, or NULL on exception)
-function snap(obj1::Geometry, obj2::Geometry, tol::Real, context::GEOSContext = get_context(obj1,obj2))
+function snap(obj1::Geometry, obj2::Geometry, tol::Real, context::GEOSContext = get_context(obj1))
     result = GEOSSnap_r(context, obj1, obj2, tol)
     if result == C_NULL
         error("LibGEOS: Error in GEOSSnap")
@@ -728,7 +728,7 @@ end
 # -----
 # Binary predicates - return 2 on exception, 1 on true, 0 on false
 # -----
-function disjoint(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function disjoint(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSDisjoint_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSDisjoint")
@@ -736,7 +736,7 @@ function disjoint(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_con
     result != 0x00
 end
 
-function touches(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function touches(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSTouches_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSTouches")
@@ -744,7 +744,7 @@ function touches(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_cont
     result != 0x00
 end
 
-function intersects(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function intersects(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSIntersects_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSIntersects")
@@ -752,7 +752,7 @@ function intersects(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_c
     result != 0x00
 end
 
-function crosses(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function crosses(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSCrosses_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSCrosses")
@@ -760,7 +760,7 @@ function crosses(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_cont
     result != 0x00
 end
 
-function within(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function within(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSWithin_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSWithin")
@@ -768,7 +768,7 @@ function within(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_conte
     result != 0x00
 end
 
-function Base.contains(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function Base.contains(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSContains_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSContains")
@@ -776,7 +776,7 @@ function Base.contains(obj1::Geometry, obj2::Geometry, context::GEOSContext = ge
     result != 0x00
 end
 
-function overlaps(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function overlaps(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSOverlaps_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSOverlaps")
@@ -784,7 +784,7 @@ function overlaps(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_con
     result != 0x00
 end
 
-function equals(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function equals(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSEquals_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSEquals")
@@ -792,7 +792,7 @@ function equals(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_conte
     result != 0x00
 end
 
-function equalsexact(obj1::Geometry, obj2::Geometry, tol::Real, context::GEOSContext = get_context(obj1,obj2))
+function equalsexact(obj1::Geometry, obj2::Geometry, tol::Real, context::GEOSContext = get_context(obj1))
     result = GEOSEqualsExact_r(context, obj1, obj2, tol)
     if result == 0x02
         error("LibGEOS: Error in GEOSEqualsExact")
@@ -800,7 +800,7 @@ function equalsexact(obj1::Geometry, obj2::Geometry, tol::Real, context::GEOSCon
     result != 0x00
 end
 
-function covers(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function covers(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSCovers_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSCovers")
@@ -808,7 +808,7 @@ function covers(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_conte
     result != 0x00
 end
 
-function coveredby(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function coveredby(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSCoveredBy_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSCoveredBy")
@@ -836,7 +836,7 @@ end
 function Base.contains(
     obj1::PreparedGeometry,
     obj2::Geometry,
-    context::GEOSContext = get_context(obj1,obj2)
+    context::GEOSContext = get_context(obj1)
 )
     result = GEOSPreparedContains_r(context, obj1, obj2)
     if result == 0x02
@@ -848,7 +848,7 @@ end
 function containsproperly(
     obj1::PreparedGeometry,
     obj2::Geometry,
-    context::GEOSContext = get_context(obj1,obj2)
+    context::GEOSContext = get_context(obj1)
 )
     result = GEOSPreparedContainsProperly_r(context, obj1, obj2)
     if result == 0x02
@@ -860,7 +860,7 @@ end
 function coveredby(
     obj1::PreparedGeometry,
     obj2::Geometry,
-    context::GEOSContext = get_context(obj1,obj2)
+    context::GEOSContext = get_context(obj1)
 )
     result = GEOSPreparedCoveredBy_r(context, obj1, obj2)
     if result == 0x02
@@ -872,7 +872,7 @@ end
 function covers(
     obj1::PreparedGeometry,
     obj2::Geometry,
-    context::GEOSContext = get_context(obj1,obj2)
+    context::GEOSContext = get_context(obj1)
 )
     result = GEOSPreparedCovers_r(context, obj1, obj2)
     if result == 0x02
@@ -884,7 +884,7 @@ end
 function crosses(
     obj1::PreparedGeometry,
     obj2::Geometry,
-    context::GEOSContext = get_context(obj1,obj2)
+    context::GEOSContext = get_context(obj1)
 )
     result = GEOSPreparedCrosses_r(context, obj1, obj2)
     if result == 0x02
@@ -896,7 +896,7 @@ end
 function disjoint(
     obj1::PreparedGeometry,
     obj2::Geometry,
-    context::GEOSContext = get_context(obj1,obj2)
+    context::GEOSContext = get_context(obj1)
 )
     result = GEOSPreparedDisjoint_r(context, obj1, obj2)
     if result == 0x02
@@ -908,7 +908,7 @@ end
 function intersects(
     obj1::PreparedGeometry,
     obj2::Geometry,
-    context::GEOSContext = get_context(obj1,obj2)
+    context::GEOSContext = get_context(obj1)
 )
     result = GEOSPreparedIntersects_r(context, obj1, obj2)
     if result == 0x02
@@ -920,7 +920,7 @@ end
 function overlaps(
     obj1::PreparedGeometry,
     obj2::Geometry,
-    context::GEOSContext = get_context(obj1,obj2)
+    context::GEOSContext = get_context(obj1)
 )
     result = GEOSPreparedOverlaps_r(context, obj1, obj2)
     if result == 0x02
@@ -932,7 +932,7 @@ end
 function touches(
     obj1::PreparedGeometry,
     obj2::Geometry,
-    context::GEOSContext = get_context(obj1,obj2)
+    context::GEOSContext = get_context(obj1)
 )
     result = GEOSPreparedTouches_r(context, obj1, obj2)
     if result == 0x02
@@ -944,7 +944,7 @@ end
 function within(
     obj1::PreparedGeometry,
     obj2::Geometry,
-    context::GEOSContext = get_context(obj1,obj2)
+    context::GEOSContext = get_context(obj1)
 )
     result = GEOSPreparedWithin_r(context, obj1, obj2)
     if result == 0x02
@@ -1374,7 +1374,7 @@ function geomLength(obj::Geometry, context::GEOSContext = get_context(obj))
     out[]
 end
 
-function distance(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function distance(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
     result = GEOSDistance_r(context, obj1, obj2, out)
@@ -1384,7 +1384,7 @@ function distance(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_con
     out[]
 end
 
-function hausdorffdistance(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function hausdorffdistance(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
     result = GEOSHausdorffDistance_r(context, obj1, obj2, out)
@@ -1398,7 +1398,7 @@ function hausdorffdistance(
     obj1::Geometry,
     obj2::Geometry,
     densifyFrac::Real,
-    context::GEOSContext = get_context(obj1,obj2),
+    context::GEOSContext = get_context(obj1),
 )
     out = Ref{Float64}()
     # Return 0 on exception, 1 otherwise
@@ -1412,7 +1412,7 @@ end
 # Returns the closest points of the two geometries.
 # The first point comes from g1 geometry and the second point comes from g2.
 # Return 0 on exception, the closest points of the two geometries otherwise.
-function nearestPoints(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1,obj2))
+function nearestPoints(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     points = GEOSNearestPoints_r(context, obj1, obj2)
     if points == C_NULL
         return Point[]
