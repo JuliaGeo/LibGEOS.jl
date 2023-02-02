@@ -10,43 +10,6 @@ function Base.show(io::IO, geo::AbstractGeometry)
     end
 end
 
-"""
-
-    get_context(geom::AbstractGeometry)::GEOSContext
-    get_context(geometries...)::GEOSContext
-
-Return the `GEOSContext` that `geom` belongs to.
-It is also possible to pass multiple `geometries` to this function.
-"""
-function get_context end
-
-function get_context(gs::AbstractVector)::GEOSContext
-    if isempty(gs)
-        get_global_context() # is this a good idea?
-    else
-        ctx = get_context(first(gs))
-        _get_context(ctx, gs)
-    end
-end
-function get_context(g1::AbstractGeometry, g2, gs...)
-    ctx = get_context(g1)
-    _get_context(ctx, g2, gs...)
-end
-function _get_context(ctx::GEOSContext, gs::AbstractVector)
-    for g in gs
-        _get_context(ctx, g)
-    end
-    ctx
-end
-function _get_context(ctx::GEOSContext, g::AbstractGeometry)
-    ctx
-end
-function _get_context(ctx::GEOSContext, g, gs...)
-    _get_context(ctx, g)
-    _get_context(ctx, gs...)
-    return ctx
-end
-
 mutable struct Point <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
@@ -215,7 +178,7 @@ mutable struct Polygon <: AbstractGeometry
         polygon
     end
     # using multiple linear rings to form polygon with holes - exterior linear ring will be polygon boundary and list of interior linear rings will form holes
-    Polygon(exterior::LinearRing, holes::Vector{LinearRing}, context::GEOSContext = get_context(exterior, holes)) =
+    Polygon(exterior::LinearRing, holes::Vector{LinearRing}, context::GEOSContext = get_context(exterior)) =
         Polygon(
             createPolygon(exterior,
                           holes,
@@ -318,7 +281,15 @@ function clone(obj::Geometry, context=get_context(obj))
     G(obj, context)::G
 end
 
+"""
+
+    get_context(obj::AbstractGeometry)::GEOSContext
+
+Return the `GEOSContext` that `obj` belongs to. If obj is not a GEOS object with
+a context, return the global context.
+"""
 get_context(obj::Geometry) = obj.context
+get_context(obj::Any) = get_global_context()
 
 mutable struct PreparedGeometry{G<:AbstractGeometry} <: AbstractGeometry
     ptr::Ptr{GEOSPreparedGeometry}
