@@ -22,6 +22,7 @@ end
 @testset "Context mixing" begin
     ctx1 = LibGEOS.GEOSContext()
     ctx2 = LibGEOS.GEOSContext()
+    ctx3 = LibGEOS.GEOSContext()
     p = [[[-1.,-1],[+1,-1],[+1,+1],[-1,+1],[-1,-1]]]
     p1 = LibGEOS.Polygon(p, ctx1)
     p2 = LibGEOS.Polygon(p, ctx2)
@@ -31,10 +32,17 @@ end
     q2 = LibGEOS.Polygon(q, ctx2)
     @test LibGEOS.intersects(p1, q1)
     @test LibGEOS.intersects(p1, q1, ctx1)
+    @test LibGEOS.intersects(p1, q1, ctx2)
     @test LibGEOS.intersects(p2, q2)
+    @test LibGEOS.intersects(p2, q2, ctx1)
     @test LibGEOS.intersects(p2, q2, ctx2)
-    @test_throws ArgumentError LibGEOS.intersects(p1, q2)
-    @test_throws ArgumentError LibGEOS.intersects(p2, q1)
+    @test LibGEOS.intersects(p1, q2)
+    @test LibGEOS.intersects(p1, q2, ctx1)
+    @test LibGEOS.intersects(p1, q2, ctx2)
+    @test LibGEOS.intersects(p2, q1)
+    @test LibGEOS.intersects(p2, q1, ctx1)
+    @test LibGEOS.intersects(p2, q1, ctx2)
+    @test LibGEOS.intersects(p2, q1, ctx3)
 end
 
 @testset "show it like you build it" begin
