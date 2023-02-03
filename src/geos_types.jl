@@ -317,3 +317,36 @@ Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::WKTReader) = x.ptr
 Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::WKTWriter) = x.ptr
 Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::WKBReader) = x.ptr
 Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::WKBWriter) = x.ptr
+
+const GEOMTYPE = Dict{GEOSGeomTypes,Symbol}(
+    GEOS_POINT => :Point,
+    GEOS_LINESTRING => :LineString,
+    GEOS_LINEARRING => :LinearRing,
+    GEOS_POLYGON => :Polygon,
+    GEOS_MULTIPOINT => :MultiPoint,
+    GEOS_MULTILINESTRING => :MultiLineString,
+    GEOS_MULTIPOLYGON => :MultiPolygon,
+    GEOS_GEOMETRYCOLLECTION => :GeometryCollection,
+)
+
+function geomFromGEOS(ptr::Union{Geometry, Ptr{Cvoid}}, context::GEOSContext = get_global_context())
+    id = geomTypeId(ptr, context)
+    if id == GEOS_POINT
+        return Point(ptr, context)
+    elseif id == GEOS_LINESTRING
+        return LineString(ptr, context)
+    elseif id == GEOS_LINEARRING
+        return LinearRing(ptr, context)
+    elseif id == GEOS_POLYGON
+        return Polygon(ptr, context)
+    elseif id == GEOS_MULTIPOINT
+        return MultiPoint(ptr, context)
+    elseif id == GEOS_MULTILINESTRING
+        return MultiLineString(ptr, context)
+    elseif id == GEOS_MULTIPOLYGON
+        return MultiPolygon(ptr, context)
+    else
+        @assert id == GEOS_GEOMETRYCOLLECTION
+        return GeometryCollection(ptr, context)
+    end
+end

@@ -244,7 +244,6 @@ end
 
 include("geos_types.jl")
 include("geos_functions.jl")
-include("geos_operations.jl")
 include("geo_interface.jl")
 include("strtree.jl")
 
