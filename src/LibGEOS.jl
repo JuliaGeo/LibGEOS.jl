@@ -246,5 +246,6 @@ include("geos_types.jl")
 include("geos_functions.jl")
 include("geo_interface.jl")
 include("strtree.jl")
+include("deprecated.jl")
 
 end  # module
