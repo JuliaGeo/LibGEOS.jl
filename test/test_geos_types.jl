@@ -362,13 +362,31 @@ end
             g1 = LibGEOS.Polygon(p, ctx)
             g2 = LibGEOS.Polygon(p, ctx)
             for j=1:n
-                LibGEOS.intersects(g1, g2, ctx)
+                @test LibGEOS.intersects(g1, g2, ctx)
             end
         end
         GC.gc(true)
         return nothing
     end
-    f91(91)
+    @test f91(91) === nothing
+    function f91_mixed_contexts(n)
+        nthread = Threads.nthreads()
+        contexts = [LibGEOS.GEOSContext() for i=1:nthread]
+        p = [[[-1.,-1],[+1,-1],[+1,+1],[-1,+1],[-1,-1]]]
+        Threads.@threads :static for i=1:n
+            ctx1 = contexts[rand(1:nthread)]
+            ctx2 = contexts[rand(1:nthread)]
+            ctx3 = contexts[rand(1:nthread)]
+            g1 = LibGEOS.Polygon(p, ctx1)
+            g2 = LibGEOS.Polygon(p, ctx2)
+            for j=1:n
+                @test LibGEOS.intersects(g1, g2, ctx3)
+            end
+        end
+        GC.gc(true)
+        return nothing
+    end
+    @test f91_mixed_contexts(91) === nothing
     @testset "clone" begin
         function f(n)
             # adapted from https://github.com/JuliaGeo/LibGEOS.jl/issues/91#issuecomment-1267732709
@@ -379,13 +397,13 @@ end
                 g1 = LibGEOS.clone(p,ctx)
                 g2 = LibGEOS.clone(p,ctx)
                 for j=1:n
-                    intersects(g1,g2)
+                    @test intersects(g1,g2)
                 end
             end
             GC.gc(true)
             return nothing
         end
-        f(91)
+        @test f(91) === nothing
     end
 end
 
