@@ -53,7 +53,7 @@ end
           Vector{Float64}[[1, 2, 3], [3, 3, 3], [7, 8, 9], [10, 11, 12]]
     @test_throws ErrorException LibGEOS.getCoordinates(b, 0)
     @test_throws ErrorException LibGEOS.getCoordinates(b, 5)
-    c = LibGEOS.createPoint(LibGEOS.createCoordSeq(Vector{Float64}[[1, 2]]))
+    c = LibGEOS.Point(1, 2)
     @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(c))[1] ≈ [1, 2] atol = 1e-5
 
     # isCCW
@@ -64,17 +64,17 @@ end
     @test !LibGEOS.isCCW(a)
 
     # Polygons and Holes
-    shell = LibGEOS.createLinearRing(
+    shell = LibGEOS.LinearRing(
         Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]],
     )
     hole1 =
-        LibGEOS.createLinearRing(Vector{Float64}[[1, 8], [2, 8], [2, 9], [1, 9], [1, 8]])
+        LibGEOS.LinearRing(Vector{Float64}[[1, 8], [2, 8], [2, 9], [1, 9], [1, 8]])
     hole2 =
-        LibGEOS.createLinearRing(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]])
-    polygon = LibGEOS.createPolygon(shell, LibGEOS.GEOSGeom[hole1, hole2])
+        LibGEOS.LinearRing(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]])
+    polygon = LibGEOS.Polygon(shell, [hole1, hole2])
     @test LibGEOS.getGeomDimensions(polygon) == 2
     @test LibGEOS.geomTypeId(polygon) == LibGEOS.GEOS_POLYGON
-    @test LibGEOS.geomArea(polygon) ≈ 98.0 atol = 1e-5
+    @test LibGEOS.area(polygon) ≈ 98.0 atol = 1e-5
     exterior = LibGEOS.exteriorRing(polygon)
     @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(exterior)) ==
           Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]
@@ -90,25 +90,25 @@ end
     @test LibGEOS.getCoordinates(LibGEOS.getCoordSeq(interiors[2])) ==
           Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]]
 
-    exterior_poly = LibGEOS.createPolygon(exterior)
+    exterior_poly = LibGEOS.Polygon(exterior)
     @test LibGEOS.getGeomDimensions(exterior_poly) == 2
     @test LibGEOS.geomTypeId(exterior_poly) == LibGEOS.GEOS_POLYGON
-    @test LibGEOS.geomArea(exterior_poly) ≈ 100.0 atol = 1e-5
+    @test LibGEOS.area(exterior_poly) ≈ 100.0 atol = 1e-5
     @test_throws ErrorException LibGEOS.interiorRing(exterior_poly, 1)
     @test LibGEOS.equals(LibGEOS.exteriorRing(exterior_poly), exterior)
 
 
     # Interpolation and Projection
-    ls = LibGEOS.createLineString(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2]])
+    ls = LibGEOS.LineString(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2]])
     pt = LibGEOS.interpolate(ls, 2.5)
     coords = LibGEOS.getCoordinates(LibGEOS.getCoordSeq(pt))
     @test length(coords) == 1
     @test coords[1] ≈ [8.5, 2.0] atol = 1e-5
-    p1 = LibGEOS.createPoint(Float64[10, 1])
-    p2 = LibGEOS.createPoint(Float64[9, 1])
-    p3 = LibGEOS.createPoint(Float64[10, 0])
-    p4 = LibGEOS.createPoint(Float64[9, 2])
-    p5 = LibGEOS.createPoint(Float64[8.7, 1.5])
+    p1 = Point(10, 1)
+    p2 = Point(9, 1)
+    p3 = Point(10, 0)
+    p4 = Point(9, 2)
+    p5 = Point(8.7, 1.5)
     dist = LibGEOS.project(ls, p1)
     @test dist ≈ 1 atol = 1e-5
     @test LibGEOS.equals(LibGEOS.interpolate(ls, dist), p2)
@@ -121,32 +121,32 @@ end
     # Taken from https://svn.osgeo.org/geos/trunk/tests/unit/capi/
 
     # GEOSContainsTest
-    geom1_ = LibGEOS._readgeom("POLYGON EMPTY")
-    geom2_ = LibGEOS._readgeom("POLYGON EMPTY")
+    geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
+    geom2_ = LibGEOS.readgeom("POLYGON EMPTY")
     @test !contains(geom1_, geom2_)
     @test !contains(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
-    geom1_ = LibGEOS._readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
-    geom2_ = LibGEOS._readgeom("POINT(2 2)")
+    geom1_ = LibGEOS.readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
+    geom2_ = LibGEOS.readgeom("POINT(2 2)")
     @test contains(geom1_, geom2_)
     @test !contains(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
-    geom1_ = LibGEOS._readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
-    geom2_ = LibGEOS._readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))")
+    geom1_ = LibGEOS.readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
+    geom2_ = LibGEOS.readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))")
     @test contains(geom1_, geom2_)
     @test !contains(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
     # GEOSConvexHullTest
-    input_ = LibGEOS._readgeom(
+    input_ = LibGEOS.readgeom(
         "MULTIPOINT (130 240, 130 240, 130 240, 570 240, 570 240, 570 240, 650 240)",
     )
-    expected_ = LibGEOS._readgeom("LINESTRING (130 240, 650 240)")
+    expected_ = LibGEOS.readgeom("LINESTRING (130 240, 650 240)")
     output_ = LibGEOS.convexhull(input_)
     @test !LibGEOS.isEmpty(output_)
     @test LibGEOS.equals(output_, expected_)
@@ -226,7 +226,7 @@ end
     @test LibGEOS.getZ(cs_, 1) ≈ z atol = 1e-5
 
     # LibGEOS.delaunayTriangulationTest
-    geom1_ = LibGEOS._readgeom("POLYGON EMPTY")
+    geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
     @test LibGEOS.isEmpty(geom1_)
     geom2_ = LibGEOS.delaunayTriangulation(geom1_, 0.0, true)
     @test LibGEOS.isEmpty(geom2_)
@@ -234,59 +234,59 @@ end
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
-    geom1_ = LibGEOS._readgeom("POINT(0 0)")
+    geom1_ = LibGEOS.readgeom("POINT(0 0)")
     geom2_ = LibGEOS.delaunayTriangulation(geom1_, 0.0, false)
     @test LibGEOS.isEmpty(geom2_)
     @test LibGEOS.geomTypeId(geom2_) == LibGEOS.GEOS_GEOMETRYCOLLECTION
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
-    geom1_ = LibGEOS._readgeom("MULTIPOINT(0 0, 5 0, 10 0)")
+    geom1_ = LibGEOS.readgeom("MULTIPOINT(0 0, 5 0, 10 0)")
     geom2_ = LibGEOS.delaunayTriangulation(geom1_, 0.0, false)
     @test LibGEOS.isEmpty(geom2_)
     @test LibGEOS.geomTypeId(geom2_) == LibGEOS.GEOS_GEOMETRYCOLLECTION
     LibGEOS.destroyGeom(geom2_)
     geom2_ = LibGEOS.delaunayTriangulation(geom1_, 0.0, true)
-    geom3_ = LibGEOS._readgeom("MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))")
+    geom3_ = LibGEOS.readgeom("MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("MULTIPOINT(0 0, 10 0, 10 10, 11 10)")
+    geom1_ = LibGEOS.readgeom("MULTIPOINT(0 0, 10 0, 10 10, 11 10)")
     geom2_ = LibGEOS.delaunayTriangulation(geom1_, 2.0, true)
-    geom3_ = LibGEOS._readgeom("MULTILINESTRING ((0 0, 10 10), (0 0, 10 0), (10 0, 10 10))")
+    geom3_ = LibGEOS.readgeom("MULTILINESTRING ((0 0, 10 10), (0 0, 10 0), (10 0, 10 10))")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
     # GEOSDistanceTest
-    geom1_ = LibGEOS._readgeom("POINT(10 10)")
-    geom2_ = LibGEOS._readgeom("POINT(3 6)")
-    @test LibGEOS.geomDistance(geom1_, geom2_) ≈ 8.06225774829855 atol = 1e-12
+    geom1_ = LibGEOS.readgeom("POINT(10 10)")
+    geom2_ = LibGEOS.readgeom("POINT(3 6)")
+    @test LibGEOS.distance(geom1_, geom2_) ≈ 8.06225774829855 atol = 1e-12
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
     # GEOSGeom_extractUniquePointsTest
-    geom1_ = LibGEOS._readgeom("POLYGON EMPTY")
+    geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
     geom2_ = LibGEOS.uniquePoints(geom1_)
     @test LibGEOS.isEmpty(geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
-    geom1_ = LibGEOS._readgeom("MULTIPOINT(0 0, 0 0, 1 1)")
-    geom2_ = LibGEOS._readgeom("MULTIPOINT(0 0, 1 1)")
+    geom1_ = LibGEOS.readgeom("MULTIPOINT(0 0, 0 0, 1 1)")
+    geom2_ = LibGEOS.readgeom("MULTIPOINT(0 0, 1 1)")
     geom3_ = LibGEOS.uniquePoints(geom1_)
     @test LibGEOS.equals(geom3_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom(
+    geom1_ = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION(MULTIPOINT(0 0, 0 0, 1 1),LINESTRING(1 1, 2 2, 2 2, 0 0),POLYGON((5 5, 0 0, 0 2, 2 2, 5 5)))",
     )
-    geom2_ = LibGEOS._readgeom("MULTIPOINT(0 0, 1 1, 2 2, 5 5, 0 2)")
+    geom2_ = LibGEOS.readgeom("MULTIPOINT(0 0, 1 1, 2 2, 5 5, 0 2)")
     geom3_ = LibGEOS.uniquePoints(geom1_)
     @test LibGEOS.equals(geom3_, geom2_)
     LibGEOS.destroyGeom(geom1_)
@@ -294,73 +294,73 @@ end
     LibGEOS.destroyGeom(geom3_)
 
     # GEOSGetCentroidTest
-    geom1_ = LibGEOS._readgeom("POINT(10 0)")
+    geom1_ = LibGEOS.readgeom("POINT(10 0)")
     geom2_ = LibGEOS.centroid(geom1_)
-    geom3_ = LibGEOS._readgeom("POINT (10 0)")
+    geom3_ = LibGEOS.readgeom("POINT (10 0)")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING(0 0, 10 0)")
+    geom1_ = LibGEOS.readgeom("LINESTRING(0 0, 10 0)")
     geom2_ = LibGEOS.centroid(geom1_)
-    geom3_ = LibGEOS._readgeom("POINT (5 0)")
+    geom3_ = LibGEOS.readgeom("POINT (5 0)")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))")
+    geom1_ = LibGEOS.readgeom("POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))")
     geom2_ = LibGEOS.centroid(geom1_)
-    geom3_ = LibGEOS._readgeom("POINT (5 5)")
+    geom3_ = LibGEOS.readgeom("POINT (5 5)")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING EMPTY")
+    geom1_ = LibGEOS.readgeom("LINESTRING EMPTY")
     geom2_ = LibGEOS.centroid(geom1_)
-    geom3_ = LibGEOS._readgeom("POINT EMPTY")
+    geom3_ = LibGEOS.readgeom("POINT EMPTY")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
     # GEOSIntersectionTest
-    geom1_ = LibGEOS._readgeom("POLYGON EMPTY")
-    geom2_ = LibGEOS._readgeom("POLYGON EMPTY")
+    geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
+    geom2_ = LibGEOS.readgeom("POLYGON EMPTY")
     geom3_ = LibGEOS.intersection(geom1_, geom2_)
-    geom4_ = LibGEOS._readgeom("GEOMETRYCOLLECTION EMPTY")
+    geom4_ = LibGEOS.readgeom("GEOMETRYCOLLECTION EMPTY")
     @test LibGEOS.equals(geom3_, geom4_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
     LibGEOS.destroyGeom(geom4_)
 
-    geom1_ = LibGEOS._readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
-    geom2_ = LibGEOS._readgeom("POINT(2 2)")
+    geom1_ = LibGEOS.readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
+    geom2_ = LibGEOS.readgeom("POINT(2 2)")
     geom3_ = LibGEOS.intersection(geom1_, geom2_)
     @test LibGEOS.equals(geom3_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
-    geom2_ = LibGEOS._readgeom("POLYGON((-1 1,-1 2,2 2,2 1,-1 1))")
+    geom1_ = LibGEOS.readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
+    geom2_ = LibGEOS.readgeom("POLYGON((-1 1,-1 2,2 2,2 1,-1 1))")
     geom3_ = LibGEOS.intersection(geom1_, geom2_)
-    geom4_ = LibGEOS._readgeom("POLYGON ((0 1, 0 2, 2 2, 2 1, 0 1))")
+    geom4_ = LibGEOS.readgeom("POLYGON ((0 1, 0 2, 2 2, 2 1, 0 1))")
     @test LibGEOS.equals(geom3_, geom4_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
     LibGEOS.destroyGeom(geom4_)
 
-    geom1_ = LibGEOS._readgeom(
+    geom1_ = LibGEOS.readgeom(
         "MULTIPOLYGON(((0 0,5 10,10 0,0 0),(1 1,1 2,2 2,2 1,1 1),(100 100,100 102,102 102,102 100,100 100)))",
     )
-    geom2_ = LibGEOS._readgeom("POLYGON((0 1,0 2,10 2,10 1,0 1))")
+    geom2_ = LibGEOS.readgeom("POLYGON((0 1,0 2,10 2,10 1,0 1))")
     geom3_ = LibGEOS.intersection(geom1_, geom2_)
-    geom4_ = LibGEOS._readgeom(
+    geom4_ = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION (LINESTRING (1 2, 2 2), LINESTRING (2 1, 1 1), POLYGON ((0.5 1, 1 2, 1 1, 0.5 1)), POLYGON ((9 2, 9.5 1, 2 1, 2 2, 9 2)))",
     )
     @test LibGEOS.equals(geom3_, geom4_)
@@ -370,28 +370,28 @@ end
     LibGEOS.destroyGeom(geom4_)
 
     # GEOSIntersectsTest
-    geom1_ = LibGEOS._readgeom("POLYGON EMPTY")
-    geom2_ = LibGEOS._readgeom("POLYGON EMPTY")
+    geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
+    geom2_ = LibGEOS.readgeom("POLYGON EMPTY")
     @test !LibGEOS.intersects(geom1_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
-    geom1_ = LibGEOS._readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
-    geom2_ = LibGEOS._readgeom("POINT(2 2)")
+    geom1_ = LibGEOS.readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
+    geom2_ = LibGEOS.readgeom("POINT(2 2)")
     @test LibGEOS.intersects(geom1_, geom2_)
     @test LibGEOS.intersects(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
-    geom1_ = LibGEOS._readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
-    geom2_ = LibGEOS._readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))")
+    geom1_ = LibGEOS.readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
+    geom2_ = LibGEOS.readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))")
     @test LibGEOS.intersects(geom1_, geom2_)
     @test LibGEOS.intersects(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
     # LineString_PointTest
-    geom1 = LibGEOS._readgeom("LINESTRING(0 0, 5 5, 10 10)")
+    geom1 = LibGEOS.readgeom("LINESTRING(0 0, 5 5, 10 10)")
     @test !LibGEOS.isClosed(geom1)
     @test LibGEOS.geomTypeId(geom1) == LibGEOS.GEOS_LINESTRING
     @test LibGEOS.numPoints(geom1) == 3
@@ -418,27 +418,29 @@ end
     LibGEOS.destroyGeom(geom2)
 
     # GEOSNearestPointsTest
-    geom1_ = LibGEOS._readgeom("POLYGON EMPTY")
-    geom2_ = LibGEOS._readgeom("POLYGON EMPTY")
-    @test LibGEOS.nearestPoints(geom1_, geom2_) == C_NULL
+    geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
+    geom2_ = LibGEOS.readgeom("POLYGON EMPTY")
+    @test LibGEOS.nearestPoints(geom1_, geom2_) == Point[]
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
-    geom1_ = LibGEOS._readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
-    geom2_ = LibGEOS._readgeom("POLYGON((8 8, 9 9, 9 10, 8 8))")
+    geom1_ = LibGEOS.readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
+    geom2_ = LibGEOS.readgeom("POLYGON((8 8, 9 9, 9 10, 8 8))")
     coords_ = LibGEOS.nearestPoints(geom1_, geom2_)
-    @test LibGEOS.getSize(coords_) == 2
-    @test LibGEOS.getCoordinates(coords_, 1)[1:2] ≈ [5.0, 5.0] atol = 1e-5
-    @test LibGEOS.getCoordinates(coords_, 2)[1:2] ≈ [8.0, 8.0] atol = 1e-5
+    @test coords_ isa Vector{Point}
+    @test length(coords_) == 2
+    @test GeoInterface.coordinates(coords_[1]) ≈ [5.0, 5.0] atol = 1e-5
+    @test GeoInterface.coordinates(coords_[2]) ≈ [8.0, 8.0] atol = 1e-5
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
-    LibGEOS.destroyCoordSeq(coords_)
+    LibGEOS.destroyGeom(coords_[1])
+    LibGEOS.destroyGeom(coords_[2])
 
     # GEOSNodeTest
-    geom1_ = LibGEOS._readgeom("LINESTRING(0 0, 10 10, 10 0, 0 10)")
+    geom1_ = LibGEOS.readgeom("LINESTRING(0 0, 10 10, 10 0, 0 10)")
     geom2_ = LibGEOS.node(geom1_)
     LibGEOS.normalize!(geom2_)
-    geom3_ = LibGEOS._readgeom(
+    geom3_ = LibGEOS.readgeom(
         "MULTILINESTRING ((5 5, 10 0, 10 10, 5 5), (0 10, 5 5), (0 0, 5 5))",
     )
     @test equals(geom2_, geom3_)
@@ -446,10 +448,10 @@ end
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("MULTILINESTRING((0 0, 2 0, 4 0),(5 0, 3 0, 1 0))")
+    geom1_ = LibGEOS.readgeom("MULTILINESTRING((0 0, 2 0, 4 0),(5 0, 3 0, 1 0))")
     geom2_ = LibGEOS.node(geom1_)
     LibGEOS.normalize!(geom2_)
-    geom3_ = LibGEOS._readgeom(
+    geom3_ = LibGEOS.readgeom(
         "MULTILINESTRING ((4 0, 5 0), (3 0, 4 0), (2 0, 3 0), (1 0, 2 0), (0 0, 1 0))",
     )
     @test LibGEOS.equals(geom2_, geom3_)
@@ -457,41 +459,41 @@ end
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("MULTILINESTRING((0 0, 2 0, 4 0),(0 0, 2 0, 4 0))")
+    geom1_ = LibGEOS.readgeom("MULTILINESTRING((0 0, 2 0, 4 0),(0 0, 2 0, 4 0))")
     geom2_ = LibGEOS.node(geom1_)
     LibGEOS.normalize!(geom2_)
-    geom3_ = LibGEOS._readgeom("MULTILINESTRING ((2 0, 4 0), (0 0, 2 0))")
+    geom3_ = LibGEOS.readgeom("MULTILINESTRING ((2 0, 4 0), (0 0, 2 0))")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
     # GEOSPointOnSurfaceTest
-    geom1_ = LibGEOS._readgeom("POINT(10 0)")
+    geom1_ = LibGEOS.readgeom("POINT(10 0)")
     geom2_ = LibGEOS.pointOnSurface(geom1_)
-    geom3_ = LibGEOS._readgeom("POINT (10 0)")
+    geom3_ = LibGEOS.readgeom("POINT (10 0)")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING(0 0, 5 0, 10 0)")
+    geom1_ = LibGEOS.readgeom("LINESTRING(0 0, 5 0, 10 0)")
     geom2_ = LibGEOS.pointOnSurface(geom1_)
-    geom3_ = LibGEOS._readgeom("POINT (5 0)")
+    geom3_ = LibGEOS.readgeom("POINT (5 0)")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))")
+    geom1_ = LibGEOS.readgeom("POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))")
     geom2_ = LibGEOS.pointOnSurface(geom1_)
-    geom3_ = LibGEOS._readgeom("POINT (5 5)")
+    geom3_ = LibGEOS.readgeom("POINT (5 5)")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("""POLYGON((
+    geom1_ = LibGEOS.readgeom("""POLYGON((
                                56.528666666700 25.2101666667,
                                56.529000000000 25.2105000000,
                                56.528833333300 25.2103333333,
@@ -502,17 +504,17 @@ end
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING EMPTY")
+    geom1_ = LibGEOS.readgeom("LINESTRING EMPTY")
     geom2_ = LibGEOS.pointOnSurface(geom1_)
-    geom3_ = LibGEOS._readgeom("POINT EMPTY")
+    geom3_ = LibGEOS.readgeom("POINT EMPTY")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING(0 0, 0 0)")
+    geom1_ = LibGEOS.readgeom("LINESTRING(0 0, 0 0)")
     geom2_ = LibGEOS.pointOnSurface(geom1_)
-    geom3_ = LibGEOS._readgeom("POINT (0 0)")
+    geom3_ = LibGEOS.readgeom("POINT (0 0)")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
@@ -520,56 +522,56 @@ end
 
     # GEOSPreparedGeometryTest
 
-    geom1_ = LibGEOS._readgeom("POLYGON EMPTY")
+    geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
     prepGeom1_ = LibGEOS.prepareGeom(geom1_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyPreparedGeom(prepGeom1_)
 
-    geom1_ = LibGEOS._readgeom("POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))")
-    geom2_ = LibGEOS._readgeom("POLYGON((2 2, 2 3, 3 3, 3 2, 2 2))")
+    geom1_ = LibGEOS.readgeom("POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))")
+    geom2_ = LibGEOS.readgeom("POLYGON((2 2, 2 3, 3 3, 3 2, 2 2))")
     prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-    @test LibGEOS.prepcontainsproperly(prepGeom1_, geom2_)
-    LibGEOS.destroyGeom(geom1_)
-    LibGEOS.destroyGeom(geom2_)
-    LibGEOS.destroyPreparedGeom(prepGeom1_)
-
-    geom1_ = LibGEOS._readgeom("POLYGON((2 2, 2 3, 3 3, 3 2, 2 2))")
-    geom2_ = LibGEOS._readgeom("POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))")
-    prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-    @test !LibGEOS.prepcontainsproperly(prepGeom1_, geom2_)
+    @test LibGEOS.containsproperly(prepGeom1_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyPreparedGeom(prepGeom1_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING(0 0, 10 10)")
-    geom2_ = LibGEOS._readgeom("LINESTRING(0 10, 10 0)")
+    geom1_ = LibGEOS.readgeom("POLYGON((2 2, 2 3, 3 3, 3 2, 2 2))")
+    geom2_ = LibGEOS.readgeom("POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))")
     prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-    @test LibGEOS.prepintersects(prepGeom1_, geom2_)
+    @test !LibGEOS.containsproperly(prepGeom1_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyPreparedGeom(prepGeom1_)
 
-    geom1_ = LibGEOS._readgeom("POLYGON((0 0, 0 10, 10 11, 10 0, 0 0))")
-    geom2_ = LibGEOS._readgeom("POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))")
+    geom1_ = LibGEOS.readgeom("LINESTRING(0 0, 10 10)")
+    geom2_ = LibGEOS.readgeom("LINESTRING(0 10, 10 0)")
     prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-    @test LibGEOS.prepcovers(prepGeom1_, geom2_)
+    @test LibGEOS.intersects(prepGeom1_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyPreparedGeom(prepGeom1_)
 
-    geom1_ = LibGEOS._readgeom("POLYGON((0 0, 0 10, 10 11, 10 0, 0 0))")
-    geom2_ = LibGEOS._readgeom("POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))")
+    geom1_ = LibGEOS.readgeom("POLYGON((0 0, 0 10, 10 11, 10 0, 0 0))")
+    geom2_ = LibGEOS.readgeom("POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))")
     prepGeom1_ = LibGEOS.prepareGeom(geom1_)
-    @test LibGEOS.prepcontains(prepGeom1_, geom2_)
+    @test LibGEOS.covers(prepGeom1_, geom2_)
+    LibGEOS.destroyGeom(geom1_)
+    LibGEOS.destroyGeom(geom2_)
+    LibGEOS.destroyPreparedGeom(prepGeom1_)
+
+    geom1_ = LibGEOS.readgeom("POLYGON((0 0, 0 10, 10 11, 10 0, 0 0))")
+    geom2_ = LibGEOS.readgeom("POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))")
+    prepGeom1_ = LibGEOS.prepareGeom(geom1_)
+    @test LibGEOS.contains(prepGeom1_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyPreparedGeom(prepGeom1_)
 
     # GEOSSharedPathsTest
-    geom1_ = LibGEOS._readgeom("LINESTRING (-30 -20, 50 60, 50 70, 50 0)")
-    geom2_ = LibGEOS._readgeom("LINESTRING (-29 -20, 50 60, 50 70, 51 0)")
+    geom1_ = LibGEOS.readgeom("LINESTRING (-30 -20, 50 60, 50 70, 50 0)")
+    geom2_ = LibGEOS.readgeom("LINESTRING (-29 -20, 50 60, 50 70, 51 0)")
     geom3_ = LibGEOS.sharedPaths(geom1_, geom2_)
-    geom4_ = LibGEOS._readgeom(
+    geom4_ = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION (MULTILINESTRING ((50 60, 50 70)), MULTILINESTRING EMPTY)",
     )
     @test LibGEOS.equals(geom3_, geom4_)
@@ -589,13 +591,13 @@ end
     # }
 
     # http://trac.osgeo.org/postgis/ticket/670#comment:3
-    # geom1_ = LibGEOS._readgeom("POINT(-11.1111111 40)")
-    # geom2_ = LibGEOS._readgeom("POLYGON((-8.1111111 60,-8.16875525879031 59.4147290339516,-8.33947250246614 58.8519497029047,-8.61670226309236 58.3332893009412,-8.98979075644036 57.8786796564404,-9.44440040094119 57.5055911630924,-9.96306080290473 57.2283614024661,-10.5258401339516 57.0576441587903,-11.1111111 57,-11.6963820660484 57.0576441587903,-12.2591613970953 57.2283614024661,-12.7778217990588 57.5055911630924,-13.2324314435596 57.8786796564404,-13.6055199369076 58.3332893009412,-13.8827496975339 58.8519497029047,-14.0534669412097 59.4147290339516,-14.1111111 60,-14.0534669412097 60.5852709660484,-13.8827496975339 61.1480502970953,-13.6055199369076 61.6667106990588,-13.2324314435597 62.1213203435596,-12.7778217990588 62.4944088369076,-12.2591613970953 62.7716385975339,-11.6963820660484 62.9423558412097,-11.1111111 63,-10.5258401339516 62.9423558412097,-9.96306080290474 62.7716385975339,-9.4444004009412 62.4944088369076,-8.98979075644036 62.1213203435596,-8.61670226309237 61.6667106990588,-8.33947250246614 61.1480502970953,-8.16875525879031 60.5852709660484,-8.1111111 60))")
+    # geom1_ = LibGEOS.readgeom("POINT(-11.1111111 40)")
+    # geom2_ = LibGEOS.readgeom("POLYGON((-8.1111111 60,-8.16875525879031 59.4147290339516,-8.33947250246614 58.8519497029047,-8.61670226309236 58.3332893009412,-8.98979075644036 57.8786796564404,-9.44440040094119 57.5055911630924,-9.96306080290473 57.2283614024661,-10.5258401339516 57.0576441587903,-11.1111111 57,-11.6963820660484 57.0576441587903,-12.2591613970953 57.2283614024661,-12.7778217990588 57.5055911630924,-13.2324314435596 57.8786796564404,-13.6055199369076 58.3332893009412,-13.8827496975339 58.8519497029047,-14.0534669412097 59.4147290339516,-14.1111111 60,-14.0534669412097 60.5852709660484,-13.8827496975339 61.1480502970953,-13.6055199369076 61.6667106990588,-13.2324314435597 62.1213203435596,-12.7778217990588 62.4944088369076,-12.2591613970953 62.7716385975339,-11.6963820660484 62.9423558412097,-11.1111111 63,-10.5258401339516 62.9423558412097,-9.96306080290474 62.7716385975339,-9.4444004009412 62.4944088369076,-8.98979075644036 62.1213203435596,-8.61670226309237 61.6667106990588,-8.33947250246614 61.1480502970953,-8.16875525879031 60.5852709660484,-8.1111111 60))")
     # geom3_ = LibGEOS.sharedPaths(geom1_, geom2_)
     # ensure(!geom3_)
 
     # GEOSSimplifyTest
-    geom1_ = LibGEOS._readgeom("POLYGON EMPTY")
+    geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
     @test LibGEOS.isEmpty(geom1_)
     geom2_ = LibGEOS.simplify(geom1_, 43.2)
     @test LibGEOS.isEmpty(geom2_)
@@ -604,97 +606,97 @@ end
 
     # GEOSSnapTest
 
-    geom1_ = LibGEOS._readgeom("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))")
-    geom2_ = LibGEOS._readgeom("POINT(0.5 0)")
+    geom1_ = LibGEOS.readgeom("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))")
+    geom2_ = LibGEOS.readgeom("POINT(0.5 0)")
     geom3_ = LibGEOS.snap(geom1_, geom2_, 1.0)
-    geom4_ = LibGEOS._readgeom("POLYGON ((0.5 0, 10 0, 10 10, 0 10, 0.5 0))")
+    geom4_ = LibGEOS.readgeom("POLYGON ((0.5 0, 10 0, 10 10, 0 10, 0.5 0))")
     @test LibGEOS.equals(geom3_, geom4_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
     LibGEOS.destroyGeom(geom4_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING (-30 -20, 50 60, 50 0)")
-    geom2_ = LibGEOS._readgeom("LINESTRING (-29 -20, 40 60, 51 0)")
+    geom1_ = LibGEOS.readgeom("LINESTRING (-30 -20, 50 60, 50 0)")
+    geom2_ = LibGEOS.readgeom("LINESTRING (-29 -20, 40 60, 51 0)")
     geom3_ = LibGEOS.snap(geom1_, geom2_, 2.0)
-    geom4_ = LibGEOS._readgeom("LINESTRING (-29 -20, 50 60, 51 0)")
+    geom4_ = LibGEOS.readgeom("LINESTRING (-29 -20, 50 60, 51 0)")
     @test LibGEOS.equals(geom3_, geom4_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
     LibGEOS.destroyGeom(geom4_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING (-20 -20, 50 50, 100 100)")
-    geom2_ = LibGEOS._readgeom("LINESTRING (-10 -9, 40 20, 80 79)")
+    geom1_ = LibGEOS.readgeom("LINESTRING (-20 -20, 50 50, 100 100)")
+    geom2_ = LibGEOS.readgeom("LINESTRING (-10 -9, 40 20, 80 79)")
     geom3_ = LibGEOS.snap(geom1_, geom2_, 2.0)
-    geom4_ = LibGEOS._readgeom("LINESTRING (-20 -20, -10 -9, 50 50, 80 79, 100 100)")
+    geom4_ = LibGEOS.readgeom("LINESTRING (-20 -20, -10 -9, 50 50, 80 79, 100 100)")
     @test LibGEOS.equals(geom3_, geom4_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
     LibGEOS.destroyGeom(geom4_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING(0 0, 10 0)")
-    geom2_ = LibGEOS._readgeom("LINESTRING(0 0, 9 0)")
-    geom3_ = LibGEOS.snap(geom1_, geom2_, 2.0)
-    @test LibGEOS.equals(geom3_, geom2_)
-    LibGEOS.destroyGeom(geom1_)
-    LibGEOS.destroyGeom(geom2_)
-    LibGEOS.destroyGeom(geom3_)
-
-    geom1_ = LibGEOS._readgeom("LINESTRING(0 0, 10 0)")
-    geom2_ = LibGEOS._readgeom("LINESTRING(0 0, 9 0, 10 0, 11 0)")
+    geom1_ = LibGEOS.readgeom("LINESTRING(0 0, 10 0)")
+    geom2_ = LibGEOS.readgeom("LINESTRING(0 0, 9 0)")
     geom3_ = LibGEOS.snap(geom1_, geom2_, 2.0)
     @test LibGEOS.equals(geom3_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING(0 3,4 1,0 1)")
-    geom2_ = LibGEOS._readgeom("MULTIPOINT(5 0,4 1)")
+    geom1_ = LibGEOS.readgeom("LINESTRING(0 0, 10 0)")
+    geom2_ = LibGEOS.readgeom("LINESTRING(0 0, 9 0, 10 0, 11 0)")
     geom3_ = LibGEOS.snap(geom1_, geom2_, 2.0)
-    geom4_ = LibGEOS._readgeom("LINESTRING (0 3, 4 1, 5 0, 0 1)")
-    @test LibGEOS.equals(geom3_, geom4_)
+    @test LibGEOS.equals(geom3_, geom2_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
-    LibGEOS.destroyGeom(geom4_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING(0 3,4 1,0 1)")
-    geom2_ = LibGEOS._readgeom("MULTIPOINT(4 1,5 0)")
+    geom1_ = LibGEOS.readgeom("LINESTRING(0 3,4 1,0 1)")
+    geom2_ = LibGEOS.readgeom("MULTIPOINT(5 0,4 1)")
     geom3_ = LibGEOS.snap(geom1_, geom2_, 2.0)
-    geom4_ = LibGEOS._readgeom("LINESTRING (0 3, 4 1, 5 0, 0 1)")
+    geom4_ = LibGEOS.readgeom("LINESTRING (0 3, 4 1, 5 0, 0 1)")
     @test LibGEOS.equals(geom3_, geom4_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
     LibGEOS.destroyGeom(geom4_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING(0 0,10 0,10 10,0 10,0 0)")
-    geom2_ = LibGEOS._readgeom("MULTIPOINT(0 0,-1 0)")
+    geom1_ = LibGEOS.readgeom("LINESTRING(0 3,4 1,0 1)")
+    geom2_ = LibGEOS.readgeom("MULTIPOINT(4 1,5 0)")
+    geom3_ = LibGEOS.snap(geom1_, geom2_, 2.0)
+    geom4_ = LibGEOS.readgeom("LINESTRING (0 3, 4 1, 5 0, 0 1)")
+    @test LibGEOS.equals(geom3_, geom4_)
+    LibGEOS.destroyGeom(geom1_)
+    LibGEOS.destroyGeom(geom2_)
+    LibGEOS.destroyGeom(geom3_)
+    LibGEOS.destroyGeom(geom4_)
+
+    geom1_ = LibGEOS.readgeom("LINESTRING(0 0,10 0,10 10,0 10,0 0)")
+    geom2_ = LibGEOS.readgeom("MULTIPOINT(0 0,-1 0)")
     geom3_ = LibGEOS.snap(geom1_, geom2_, 3.0)
-    geom4_ = LibGEOS._readgeom("LINESTRING (-1 0, 0 0, 10 0, 10 10, 0 10, -1 0)")
+    geom4_ = LibGEOS.readgeom("LINESTRING (-1 0, 0 0, 10 0, 10 10, 0 10, -1 0)")
     @test LibGEOS.equals(geom3_, geom4_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
     LibGEOS.destroyGeom(geom4_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING(0 2,5 2,9 2,5 0)")
-    geom2_ = LibGEOS._readgeom("POINT(5 0)")
+    geom1_ = LibGEOS.readgeom("LINESTRING(0 2,5 2,9 2,5 0)")
+    geom2_ = LibGEOS.readgeom("POINT(5 0)")
     geom3_ = LibGEOS.snap(geom1_, geom2_, 3.0)
-    geom4_ = LibGEOS._readgeom("LINESTRING (0 2, 5 2, 9 2, 5 0)")
+    geom4_ = LibGEOS.readgeom("LINESTRING (0 2, 5 2, 9 2, 5 0)")
     @test LibGEOS.equals(geom3_, geom4_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
     LibGEOS.destroyGeom(geom4_)
 
-    geom1_ = LibGEOS._readgeom("LINESTRING(-71.1317 42.2511,-71.1317 42.2509)")
+    geom1_ = LibGEOS.readgeom("LINESTRING(-71.1317 42.2511,-71.1317 42.2509)")
     geom2_ =
-        LibGEOS._readgeom("MULTIPOINT(-71.1261 42.2703,-71.1257 42.2703,-71.1261 42.2702)")
+        LibGEOS.readgeom("MULTIPOINT(-71.1261 42.2703,-71.1257 42.2703,-71.1261 42.2702)")
     geom3_ = LibGEOS.snap(geom1_, geom2_, 0.5)
-    geom4_ = LibGEOS._readgeom(
+    geom4_ = LibGEOS.readgeom(
         "LINESTRING (-71.1257 42.2703, -71.1261 42.2703, -71.1261 42.2702, -71.1317 42.2509)",
     )
     @test LibGEOS.equals(geom3_, geom4_)
@@ -704,43 +706,43 @@ end
     LibGEOS.destroyGeom(geom4_)
 
     # GEOSUnaryUnionTest
-    geom1_ = LibGEOS._readgeom("POINT EMPTY")
+    geom1_ = LibGEOS.readgeom("POINT EMPTY")
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom("POINT EMPTY")
+    geom3_ = LibGEOS.readgeom("POINT EMPTY")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("POINT (6 3)")
+    geom1_ = LibGEOS.readgeom("POINT (6 3)")
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom("POINT (6 3)")
+    geom3_ = LibGEOS.readgeom("POINT (6 3)")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("POINT (4 5 6)")
+    geom1_ = LibGEOS.readgeom("POINT (4 5 6)")
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom("POINT Z (4 5 6)")
+    geom3_ = LibGEOS.readgeom("POINT Z (4 5 6)")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom("MULTIPOINT (4 5, 6 7, 4 5, 6 5, 6 7)")
+    geom1_ = LibGEOS.readgeom("MULTIPOINT (4 5, 6 7, 4 5, 6 5, 6 7)")
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom("MULTIPOINT (4 5, 6 5, 6 7)")
+    geom3_ = LibGEOS.readgeom("MULTIPOINT (4 5, 6 5, 6 7)")
     @test LibGEOS.equals(geom2_, geom3_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom(
+    geom1_ = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION (POINT(4 5), MULTIPOINT(6 7, 6 5, 6 7), LINESTRING(0 5, 10 5), LINESTRING(4 -10, 4 10))",
     )
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom(
+    geom3_ = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION (POINT (6 7), LINESTRING (0 5, 4 5), LINESTRING (4 5, 10 5), LINESTRING (4 -10, 4 5), LINESTRING (4 5, 4 10))",
     )
     @test LibGEOS.equals(geom2_, geom3_)
@@ -748,11 +750,11 @@ end
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom(
+    geom1_ = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION (POINT(4 5), MULTIPOINT(6 7, 6 5, 6 7), POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),(5 6, 7 6, 7 8, 5 8, 5 6)))",
     )
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom(
+    geom3_ = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION (POINT (6 7), POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0), (5 6, 7 6, 7 8, 5 8, 5 6)))",
     )
     @test LibGEOS.equals(geom2_, geom3_)
@@ -760,11 +762,11 @@ end
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom(
+    geom1_ = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION (MULTILINESTRING((5 7, 12 7), (4 5, 6 5), (5.5 7.5, 6.5 7.5)), POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),(5 6, 7 6, 7 8, 5 8, 5 6)))",
     )
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom(
+    geom3_ = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION (LINESTRING (5 7, 7 7), LINESTRING (10 7, 12 7), LINESTRING (5.5 7.5, 6.5 7.5), POLYGON ((10 7, 10 0, 0 0, 0 10, 10 10, 10 7), (5 6, 7 6, 7 7, 7 8, 5 8, 5 7, 5 6)))",
     )
     @test LibGEOS.equals(geom2_, geom3_)
@@ -772,11 +774,11 @@ end
     LibGEOS.destroyGeom(geom2_)
     LibGEOS.destroyGeom(geom3_)
 
-    geom1_ = LibGEOS._readgeom(
+    geom1_ = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION (MULTILINESTRING((5 7, 12 7), (4 5, 6 5), (5.5 7.5, 6.5 7.5)), POLYGON((0 0, 10 0, 10 10, 0 10, 0 0),(5 6, 7 6, 7 8, 5 8, 5 6)), MULTIPOINT(6 6.5, 6 1, 12 2, 6 1))",
     )
     geom2_ = LibGEOS.unaryUnion(geom1_)
-    geom3_ = LibGEOS._readgeom(
+    geom3_ = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION (POINT (6 6.5), POINT (12 2), LINESTRING (5 7, 7 7), LINESTRING (10 7, 12 7), LINESTRING (5.5 7.5, 6.5 7.5), POLYGON ((10 7, 10 0, 0 0, 0 10, 10 10, 10 7), (5 6, 7 6, 7 7, 7 8, 5 8, 5 7, 5 6)))",
     )
     @test LibGEOS.equals(geom2_, geom3_)
@@ -785,32 +787,32 @@ end
     LibGEOS.destroyGeom(geom3_)
 
     # GEOSWithinTest
-    geom1_ = LibGEOS._readgeom("POLYGON EMPTY")
-    geom2_ = LibGEOS._readgeom("POLYGON EMPTY")
+    geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
+    geom2_ = LibGEOS.readgeom("POLYGON EMPTY")
     @test !LibGEOS.within(geom1_, geom2_)
     @test !LibGEOS.within(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
-    geom1_ = LibGEOS._readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
-    geom2_ = LibGEOS._readgeom("POINT(2 2)")
+    geom1_ = LibGEOS.readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
+    geom2_ = LibGEOS.readgeom("POINT(2 2)")
     @test !LibGEOS.within(geom1_, geom2_)
     @test LibGEOS.within(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
-    geom1_ = LibGEOS._readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
-    geom2_ = LibGEOS._readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))")
+    geom1_ = LibGEOS.readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
+    geom2_ = LibGEOS.readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))")
     @test !LibGEOS.within(geom1_, geom2_)
     @test LibGEOS.within(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
     # GEOSisClosedTest
-    geom_ = LibGEOS._readgeom("LINESTRING(0 0, 1 0, 1 1)")
+    geom_ = LibGEOS.readgeom("LINESTRING(0 0, 1 0, 1 1)")
     @test !LibGEOS.isClosed(geom_)
     LibGEOS.destroyGeom(geom_)
-    geom_ = LibGEOS._readgeom("LINESTRING(0 0, 0 1, 1 1, 0 0)")
+    geom_ = LibGEOS.readgeom("LINESTRING(0 0, 0 1, 1 1, 0 0)")
     @test LibGEOS.isClosed(geom_)
     LibGEOS.destroyGeom(geom_)
 

@@ -51,19 +51,10 @@ export Point,
     overlaps,
     equals,
     equalsexact,
+    containsproperly,
     covers,
     coveredby,
     prepareGeom,
-    prepcontains,
-    prepcontainsproperly,
-    prepcoveredby,
-    prepcovers,
-    prepcrosses,
-    prepdisjoint,
-    prepintersects,
-    prepoverlaps,
-    preptouches,
-    prepwithin,
     isEmpty,
     isSimple,
     isRing,
@@ -117,8 +108,8 @@ need scratch memory or caches to do their job.
 A `GEOSContext` governs such memory. Almost every function in LibGEOS accepts a `context`
 argument, that allows passing a context explicitly. If no context is passed, a global context is used.
 
-Using the global context is fine, as long as no multi threading is used. 
-If multi threading is used, the global context should be avoided and every operation should only 
+Using the global context is fine, as long as no multi threading is used.
+If multi threading is used, the global context should be avoided and every operation should only
 involve objects that live in the context passed to the operation.
 """
 mutable struct GEOSContext
@@ -126,12 +117,12 @@ mutable struct GEOSContext
 
     function GEOSContext()
         context = new(GEOS_init_r())
-        GEOSContext_setNoticeHandler_r(context.ptr, C_NULL)
+        GEOSContext_setNoticeHandler_r(context, C_NULL)
         GEOSContext_setErrorHandler_r(
-            context.ptr,
+            context,
             @cfunction(geosjl_errorhandler, Ptr{Cvoid}, (Ptr{UInt8}, Ptr{Cvoid}))
         )
-        finalizer(context -> (GEOS_finish_r(context.ptr); context.ptr = C_NULL), context)
+        finalizer(context -> (GEOS_finish_r(context); context.ptr = C_NULL), context)
         context
     end
 end
@@ -144,7 +135,7 @@ function Base.hash(c::GEOSContext, h::UInt)
 end
 
 "Get a copy of a string from GEOS, freeing the GEOS managed memory."
-function string_copy_free(s::Cstring, context::Ptr{Cvoid} = get_global_context().ptr)::String
+function string_copy_free(s::Cstring, context::GEOSContext = get_global_context())::String
     copy = unsafe_string(s)
     GEOSFree_r(context, pointer(s))
     return copy
@@ -156,9 +147,9 @@ mutable struct WKTReader
     ptr::Ptr{GEOSWKTReader}
 
     function WKTReader(context::GEOSContext)
-        reader = new(GEOSWKTReader_create_r(context.ptr))
+        reader = new(GEOSWKTReader_create_r(context))
         finalizer(function (reader)
-            GEOSWKTReader_destroy_r(context.ptr, reader.ptr)
+            GEOSWKTReader_destroy_r(context, reader)
             reader.ptr = C_NULL
         end, reader)
         reader
@@ -174,12 +165,12 @@ mutable struct WKTWriter
         outputdim::Int = 3,
         roundingprecision::Int = -1,
     )
-        writer = new(GEOSWKTWriter_create_r(context.ptr))
-        GEOSWKTWriter_setTrim_r(context.ptr, writer.ptr, UInt8(trim))
-        GEOSWKTWriter_setOutputDimension_r(context.ptr, writer.ptr, outputdim)
-        GEOSWKTWriter_setRoundingPrecision_r(context.ptr, writer.ptr, roundingprecision)
+        writer = new(GEOSWKTWriter_create_r(context))
+        GEOSWKTWriter_setTrim_r(context, writer, UInt8(trim))
+        GEOSWKTWriter_setOutputDimension_r(context, writer, outputdim)
+        GEOSWKTWriter_setRoundingPrecision_r(context, writer, roundingprecision)
         finalizer(function (writer)
-            GEOSWKTWriter_destroy_r(context.ptr, writer.ptr)
+            GEOSWKTWriter_destroy_r(context, writer)
             writer.ptr = C_NULL
         end, writer)
         writer
@@ -190,9 +181,9 @@ mutable struct WKBReader
     ptr::Ptr{GEOSWKBReader}
 
     function WKBReader(context::GEOSContext)
-        reader = new(GEOSWKBReader_create_r(context.ptr))
+        reader = new(GEOSWKBReader_create_r(context))
         finalizer(function (reader)
-            GEOSWKBReader_destroy_r(context.ptr, reader.ptr)
+            GEOSWKBReader_destroy_r(context, reader)
             reader.ptr = C_NULL
         end, reader)
         reader
@@ -203,9 +194,9 @@ mutable struct WKBWriter
     ptr::Ptr{GEOSWKBWriter}
 
     function WKBWriter(context::GEOSContext)
-        writer = new(GEOSWKBWriter_create_r(context.ptr))
+        writer = new(GEOSWKBWriter_create_r(context))
         finalizer(function (writer)
-            GEOSWKBWriter_destroy_r(context.ptr, writer.ptr)
+            GEOSWKBWriter_destroy_r(context, writer)
             writer.ptr = C_NULL
         end, writer)
         writer
@@ -258,10 +249,10 @@ function __init__()
     _GLOBAL_CONTEXT[] = GEOSContext()
 end
 
-include("geos_functions.jl")
 include("geos_types.jl")
-include("geos_operations.jl")
+include("geos_functions.jl")
 include("geo_interface.jl")
 include("strtree.jl")
+include("deprecated.jl")
 
 end  # module

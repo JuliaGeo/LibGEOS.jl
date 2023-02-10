@@ -11,31 +11,28 @@ GeoInterface.geomtrait(::GeometryCollection) = GeometryCollectionTrait()
 GeoInterface.geomtrait(geom::PreparedGeometry) = GeoInterface.geomtrait(geom.ownedby)
 
 GeoInterface.ngeom(::AbstractGeometryTrait, geom::AbstractGeometry) =
-    isEmpty(geom.ptr) ? 0 : numGeometries(geom.ptr)
+    isEmpty(geom) ? 0 : numGeometries(geom)
 GeoInterface.ngeom(::AbstractPointTrait, geom::AbstractGeometry) = 0
 
 function GeoInterface.getgeom(::AbstractGeometryTrait, geom::AbstractGeometry, i)
-    clone = getGeometry(geom.ptr, i)
-    id = geomTypeId(clone) + 1
-    0 < id <= length(geomtypes) || error("Unknown geometry type id $id")
-    geomtypes[id](clone)
+    getGeometry(geom, i)
 end
 
 GeoInterface.getgeom(::AbstractPointTrait, geom::AbstractGeometry, i) = nothing
 GeoInterface.ngeom(::AbstractGeometryTrait, geom::Union{LineString,LinearRing}) =
-    numPoints(geom.ptr)
+    numPoints(geom)
 GeoInterface.ngeom(t::AbstractPointTrait, geom::Union{LineString,LinearRing}) = 0
 GeoInterface.getgeom(::AbstractGeometryTrait, geom::Union{LineString,LinearRing}, i) =
-    Point(getPoint(geom.ptr, i))
+    Point(getPoint(geom, i))
 GeoInterface.getgeom(::AbstractPointTrait, geom::Union{LineString,LinearRing}, i) = nothing
 
-GeoInterface.ngeom(::AbstractGeometryTrait, geom::Polygon) = numInteriorRings(geom.ptr) + 1
+GeoInterface.ngeom(::AbstractGeometryTrait, geom::Polygon) = numInteriorRings(geom) + 1
 GeoInterface.ngeom(::AbstractPointTrait, geom::Polygon) = 0
 function GeoInterface.getgeom(::AbstractGeometryTrait, geom::Polygon, i)
     if i == 1
-        LinearRing(exteriorRing(geom.ptr))
+        LinearRing(exteriorRing(geom))
     else
-        LinearRing(interiorRing(geom.ptr, i - 1))
+        LinearRing(interiorRing(geom, i - 1))
     end
 end
 GeoInterface.getgeom(::AbstractPointTrait, geom::Polygon, i) = nothing
@@ -48,9 +45,9 @@ GeoInterface.getgeom(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
 GeoInterface.getgeom(t::AbstractPointTrait, geom::PreparedGeometry, i) = 0
 
 GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
-    isEmpty(geom.ptr) ? 0 : getCoordinateDimension(geom.ptr)
+    isEmpty(geom) ? 0 : getCoordinateDimension(geom)
 GeoInterface.getcoord(::AbstractGeometryTrait, geom::AbstractGeometry, i) =
-    getCoordinates(getCoordSeq(geom.ptr), 1)[i]
+    getCoordinates(getCoordSeq(geom), 1)[i]
 
 GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) =
     GeoInterface.ncoord(t, geom.ownedby)

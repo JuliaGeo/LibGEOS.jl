@@ -2,20 +2,20 @@
 # Function to test if a geomerty is valid and if its type matches the geometry ID and has the correct dimensions
 function testValidTypeDims(geom::LibGEOS.Geometry, typeid::LibGEOS.GEOSGeomTypes, dims::Integer)
     @test LibGEOS.isValid(geom)
-    @test LibGEOS.geomTypeId(geom.ptr) == typeid
-    @test LibGEOS.getGeomDimensions(geom.ptr) == dims
+    @test LibGEOS.geomTypeId(geom) == typeid
+    @test LibGEOS.getGeomDimensions(geom) == dims
 end
-testValidTypeDims(point::LibGEOS.Point) = 
+testValidTypeDims(point::LibGEOS.Point) =
     testValidTypeDims(point, LibGEOS.GEOS_POINT, 0)
 testValidTypeDims(multipoint::LibGEOS.MultiPoint) =
     testValidTypeDims(multipoint, LibGEOS.GEOS_MULTIPOINT, 0)
 testValidTypeDims(linestring::LibGEOS.LineString) =
-    testValidTypeDims(linestring, LibGEOS.GEOS_LINESTRING, 1) 
+    testValidTypeDims(linestring, LibGEOS.GEOS_LINESTRING, 1)
 testValidTypeDims(multilinestring::LibGEOS.MultiLineString) =
     testValidTypeDims(multilinestring, LibGEOS.GEOS_MULTILINESTRING, 1)
 testValidTypeDims(ring::LibGEOS.LinearRing) =
     testValidTypeDims(ring, LibGEOS.GEOS_LINEARRING, 1)
-testValidTypeDims(poly::LibGEOS.Polygon) = 
+testValidTypeDims(poly::LibGEOS.Polygon) =
     testValidTypeDims(poly, LibGEOS.GEOS_POLYGON, 2)
 testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
     testValidTypeDims(multipoly, LibGEOS.GEOS_MULTIPOLYGON, 2)
@@ -34,24 +34,24 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test LibGEOS.area(point3D) == 0.0
         @test LibGEOS.GeoInterface.coordinates(point3D) == [0.0, 0.0, 2.0]
 
-        # Test point made from vector 
+        # Test point made from vector
         point_coord = LibGEOS.Point([0.0, 0.0, 0.2])
         testValidTypeDims(point_coord, LibGEOS.GEOS_POINT, 0)
         @test LibGEOS.equals(point_coord, point3D)
 
         # Test point made from point pointer
-        point_ptr = LibGEOS.Point(point2D.ptr)
+        point_ptr = LibGEOS.Point(point2D)
         testValidTypeDims(point_ptr)
         @test LibGEOS.equals(point_ptr, point2D)
 
         # Test point made from polygon pointer --> should not work
-        @test_throws ErrorException LibGEOS.Point(LibGEOS.Polygon(
-            [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]).ptr)
+        @test_throws MethodError LibGEOS.Point(LibGEOS.Polygon(
+            [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]))
 
         # Test point made with local context
         ctx = LibGEOS.GEOSContext()
-        point_ctx = LibGEOS.Point(point2D.ptr, ctx)
-        @test LibGEOS.equals(point_ctx, point2D) 
+        point_ctx = LibGEOS.Point(point2D, ctx)
+        @test LibGEOS.equals(point_ctx, point2D)
 
         LibGEOS.destroyGeom(point2D)
         LibGEOS.destroyGeom(point3D)
@@ -68,30 +68,30 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         testValidTypeDims(mpoint_coord)
         @test GeoInterface.coordinates(mpoint_coord) == [[0.0, 0.0], [1.0, 1.0]]
         @test LibGEOS.numGeometries(mpoint_coord) == 2
-        @test LibGEOS.equals(LibGEOS.getGeometry(mpoint_coord, 1), 
+        @test LibGEOS.equals(LibGEOS.getGeometry(mpoint_coord, 1),
                              point1)
         @test LibGEOS.equals(LibGEOS.getGeometry(mpoint_coord, 2),
                             point2)
 
         # Test MultiPoint made from MultiPoint pointer
-        multipoint_ptr = LibGEOS.MultiPoint(mpoint_coord.ptr)
+        multipoint_ptr = LibGEOS.MultiPoint(mpoint_coord)
         testValidTypeDims(multipoint_ptr)
         @test LibGEOS.equals(multipoint_ptr, mpoint_coord)
-        @test LibGEOS.equals(LibGEOS.getGeometry(mpoint_coord, 1), 
+        @test LibGEOS.equals(LibGEOS.getGeometry(mpoint_coord, 1),
                              LibGEOS.getGeometry(multipoint_ptr, 1))
-        @test LibGEOS.equals(LibGEOS.getGeometry(mpoint_coord, 2), 
+        @test LibGEOS.equals(LibGEOS.getGeometry(mpoint_coord, 2),
                              LibGEOS.getGeometry(multipoint_ptr, 2))
 
         # Test MultiPoint made from Point pointer
         mpoint_ptr = LibGEOS.MultiPoint(
-                             LibGEOS.getGeometry(mpoint_coord, 1).ptr)
+                             LibGEOS.getGeometry(mpoint_coord, 1))
         testValidTypeDims(mpoint_ptr)
-        @test LibGEOS.equals(LibGEOS.getGeometry(mpoint_ptr, 1), 
+        @test LibGEOS.equals(LibGEOS.getGeometry(mpoint_ptr, 1),
                              Point(0.0, 0.0))
 
         # Test MultiPoint made from Polygon pointer
-        @test_throws ErrorException LibGEOS.MultiPoint(LibGEOS.Polygon(
-            [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]).ptr)
+        @test_throws MethodError LibGEOS.MultiPoint(LibGEOS.Polygon(
+            [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]))
 
         # Test MultiPoint made from vector of 1 point and 2 points
         point_coord1 = LibGEOS.MultiPoint([point1])
@@ -103,8 +103,8 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
 
         # Test MultiPoint made with local context
         ctx = LibGEOS.GEOSContext()
-        mpoint_ctx = LibGEOS.MultiPoint(mpoint_coord.ptr, ctx)
-        @test LibGEOS.equals(mpoint_ctx, mpoint_coord) 
+        mpoint_ctx = LibGEOS.MultiPoint(mpoint_coord, ctx)
+        @test LibGEOS.equals(mpoint_ctx, mpoint_coord)
 
         LibGEOS.destroyGeom(mpoint_coord)
         LibGEOS.destroyGeom(point1)
@@ -120,21 +120,21 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         # Test LineString made from vectors
         ls_coord = LibGEOS.LineString([[0.0, 0.0], [1.0, 1.0], [1.0,0.0]])
         testValidTypeDims(ls_coord)
-        @test LibGEOS.numCoordinates(ls_coord.ptr) == 3
-        
+        @test LibGEOS.numCoordinates(ls_coord) == 3
+
         # Test LineString made from linestring pointer
-        ls_ptr = LibGEOS.LineString(ls_coord.ptr)
+        ls_ptr = LibGEOS.LineString(ls_coord)
         testValidTypeDims(ls_ptr)
         @test LibGEOS.equals(ls_coord, ls_ptr)
 
         # Test LineString made from polygon pointer
-        @test_throws ErrorException LibGEOS.LineString(LibGEOS.Polygon(
-            [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]).ptr)
+        @test_throws MethodError LibGEOS.LineString(LibGEOS.Polygon(
+            [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]))
 
         # Test LineString made with local context
         ctx = LibGEOS.GEOSContext()
-        linestring_ctx = LibGEOS.LineString(ls_coord.ptr, ctx)
-        @test LibGEOS.equals(linestring_ctx, ls_coord) 
+        linestring_ctx = LibGEOS.LineString(ls_coord, ctx)
+        @test LibGEOS.equals(linestring_ctx, ls_coord)
 
         LibGEOS.destroyGeom(ls_coord)
         LibGEOS.destroyGeom(ls_ptr)
@@ -148,18 +148,18 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         @test LibGEOS.numGeometries(mls_coord) == 2
 
         # Test MultiLineString made from MultiLineString pointer
-        mls_ptr = LibGEOS.MultiLineString(mls_coord.ptr)
+        mls_ptr = LibGEOS.MultiLineString(mls_coord)
         testValidTypeDims(mls_ptr)
         @test LibGEOS.equals(mls_coord, mls_ptr)
 
         # Test MultiLineString made from polygon pointer
-        @test_throws ErrorException LibGEOS.MultiLineString(LibGEOS.Polygon(
-            [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]).ptr)
+        @test_throws MethodError LibGEOS.MultiLineString(LibGEOS.Polygon(
+            [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]))
 
         # Test MultiLineString made with local context
         ctx = LibGEOS.GEOSContext()
-        multilinestring_ctx = LibGEOS.MultiLineString(mls_coord.ptr, ctx)
-        @test LibGEOS.equals(multilinestring_ctx, mls_coord) 
+        multilinestring_ctx = LibGEOS.MultiLineString(mls_coord, ctx)
+        @test LibGEOS.equals(multilinestring_ctx, mls_coord)
 
         LibGEOS.destroyGeom(mls_coord)
         LibGEOS.destroyGeom(mls_ptr)
@@ -171,20 +171,20 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         lr_coord = LibGEOS.LinearRing([[-2.0, -2.0], [2.0, -2.0], [2.0, 2.0],
         [-2.0, 2.0], [-2.0, -2.0]])
         testValidTypeDims(lr_coord)
-        @test LibGEOS.numCoordinates(lr_coord.ptr) == 5
+        @test LibGEOS.numCoordinates(lr_coord) == 5
 
         # Test LinearRing made from LinearRing pointer
-        lr_ptr = LibGEOS.LinearRing(lr_coord.ptr)
+        lr_ptr = LibGEOS.LinearRing(lr_coord)
         testValidTypeDims(lr_ptr)
         @test LibGEOS.equals(lr_ptr, lr_coord)
 
         # Test LinearRing made from polygon pointer
-        @test_throws ErrorException LibGEOS.LinearRing(LibGEOS.Polygon(
-            [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]).ptr)
+        @test_throws MethodError LibGEOS.LinearRing(LibGEOS.Polygon(
+            [[[-2.0, -2.0], [2.0, 2.0],[-2.0,2.0], [-2.0, -2.0]]]))
 
         # Test LinearRing made with local context
         ctx = LibGEOS.GEOSContext()
-        linearring_ctx = LibGEOS.LinearRing(lr_coord.ptr, ctx)
+        linearring_ctx = LibGEOS.LinearRing(lr_coord, ctx)
         @test LibGEOS.equals(linearring_ctx, lr_coord)
 
         LibGEOS.destroyGeom(lr_coord)
@@ -201,13 +201,13 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         testValidTypeDims(poly_vec)
         @test LibGEOS.area(poly_vec) == 15.5
         @test !LibGEOS.isEmpty(poly_vec)
-        @test LibGEOS.GeoInterface.coordinates(poly_vec) == 
+        @test LibGEOS.GeoInterface.coordinates(poly_vec) ==
             [[[-2.0, -2.0], [2.0, -2.0], [2.0, 2.0], [-2.0,2.0], [-2.0, -2.0]],
              [[0.0, 0.0], [1.0, 1.0], [1.0,0.0], [0.0, 0.0]]]
         @test length(LibGEOS.interiorRings(poly_vec)) == 1
 
         # Test polygon made from  polygon pointer
-        poly_ptr = LibGEOS.Polygon(poly_vec.ptr)
+        poly_ptr = LibGEOS.Polygon(poly_vec)
         testValidTypeDims(poly_ptr)
         @test LibGEOS.equals(poly_vec, poly_ptr) # same area and coordinates
         @test length(LibGEOS.interiorRings(poly_vec)) == 1
@@ -215,26 +215,26 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         # Test polygon made from linear ring pointer
         ring_ext = LibGEOS.LinearRing([[-2.0, -2.0], [2.0, -2.0], [2.0, 2.0],
                                        [-2.0, 2.0], [-2.0, -2.0]])
-        poly_ringptr = LibGEOS.Polygon(ring_ext.ptr)
+        poly_ringptr = LibGEOS.Polygon(ring_ext)
 
         # tests that ring's geomTypeID is linear ring and dimensions is 1
-        testValidTypeDims(ring_ext) 
+        testValidTypeDims(ring_ext)
 
         # tests that the geomTypeID is polygon and dimensions is 2
-        testValidTypeDims(poly_ringptr) 
+        testValidTypeDims(poly_ringptr)
         @test LibGEOS.area(poly_ringptr) == 16
         @test !LibGEOS.isEmpty(poly_ringptr)
 
         # Test polygon made from point pointer
         point = LibGEOS.Point(1.0, 2.0)
-        @test_throws ErrorException LibGEOS.Polygon(point.ptr)
+        @test_throws MethodError LibGEOS.Polygon(point)
 
         # Test polygon made from 1 linear ring
         poly_ring = LibGEOS.Polygon(ring_ext)
         testValidTypeDims(poly_ring)
         @test LibGEOS.area(poly_ring) == 16
         @test !LibGEOS.isEmpty(poly_ring)
-        @test LibGEOS.GeoInterface.coordinates(poly_ring) == 
+        @test LibGEOS.GeoInterface.coordinates(poly_ring) ==
             [[[-2.0, -2.0], [2.0, -2.0], [2.0, 2.0], [-2.0, 2.0], [-2.0, -2.0]]]
         @test length(LibGEOS.interiorRings(poly_ring)) == 0
 
@@ -255,7 +255,7 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
         testValidTypeDims(poly_rings2)
         @test LibGEOS.area(poly_rings2) == 14.5
         @test !LibGEOS.isEmpty(poly_rings2)
-        @test LibGEOS.GeoInterface.coordinates(poly_rings2) == 
+        @test LibGEOS.GeoInterface.coordinates(poly_rings2) ==
             [[[-2.0, -2.0], [2.0, -2.0], [2.0, 2.0], [-2.0, 2.0], [-2.0, -2.0]],
             [[0.0, 0.0], [1.0, 1.0], [1.0,0.0],[0.0, 0.0]],
              [[0.0, 0.0], [0.0, -1.0], [-1.0, -1.0],[-1.0, 0.0], [0.0, 0.0]]]
@@ -263,7 +263,7 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
 
         # Test Polygon made with local context
         ctx = LibGEOS.GEOSContext()
-        poly_ctx = LibGEOS.Polygon(poly_vec.ptr, ctx)
+        poly_ctx = LibGEOS.Polygon(poly_vec, ctx)
         @test LibGEOS.equals(poly_ctx, poly_vec)
 
         LibGEOS.destroyGeom(poly_vec)
@@ -280,30 +280,30 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
     end
 
     @testset "MultiPolygon" begin
-        poly1 = LibGEOS.Polygon([[[-2.0, -2.0], [2.0, 2.0], 
+        poly1 = LibGEOS.Polygon([[[-2.0, -2.0], [2.0, 2.0],
                                   [-2.0, 2.0], [-2.0, -2.0]]])
-        poly2 = LibGEOS.Polygon([[[0.0, 0.0], [1.0, -1.0], 
+        poly2 = LibGEOS.Polygon([[[0.0, 0.0], [1.0, -1.0],
                                   [1.0, 0.0], [0.0, 0.0]]])
         # Test multipolygon made from vectors
         mpoly_coord = LibGEOS.MultiPolygon([
-            [[[-2.0, -2.0], [2.0, 2.0], [-2.0, 2.0], [-2.0, -2.0]]], 
+            [[[-2.0, -2.0], [2.0, 2.0], [-2.0, 2.0], [-2.0, -2.0]]],
             [[[0.0, 0.0], [1.0, -1.0], [1.0, 0.0], [0.0, 0.0]]]])
         testValidTypeDims(mpoly_coord)
         @test LibGEOS.numGeometries(mpoly_coord) == 2
         @test LibGEOS.equals(LibGEOS.getGeometry(mpoly_coord, 1), poly1)
 
         # Test multipolygon made from multipolygon pointer
-        mpoly_ptr = LibGEOS.MultiPolygon(mpoly_coord.ptr)
+        mpoly_ptr = LibGEOS.MultiPolygon(mpoly_coord)
         testValidTypeDims(mpoly_coord)
         @test LibGEOS.equals(mpoly_ptr, mpoly_coord)
 
         # Test multipolygon made from polygon pointer
-        mpoly_poly_ptr = LibGEOS.MultiPolygon(poly1.ptr)
+        mpoly_poly_ptr = LibGEOS.MultiPolygon(poly1)
         testValidTypeDims(mpoly_poly_ptr)
-        @test LibGEOS.equals(LibGEOS.getGeometry(mpoly_poly_ptr, 1), poly1) 
+        @test LibGEOS.equals(LibGEOS.getGeometry(mpoly_poly_ptr, 1), poly1)
 
         # Test multipolygon made from point pointer --> should finalizer
-        @test_throws ErrorException LibGEOS.MultiPolygon(LibGEOS.Point(1.0, 2.0).ptr)
+        @test_throws MethodError LibGEOS.MultiPolygon(LibGEOS.Point(1.0, 2.0))
 
         # Test multipolygon made from list of polygons
         mpoly_polylist = LibGEOS.MultiPolygon([poly1, poly2])
@@ -312,7 +312,7 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
 
         # Test MultiPolygon made with local context
         ctx = LibGEOS.GEOSContext()
-        mpoly_ctx = LibGEOS.MultiPolygon(mpoly_coord.ptr, ctx)
+        mpoly_ctx = LibGEOS.MultiPolygon(mpoly_coord, ctx)
         @test LibGEOS.equals(mpoly_ctx, mpoly_coord)
 
         LibGEOS.destroyGeom(poly1)
@@ -326,21 +326,21 @@ testValidTypeDims(multipoly::LibGEOS.MultiPolygon) =
 
     @testset "GeometryCollections" begin
         point = LibGEOS.Point(0.0, 0.0)
-        poly = LibGEOS.Polygon([[[-2.0, -2.0], [2.0, 2.0], 
+        poly = LibGEOS.Polygon([[[-2.0, -2.0], [2.0, 2.0],
                                   [-2.0, 2.0], [-2.0, -2.0]]])
         # Test GeometryCollection from list of geometry pointers
-        geomcol_ptr_list = LibGEOS.GeometryCollection([point.ptr, poly.ptr])
+        geomcol_ptr_list = LibGEOS.GeometryCollection([point, poly])
         @test LibGEOS.isValid(geomcol_ptr_list)
-        @test LibGEOS.geomTypeId(geomcol_ptr_list.ptr) == LibGEOS.GEOS_GEOMETRYCOLLECTION
+        @test LibGEOS.geomTypeId(geomcol_ptr_list) == LibGEOS.GEOS_GEOMETRYCOLLECTION
         #test GeometryCollection from GeometryCollection pointer
-        geomcollection_ptr = LibGEOS.GeometryCollection(geomcol_ptr_list.ptr)
+        geomcollection_ptr = LibGEOS.GeometryCollection(geomcol_ptr_list)
         @test LibGEOS.isValid(geomcollection_ptr)
-        @test LibGEOS.geomTypeId(geomcollection_ptr.ptr) == LibGEOS.GEOS_GEOMETRYCOLLECTION
+        @test LibGEOS.geomTypeId(geomcollection_ptr) == LibGEOS.GEOS_GEOMETRYCOLLECTION
         @test LibGEOS.equals(geomcol_ptr_list, geomcollection_ptr)
 
         # Test GeomertyCollections made with local context
         ctx = LibGEOS.GEOSContext()
-        geomcollect_ctx = LibGEOS.GeometryCollection(geomcol_ptr_list.ptr, ctx)
+        geomcollect_ctx = LibGEOS.GeometryCollection(geomcol_ptr_list, ctx)
         @test LibGEOS.equals(geomcollect_ctx, geomcol_ptr_list)
 
         LibGEOS.destroyGeom(point)
@@ -362,13 +362,13 @@ end
             g1 = LibGEOS.Polygon(p, ctx)
             g2 = LibGEOS.Polygon(p, ctx)
             for j=1:n
-                LibGEOS.intersects(g1.ptr, g2.ptr, ctx)
+                @test LibGEOS.intersects(g1, g2, ctx)
             end
         end
         GC.gc(true)
         return nothing
     end
-    f91(91)
+    @test f91(91) === nothing
     @testset "clone" begin
         function f(n)
             # adapted from https://github.com/JuliaGeo/LibGEOS.jl/issues/91#issuecomment-1267732709
@@ -379,13 +379,13 @@ end
                 g1 = LibGEOS.clone(p,ctx)
                 g2 = LibGEOS.clone(p,ctx)
                 for j=1:n
-                    intersects(g1,g2)
+                    @test intersects(g1,g2)
                 end
             end
             GC.gc(true)
             return nothing
         end
-        f(91)
+        @test f(91) === nothing
     end
 end
 
