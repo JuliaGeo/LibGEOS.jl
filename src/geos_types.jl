@@ -358,18 +358,59 @@ const geomtypes = [
     GeometryCollection,
 ]
 
-function Base.:(==)(g1::AbstractGeometry, g2::AbstractGeometry)
-    (typeof(g1) == typeof(g2)) || return false
-    equals(g1,g2)
+function Base.:(==)(geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
+    compare(==, geo1, geo2)
+end
+function Base.isequal(geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
+    compare(isequal, geo1, geo2)
+end
+function compare(≅, geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
+    (typeof(geo1) === typeof(geo2)) || return false
+    ng1 = ngeom(geo1)
+    ng2 = ngeom(geo2)
+    ng1 == ng2 || return false
+    for i in 1:ng1
+        (getgeom(geo1, i) ≅ getgeom(geo2, i)) || return false
+    end
+    return true
+end
+function compare(≅, pt1::Point, pt2::Point)::Bool
+    is3d = GeoInterface.is3d(pt1)
+    is3d === GeoInterface.is3d(pt2) || return false
+    GeoInterface.getcoord(pt1,1) ≅ GeoInterface.getcoord(pt2,1) || return false
+    GeoInterface.getcoord(pt1,2) ≅ GeoInterface.getcoord(pt2,2) || return false
+    if is3d
+        GeoInterface.getcoord(pt1,3) ≅ GeoInterface.getcoord(pt2,3) || return false
+    end
+    return true
 end
 
-function Base.:(==)(pt1::Point, pt2::Point)
-    GeoInterface.coordinates(pt1) == GeoInterface.coordinates(pt2)
+typesalt(::Type{GeometryCollection} ) = 0xd1fd7c6403c36e5b
+typesalt(::Type{PreparedGeometry}   ) = 0xbc1a26fe2f5b7537
+typesalt(::Type{LineString}         ) = 0x712352fe219fca15
+typesalt(::Type{LinearRing}         ) = 0xac7644fd36955ef1
+typesalt(::Type{MultiLineString}    ) = 0x85aff0a53a2f2a32
+typesalt(::Type{MultiPoint}         ) = 0x6213e67dbfd3b570
+typesalt(::Type{MultiPolygon}       ) = 0xff2f957b4cdb5832
+typesalt(::Type{Point}              ) = 0x4b5c101d3843160e
+typesalt(::Type{Polygon}            ) = 0xa5c895d62ef56723
+
+function Base.hash(geo::AbstractGeometry, h::UInt)::UInt
+    salt = typesalt(typeof(geo))
+    h = hash(salt, h)
+    for i in 1:ngeom(geo)
+        g = getgeom(geo,i)
+        h = hash(g, h)
+    end
+    return h
 end
 
-function Base.hash(g::AbstractGeometry, h::UInt)
-    # since (==) is only up to a certain tolerance in LibGEOS
-    # hash must be constant in order to satisfy the hash invariant:
-    # g1 == g2 implies hash(g1,h) == hash(g2,h)
-    h
+function Base.hash(pt::Point, h::UInt)::UInt
+    h = hash(getcoord(pt,1), h)
+    h = hash(getcoord(pt,2), h)
+    if GeoInterface.is3d(pt)
+        h = hash(getcoord(pt,3), h)
+    end
+    h = hash(getcoord(pt,2), h)
+    return h
 end

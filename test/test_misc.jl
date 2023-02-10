@@ -47,13 +47,24 @@ end
     pt1 = readgeom("POINT(0.12345 2.000 0.1)")
     pt2 = readgeom("POINT(0.12345 2.000 0.2)")
     @test pt1 != pt2
+    @test hash(pt1) != hash(pt2)
     @test !isequal(pt1, pt2)
     @test readgeom("LINESTRING (130 240, 650 240)") != readgeom("LINESTRING (130 240, -650 240)")
 
+    pt = readgeom("POINT(0 NaN)")
+    @test isequal(pt, pt)
+    @test pt != pt
+
+    geo = readgeom("POLYGON((1 1,1 2,2 2,2 NaN,1 1))")
+    @test isequal(geo,geo)
+    @test geo != geo
+
     geos = [
         readgeom("POINT(0.12345 2.000 0.1)"),
+        readgeom("POINT(0.12345 2.000)"),
         readgeom("POINT(0.12345 2.000 0.2)"),
         readgeom("POLYGON EMPTY"),
+        readgeom("LINESTRING EMPTY"),
         readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))"),
         readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))"),
         readgeom("POLYGON((1 1,1 2,2 2,2.1 1,1 1))"),
@@ -67,9 +78,11 @@ end
             if g1 === g2
                 @test g1 == g2
                 @test isequal(g1,g2)
+                @test hash(g1) == hash(g2)
             else
                 @test g1 != g2
                 @test !isequal(g1,g2)
+                @test hash(g1) != hash(g2)
             end
         end
     end
