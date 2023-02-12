@@ -57,6 +57,10 @@ end
     @test pt1 != pt2
     @test hash(pt1) != hash(pt2)
     @test !isequal(pt1, pt2)
+    @test !isapprox(pt1, pt2)
+    @test !isapprox(pt1, pt2, atol=0, rtol=0)
+    @test isapprox(pt1, pt2, atol=0.2)
+    @test isapprox(pt1, pt2, rtol=0.1)
     @test readgeom("LINESTRING (130 240, 650 240)") != readgeom("LINESTRING (130 240, -650 240)")
 
     pt = readgeom("POINT(0 NaN)")
@@ -87,9 +91,11 @@ end
                 @test g1 == g2
                 @test isequal(g1,g2)
                 @test hash(g1) == hash(g2)
+                @test isapprox(g1,g2)
             else
                 @test g1 != g2
                 @test !isequal(g1,g2)
+                @test !isapprox(g1,g2)
                 @test hash(g1) != hash(g2)
             end
         end

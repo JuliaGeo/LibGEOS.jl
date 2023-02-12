@@ -309,11 +309,22 @@ const geomtypes = [
     GeometryCollection,
 ]
 
+Base.@kwdef struct IsApprox
+    atol::Float64=0.0
+    rtol::Float64=sqrt(eps(Float64))
+end
+
 function Base.:(==)(geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
     compare(==, geo1, geo2)
 end
 function Base.isequal(geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
     compare(isequal, geo1, geo2)
+end
+function Base.isapprox(geo1::AbstractGeometry, geo2::AbstractGeometry; kw...)::Bool
+    compare(IsApprox(;kw...), geo1, geo2)
+end
+function (cmp::IsApprox)(geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
+    compare(cmp, geo1, geo2)
 end
 function compare(≅, geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
     (typeof(geo1) === typeof(geo2)) || return false
@@ -334,6 +345,29 @@ function compare(≅, pt1::Point, pt2::Point)::Bool
         GeoInterface.getcoord(pt1,3) ≅ GeoInterface.getcoord(pt2,3) || return false
     end
     return true
+end
+
+function _norm(x,y,z)
+    return sqrt(x^2 + y^2 + z^2)
+end
+
+function compare(cmp::IsApprox, pt1::Point, pt2::Point)::Bool
+    is3d = GeoInterface.is3d(pt1)
+    is3d === GeoInterface.is3d(pt2) || return false
+    x1 = GeoInterface.getcoord(pt1,1)
+    x2 = GeoInterface.getcoord(pt2,1)
+    y1 = GeoInterface.getcoord(pt1,2)
+    y2 = GeoInterface.getcoord(pt2,2)
+    if is3d
+        z1 = GeoInterface.getcoord(pt1,3) 
+        z2 = GeoInterface.getcoord(pt2,3)
+    else
+        z1 = 0.0
+        z2 = 0.0
+    end
+    lhs = _norm(x1 - x2, y1 - y2, z1 - z2)
+    rhs = cmp.atol + cmp.rtol * max(_norm(x1,y1,z2), _norm(x2,y2,z2))
+    return lhs <= rhs
 end
 
 typesalt(::Type{GeometryCollection} ) = 0xd1fd7c6403c36e5b
