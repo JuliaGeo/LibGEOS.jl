@@ -62,14 +62,21 @@ end
     @test isapprox(pt1, pt2, atol=0.2)
     @test isapprox(pt1, pt2, rtol=0.1)
     @test readgeom("LINESTRING (130 240, 650 240)") != readgeom("LINESTRING (130 240, -650 240)")
+    @test !(readgeom("LINESTRING (130 240, 650 240)") ≈ readgeom("LINESTRING (130 240, -650 240)"))
+    @test readgeom("LINESTRING (130 240, 650 240)") ≈ readgeom("LINESTRING (130 240, -650 240)") atol=1300
+    @test readgeom("LINESTRING (130 240, 650 240)") ≈ readgeom("LINESTRING (130 240, 650 240.00000001)")
 
     pt = readgeom("POINT(0 NaN)")
     @test isequal(pt, pt)
     @test pt != pt
+    @test !(isapprox(pt, pt))
+    @test !(isapprox(pt, pt, atol=Inf))
 
     geo = readgeom("POLYGON((1 1,1 2,2 2,2 NaN,1 1))")
     @test isequal(geo,geo)
     @test geo != geo
+    @test !(isapprox(geo, geo))
+    @test !(isapprox(geo, geo, atol=Inf))
 
     geos = [
         readgeom("POINT(0.12345 2.000 0.1)"),
@@ -102,6 +109,7 @@ end
     end
     for g in geos
         @test g == LibGEOS.clone(g)
+        @test g ≈ LibGEOS.clone(g)
         @test isequal(g, LibGEOS.clone(g))
         @test hash(g) == hash(LibGEOS.clone(g))
     end
