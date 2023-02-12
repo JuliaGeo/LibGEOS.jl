@@ -323,51 +323,87 @@ end
 function Base.isapprox(geo1::AbstractGeometry, geo2::AbstractGeometry; kw...)::Bool
     compare(IsApprox(;kw...), geo1, geo2)
 end
-function (cmp::IsApprox)(geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
-    compare(cmp, geo1, geo2)
-end
 function compare(≅, geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
     (typeof(geo1) === typeof(geo2)) || return false
     ng1 = ngeom(geo1)
     ng2 = ngeom(geo2)
     ng1 == ng2 || return false
     for i in 1:ng1
-        (getgeom(geo1, i) ≅ getgeom(geo2, i)) || return false
-    end
-    return true
-end
-function compare(≅, pt1::Point, pt2::Point)::Bool
-    is3d = GeoInterface.is3d(pt1)
-    is3d === GeoInterface.is3d(pt2) || return false
-    GeoInterface.getcoord(pt1,1) ≅ GeoInterface.getcoord(pt2,1) || return false
-    GeoInterface.getcoord(pt1,2) ≅ GeoInterface.getcoord(pt2,2) || return false
-    if is3d
-        GeoInterface.getcoord(pt1,3) ≅ GeoInterface.getcoord(pt2,3) || return false
+        compare(≅, getgeom(geo1,i), getgeom(geo2,i)) || return false
     end
     return true
 end
 
-function _norm(x,y,z)
-    return sqrt(x^2 + y^2 + z^2)
+const HasCoordSeq = Union{LineString, LinearRing, Point}
+
+function compare(≅, pt1::HasCoordSeq, pt2::HasCoordSeq)::Bool
+    compare_coordseq(≅, pt1, pt2)
 end
 
-function compare(cmp::IsApprox, pt1::Point, pt2::Point)::Bool
-    is3d = GeoInterface.is3d(pt1)
-    is3d === GeoInterface.is3d(pt2) || return false
-    x1 = GeoInterface.getcoord(pt1,1)
-    x2 = GeoInterface.getcoord(pt2,1)
-    y1 = GeoInterface.getcoord(pt1,2)
-    y2 = GeoInterface.getcoord(pt2,2)
-    if is3d
-        z1 = GeoInterface.getcoord(pt1,3) 
-        z2 = GeoInterface.getcoord(pt2,3)
-    else
-        z1 = 0.0
-        z2 = 0.0
+_numPoints(geo::Union{LineString,LinearRing}) = numPoints(geo)
+_numPoints(geo::Point) = 1
+function compare_coordseq(cmp, geo1::HasCoordSeq, geo2::HasCoordSeq, ctx=get_context(geo1))
+    typeof(geo1) === typeof(geo2) || return false
+    is3d = GeoInterface.is3d(geo1)
+    is3d === GeoInterface.is3d(geo2) || return false
+    npts = _numPoints(geo1)
+    npts == _numPoints(geo2) || return false 
+    GC.@preserve geo1 geo2 ctx begin
+        seq1 = getCoordSeq(geo1)
+        seq2 = getCoordSeq(geo2)
+        unsafe_compare_coorseq(cmp, seq1, seq2, npts, is3d, ctx.ptr)
     end
-    lhs = _norm(x1 - x2, y1 - y2, z1 - z2)
-    rhs = cmp.atol + cmp.rtol * max(_norm(x1,y1,z2), _norm(x2,y2,z2))
-    return lhs <= rhs
+end
+
+function unsafe_compare_coorseq(cmp, seq1::GEOSCoordSeq, seq2::GEOSCoordSeq, npts, is3d, ctx::Ptr)
+    X1 = Ref(NaN)
+    Y1 = Ref(NaN)
+    Z1 = Ref(NaN)
+    X2 = Ref(NaN)
+    Y2 = Ref(NaN)
+    Z2 = Ref(NaN)
+    GC.@preserve X1 Y1 Z1 X2 Y2 Z2 for i in 0:(npts-1)
+        if is3d
+            GEOSCoordSeq_getXYZ_r(ctx, seq1, i, X1, Y1, Z1)
+            GEOSCoordSeq_getXYZ_r(ctx, seq2, i, X2, Y2, Z2)
+        else
+            GEOSCoordSeq_getXY_r(ctx, seq1, i, X1, Y1)
+            GEOSCoordSeq_getXY_r(ctx, seq2, i, X2, Y2)
+        end
+        cmp(X1[], X2[]) || return false
+        cmp(Y1[], Y2[]) || return false
+        if is3d
+            cmp(Z1[], Z2[]) || return false
+        end
+    end
+    return true
+end
+
+function unsafe_compare_coorseq(cmp::IsApprox, seq1::GEOSCoordSeq, seq2::GEOSCoordSeq, npts, is3d, ctx::Ptr)
+    X1 = Ref(NaN)
+    Y1 = Ref(NaN)
+    Z1 = Ref(0.0)
+    X2 = Ref(NaN)
+    Y2 = Ref(NaN)
+    Z2 = Ref(0.0)
+    s1 = 0.0
+    s2 = 0.0
+    s12 = 0.0
+    for i in 0:(npts-1)
+        if is3d
+            GEOSCoordSeq_getXYZ_r(ctx, seq1, i, X1, Y1, Z1)
+            GEOSCoordSeq_getXYZ_r(ctx, seq2, i, X2, Y2, Z2)
+        else
+            GEOSCoordSeq_getXY_r(ctx, seq1, i, X1, Y1)
+            GEOSCoordSeq_getXY_r(ctx, seq2, i, X2, Y2)
+        end
+        x1 = X1[]; y1 = Y1[]; z1 = Z1[]
+        x2 = X2[]; y2 = Y2[]; z2 = Z2[];
+        s1 += x1^2 + y1^2 + z1^2
+        s2 += x2^2 + y2^2 + z2^2
+        s12 += (x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2
+    end
+    return sqrt(s12) <= cmp.atol + cmp.rtol * max(s1, s2)
 end
 
 typesalt(::Type{GeometryCollection} ) = 0xd1fd7c6403c36e5b
@@ -390,14 +426,33 @@ function Base.hash(geo::AbstractGeometry, h::UInt)::UInt
     return h
 end
 
-function Base.hash(pt::Point, h::UInt)::UInt
-    h = hash(getcoord(pt,1), h)
-    h = hash(getcoord(pt,2), h)
-    if GeoInterface.is3d(pt)
-        h = hash(getcoord(pt,3), h)
+function hash_coordseq(geo::HasCoordSeq, h::UInt, ctx=get_context(geo))::UInt
+    seq = getCoordSeq(geo)
+    npts = _numPoints(geo)
+    is3d = GeoInterface.is3d(geo)
+    X = Ref(NaN)
+    Y = Ref(NaN)
+    Z = Ref(NaN)
+    GC.@preserve geo for i in 0:(npts-1)
+        for i in 0:(npts-1)
+            if is3d
+                GEOSCoordSeq_getXYZ_r(ctx, seq, i, X, Y, Z)
+                h = hash(X[], h)
+                h = hash(Y[], h)
+                h = hash(Z[], h)
+            else
+                GEOSCoordSeq_getXY_r(ctx, seq, i, X, Y)
+                h = hash(X[], h)
+                h = hash(Y[], h)
+            end
+        end
     end
-    h = hash(getcoord(pt,2), h)
     return h
+end
+
+function Base.hash(geo::HasCoordSeq, h::UInt)::UInt
+    h = hash(typesalt(typeof(geo)), h)
+    return hash_coordseq(geo, h)
 end
 
 # teach ccall how to get the pointer to pass to libgeos

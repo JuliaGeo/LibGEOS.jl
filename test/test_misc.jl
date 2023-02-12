@@ -66,7 +66,10 @@ end
     @test readgeom("LINESTRING (130 240, 650 240)") ≈ readgeom("LINESTRING (130 240, -650 240)") atol=1300
     @test readgeom("LINESTRING (130 240, 650 240)") ≈ readgeom("LINESTRING (130 240, 650 240.00000001)")
 
-    pt = readgeom("POINT(0 NaN)")
+    @test isapprox(readgeom("POLYGON((1 1,0 0,            1 2,2 2,2 4,1 1))"),
+                   readgeom("POLYGON((1 1,0 0.00000000001,1 2,2 2,2 4,1 1))"))
+
+    pt = readgeom("POINT(-1 NaN)")
     @test isequal(pt, pt)
     @test pt != pt
     @test !(isapprox(pt, pt))
