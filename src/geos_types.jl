@@ -309,6 +309,97 @@ const geomtypes = [
     GeometryCollection,
 ]
 
+Base.@kwdef struct IsApprox
+    atol::Float64=0.0
+    rtol::Float64=sqrt(eps(Float64))
+end
+
+function Base.:(==)(geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
+    compare(==, geo1, geo2)
+end
+function Base.isequal(geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
+    compare(isequal, geo1, geo2)
+end
+function Base.isapprox(geo1::AbstractGeometry, geo2::AbstractGeometry; kw...)::Bool
+    compare(IsApprox(;kw...), geo1, geo2)
+end
+function (cmp::IsApprox)(geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
+    compare(cmp, geo1, geo2)
+end
+function compare(≅, geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
+    (typeof(geo1) === typeof(geo2)) || return false
+    ng1 = ngeom(geo1)
+    ng2 = ngeom(geo2)
+    ng1 == ng2 || return false
+    for i in 1:ng1
+        (getgeom(geo1, i) ≅ getgeom(geo2, i)) || return false
+    end
+    return true
+end
+function compare(≅, pt1::Point, pt2::Point)::Bool
+    is3d = GeoInterface.is3d(pt1)
+    is3d === GeoInterface.is3d(pt2) || return false
+    GeoInterface.getcoord(pt1,1) ≅ GeoInterface.getcoord(pt2,1) || return false
+    GeoInterface.getcoord(pt1,2) ≅ GeoInterface.getcoord(pt2,2) || return false
+    if is3d
+        GeoInterface.getcoord(pt1,3) ≅ GeoInterface.getcoord(pt2,3) || return false
+    end
+    return true
+end
+
+function _norm(x,y,z)
+    return sqrt(x^2 + y^2 + z^2)
+end
+
+function compare(cmp::IsApprox, pt1::Point, pt2::Point)::Bool
+    is3d = GeoInterface.is3d(pt1)
+    is3d === GeoInterface.is3d(pt2) || return false
+    x1 = GeoInterface.getcoord(pt1,1)
+    x2 = GeoInterface.getcoord(pt2,1)
+    y1 = GeoInterface.getcoord(pt1,2)
+    y2 = GeoInterface.getcoord(pt2,2)
+    if is3d
+        z1 = GeoInterface.getcoord(pt1,3) 
+        z2 = GeoInterface.getcoord(pt2,3)
+    else
+        z1 = 0.0
+        z2 = 0.0
+    end
+    lhs = _norm(x1 - x2, y1 - y2, z1 - z2)
+    rhs = cmp.atol + cmp.rtol * max(_norm(x1,y1,z2), _norm(x2,y2,z2))
+    return lhs <= rhs
+end
+
+typesalt(::Type{GeometryCollection} ) = 0xd1fd7c6403c36e5b
+typesalt(::Type{PreparedGeometry}   ) = 0xbc1a26fe2f5b7537
+typesalt(::Type{LineString}         ) = 0x712352fe219fca15
+typesalt(::Type{LinearRing}         ) = 0xac7644fd36955ef1
+typesalt(::Type{MultiLineString}    ) = 0x85aff0a53a2f2a32
+typesalt(::Type{MultiPoint}         ) = 0x6213e67dbfd3b570
+typesalt(::Type{MultiPolygon}       ) = 0xff2f957b4cdb5832
+typesalt(::Type{Point}              ) = 0x4b5c101d3843160e
+typesalt(::Type{Polygon}            ) = 0xa5c895d62ef56723
+
+function Base.hash(geo::AbstractGeometry, h::UInt)::UInt
+    salt = typesalt(typeof(geo))
+    h = hash(salt, h)
+    for i in 1:ngeom(geo)
+        g = getgeom(geo,i)
+        h = hash(g, h)
+    end
+    return h
+end
+
+function Base.hash(pt::Point, h::UInt)::UInt
+    h = hash(getcoord(pt,1), h)
+    h = hash(getcoord(pt,2), h)
+    if GeoInterface.is3d(pt)
+        h = hash(getcoord(pt,3), h)
+    end
+    h = hash(getcoord(pt,2), h)
+    return h
+end
+
 # teach ccall how to get the pointer to pass to libgeos
 # this way the Julia compiler will track the lifetimes for us
 Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::AbstractGeometry) = x.ptr

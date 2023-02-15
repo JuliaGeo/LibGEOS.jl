@@ -1,5 +1,6 @@
 using Test
 using LibGEOS
+import GeoInterface
 
 @testset "allow_global_context!" begin
     Point(1,2,3)
@@ -43,6 +44,75 @@ end
     @test LibGEOS.intersects(p2, q1, ctx1)
     @test LibGEOS.intersects(p2, q1, ctx2)
     @test LibGEOS.intersects(p2, q1, ctx3)
+end
+
+@testset "hash eq" begin
+    ctx1 = LibGEOS.GEOSContext()
+    ctx2 = LibGEOS.GEOSContext()
+    @test ctx1 != ctx2
+    @test ctx1 == ctx1
+    @test hash(ctx1) != hash(ctx2)
+    pt1 = readgeom("POINT(0.12345 2.000 0.1)")
+    pt2 = readgeom("POINT(0.12345 2.000 0.2)")
+    @test pt1 != pt2
+    @test hash(pt1) != hash(pt2)
+    @test !isequal(pt1, pt2)
+    @test !isapprox(pt1, pt2)
+    @test !isapprox(pt1, pt2, atol=0, rtol=0)
+    @test isapprox(pt1, pt2, atol=0.2)
+    @test isapprox(pt1, pt2, rtol=0.1)
+    @test readgeom("LINESTRING (130 240, 650 240)") != readgeom("LINESTRING (130 240, -650 240)")
+    @test !(readgeom("LINESTRING (130 240, 650 240)") ≈ readgeom("LINESTRING (130 240, -650 240)"))
+    @test readgeom("LINESTRING (130 240, 650 240)") ≈ readgeom("LINESTRING (130 240, -650 240)") atol=1300
+    @test readgeom("LINESTRING (130 240, 650 240)") ≈ readgeom("LINESTRING (130 240, 650 240.00000001)")
+
+    pt = readgeom("POINT(0 NaN)")
+    @test isequal(pt, pt)
+    @test pt != pt
+    @test !(isapprox(pt, pt))
+    @test !(isapprox(pt, pt, atol=Inf))
+
+    geo = readgeom("POLYGON((1 1,1 2,2 2,2 NaN,1 1))")
+    @test isequal(geo,geo)
+    @test geo != geo
+    @test !(isapprox(geo, geo))
+    @test !(isapprox(geo, geo, atol=Inf))
+
+    geos = [
+        readgeom("POINT(0.12345 2.000 0.1)"),
+        readgeom("POINT(0.12345 2.000)"),
+        readgeom("POINT(0.12345 2.000 0.2)"),
+        readgeom("POLYGON EMPTY"),
+        readgeom("LINESTRING EMPTY"),
+        readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))"),
+        readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))"),
+        readgeom("POLYGON((1 1,1 2,2 2,2.1 1,1 1))"),
+        readgeom("LINESTRING (130 240, 650 240)"),
+        readgeom("MULTILINESTRING ((5 0, 10 0), (0 0, 5 0))"),
+        readgeom("GEOMETRYCOLLECTION (LINESTRING (1 2, 2 2), LINESTRING (2 1, 1 1), POLYGON ((0.5 1, 1 2, 1 1, 0.5 1)), POLYGON ((9 2, 9.5 1, 2 1, 2 2, 9 2)))"),
+        readgeom("MULTIPOINT(0 0, 5 0, 10 0)"),
+    ]
+    for g1 in geos
+        for g2 in geos
+            if g1 === g2
+                @test g1 == g2
+                @test isequal(g1,g2)
+                @test hash(g1) == hash(g2)
+                @test isapprox(g1,g2)
+            else
+                @test g1 != g2
+                @test !isequal(g1,g2)
+                @test !isapprox(g1,g2)
+                @test hash(g1) != hash(g2)
+            end
+        end
+    end
+    for g in geos
+        @test g == LibGEOS.clone(g)
+        @test g ≈ LibGEOS.clone(g)
+        @test isequal(g, LibGEOS.clone(g))
+        @test hash(g) == hash(LibGEOS.clone(g))
+    end
 end
 
 @testset "show it like you build it" begin
