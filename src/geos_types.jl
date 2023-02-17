@@ -323,7 +323,7 @@ end
 function Base.isapprox(geo1::AbstractGeometry, geo2::AbstractGeometry; kw...)::Bool
     compare(IsApprox(;kw...), geo1, geo2)
 end
-function compare(cmp, geo1::AbstractGeometry, geo2::AbstractGeometry, ctx=get_context(geo1))::Bool
+function compare(cmp::Eq, geo1::AbstractGeometry, geo2::AbstractGeometry, ctx=get_context(geo1))::Bool where {Eq}
     (typeof(geo1) === typeof(geo2)) || return false
     GC.@preserve geo1 geo2 ctx begin
         unsafe_compare(cmp, geo1.ptr, geo2.ptr, ctx.ptr)
@@ -361,7 +361,7 @@ function unsafe_getgeom(geo::Ptr, i, ctx::Ptr)::Ptr
     end
 end
 
-function unsafe_compare(cmp, geo1::Ptr, geo2::Ptr, ctx::Ptr)
+function unsafe_compare(cmp::Eq, geo1::Ptr, geo2::Ptr, ctx::Ptr) where {Eq}
     (unsafe_GEOSGeomTypes(geo1, ctx) === unsafe_GEOSGeomTypes(geo2, ctx)) || return false
     (unsafe_is3d(geo1, ctx) === unsafe_is3d(geo2, ctx)) || return false
     if unsafe_has_coordseq(geo1, ctx)
@@ -392,7 +392,7 @@ function unsafe_is3d(geo::Ptr, ctx::Ptr)::Bool
     GEOSGeom_getCoordinateDimension_r(ctx, geo) == 3
 end
 
-function unsafe_compare_coordseq(cmp, geo1, geo2, ctx)
+function unsafe_compare_coordseq(cmp::Eq, geo1, geo2, ctx) where {Eq}
     npts = _unsafe_numPoints(geo1, ctx)
     npts == _unsafe_numPoints(geo2, ctx) || return false 
     seq1 = GEOSGeom_getCoordSeq_r(ctx, geo1)

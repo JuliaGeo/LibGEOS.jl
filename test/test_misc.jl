@@ -127,19 +127,22 @@ end
 
 @testset "performance hash eq" begin
     rng = Xoshiro(123)
-    pts1 = [randn(rng, 3) for _ in 1:10^4]
+    pts1 = [randn(rng, 3) for _ in 1:10^3]
     pts1[end] = pts1[begin]
     lr1 = LinearRing(pts1)
     pts2 = copy(pts1)
-    pts2[4535] = randn(rng, 3)
+    pts2[453] = randn(rng, 3)
     lr2 = LinearRing(pts2)
     @test !(lr1 == lr2)
     @test !isequal(lr1, lr2)
     @test !isapprox(lr1, lr2)
     
-    @test 100 > @allocated lr1 == lr2
-    @test 100 > @allocated isequal(lr1, lr2)
-    @test 100 > @allocated isapprox(lr1, lr2)
+    @test 0 == @allocated lr1 == lr2
+    @test 0 == @allocated isequal(lr1, lr2)
+    @test 0 == @allocated isapprox(lr1, lr2)
+
+    hash(lr1) != hash(lr2)
+    @test 50 > @allocated hash(lr1, UInt(0))
 
     poly1 = Polygon(lr1)
     poly2 = Polygon(lr2)
@@ -149,10 +152,12 @@ end
     @test !isequal(poly1, poly2)
     @test !isapprox(poly1, poly2)
     
-    @test 100 > @allocated poly1 == poly2
-    @test 100 > @allocated isequal(poly1, poly2)
-    @test 100 > @allocated isapprox(poly1, poly2)
+    @test 0 == @allocated poly1 == poly2
+    @test 0 == @allocated isequal(poly1, poly2)
+    @test 0 == @allocated isapprox(poly1, poly2)
 
+    @test hash(poly1) != hash(poly2)
+    @test 50 > @allocated hash(poly1, UInt(0))
 end
 
 @testset "show it like you build it" begin
