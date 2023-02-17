@@ -75,6 +75,12 @@ end
     @test !(isapprox(pt, pt))
     @test !(isapprox(pt, pt, atol=Inf))
 
+    pt = readgeom("POINT(0 NaN)")
+    @test isequal(pt, pt)
+    @test pt != pt
+    @test !(isapprox(pt, pt))
+    @test !(isapprox(pt, pt, atol=Inf))
+
     geo = readgeom("POLYGON((1 1,1 2,2 2,2 NaN,1 1))")
     @test isequal(geo,geo)
     @test geo != geo
