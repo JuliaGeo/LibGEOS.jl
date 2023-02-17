@@ -142,7 +142,7 @@ end
     @test 0 == @allocated isapprox(lr1, lr2)
 
     hash(lr1) != hash(lr2)
-    @test 50 > @allocated hash(lr1, UInt(0))
+    @test 50 > @allocated hash(lr1)
 
     poly1 = Polygon(lr1)
     poly2 = Polygon(lr2)
@@ -157,7 +157,7 @@ end
     @test 0 == @allocated isapprox(poly1, poly2)
 
     @test hash(poly1) != hash(poly2)
-    @test 50 > @allocated hash(poly1, UInt(0))
+    @test 50 > @allocated hash(poly1)
 end
 
 @testset "show it like you build it" begin
