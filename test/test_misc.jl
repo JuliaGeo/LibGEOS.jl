@@ -1,6 +1,7 @@
 using Test
 using LibGEOS
 import GeoInterface
+using Random: Xoshiro
 
 @testset "allow_global_context!" begin
     Point(1,2,3)
@@ -122,6 +123,36 @@ end
         @test isequal(g, LibGEOS.clone(g))
         @test hash(g) == hash(LibGEOS.clone(g))
     end
+end
+
+@testset "performance hash eq" begin
+    rng = Xoshiro(123)
+    pts1 = [randn(rng, 3) for _ in 1:10^4]
+    pts1[end] = pts1[begin]
+    lr1 = LinearRing(pts1)
+    pts2 = copy(pts1)
+    pts2[4535] = randn(rng, 3)
+    lr2 = LinearRing(pts2)
+    @test !(lr1 == lr2)
+    @test !isequal(lr1, lr2)
+    @test !isapprox(lr1, lr2)
+    
+    @test 100 > @allocated lr1 == lr2
+    @test 100 > @allocated isequal(lr1, lr2)
+    @test 100 > @allocated isapprox(lr1, lr2)
+
+    poly1 = Polygon(lr1)
+    poly2 = Polygon(lr2)
+
+    poly2 = LinearRing(pts2)
+    @test !(poly1 == poly2)
+    @test !isequal(poly1, poly2)
+    @test !isapprox(poly1, poly2)
+    
+    @test 100 > @allocated poly1 == poly2
+    @test 100 > @allocated isequal(poly1, poly2)
+    @test 100 > @allocated isapprox(poly1, poly2)
+
 end
 
 @testset "show it like you build it" begin
