@@ -362,9 +362,11 @@ function unsafe_getgeom(geo::Ptr, i, ctx::Ptr)::Ptr
 end
 
 function unsafe_compare(cmp, geo1::Ptr, geo2::Ptr, ctx::Ptr)
+    (unsafe_GEOSGeomTypes(geo1, ctx) === unsafe_GEOSGeomTypes(geo2, ctx)) || return false
+    (unsafe_is3d(geo1, ctx) === unsafe_is3d(geo2, ctx)) || return false
     if unsafe_has_coordseq(geo1, ctx)
         @assert unsafe_has_coordseq(geo2, ctx)
-        return unsafe_compare_has_coordseq(cmp, geo1, geo2, ctx)
+        return unsafe_compare_coordseq(cmp, geo1, geo2, ctx)
     end
     ng1 = unsafe_ngeom(geo1, ctx)
     ng2 = unsafe_ngeom(geo2, ctx)
@@ -390,17 +392,17 @@ function unsafe_is3d(geo::Ptr, ctx::Ptr)::Bool
     GEOSGeom_getCoordinateDimension_r(ctx, geo) == 3
 end
 
-function unsafe_compare_has_coordseq(cmp, geo1, geo2, ctx)
+function unsafe_compare_coordseq(cmp, geo1, geo2, ctx)
     npts = _unsafe_numPoints(geo1, ctx)
     npts == _unsafe_numPoints(geo2, ctx) || return false 
     seq1 = GEOSGeom_getCoordSeq_r(ctx, geo1)
     seq2 = GEOSGeom_getCoordSeq_r(ctx, geo2)
     is3d = unsafe_is3d(geo1, ctx)
     is3d == unsafe_is3d(geo2, ctx) || return false
-    unsafe_compare_coordseq(cmp, seq1, seq2, npts, is3d, ctx)
+    unsafe_compare_coordseq_kernel(cmp, seq1, seq2, npts, is3d, ctx)
 end
 
-function unsafe_compare_coordseq(cmp, seq1::GEOSCoordSeq, seq2::GEOSCoordSeq, npts, is3d, ctx::Ptr)
+function unsafe_compare_coordseq_kernel(cmp, seq1::GEOSCoordSeq, seq2::GEOSCoordSeq, npts, is3d, ctx::Ptr)
     X1 = Ref(NaN)
     Y1 = Ref(NaN)
     Z1 = Ref(NaN)
@@ -424,7 +426,7 @@ function unsafe_compare_coordseq(cmp, seq1::GEOSCoordSeq, seq2::GEOSCoordSeq, np
     return true
 end
 
-function unsafe_compare_coordseq(cmp::IsApprox, seq1::GEOSCoordSeq, seq2::GEOSCoordSeq, npts, is3d, ctx::Ptr)
+function unsafe_compare_coordseq_kernel(cmp::IsApprox, seq1::GEOSCoordSeq, seq2::GEOSCoordSeq, npts, is3d, ctx::Ptr)
     X1 = Ref(NaN)
     Y1 = Ref(NaN)
     Z1 = Ref(0.0)
