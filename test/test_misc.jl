@@ -1,7 +1,7 @@
 using Test
 using LibGEOS
 import GeoInterface
-using Random: Xoshiro
+using Random: MersenneTwister
 
 @testset "allow_global_context!" begin
     Point(1,2,3)
@@ -126,7 +126,7 @@ end
 end
 
 @testset "performance hash eq" begin
-    rng = Xoshiro(123)
+    rng = MersenneTwister(123)
     pts1 = [randn(rng, 3) for _ in 1:10^3]
     pts1[end] = pts1[begin]
     lr1 = LinearRing(pts1)
