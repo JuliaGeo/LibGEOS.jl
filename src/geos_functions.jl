@@ -292,22 +292,31 @@ function getZ(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     zcoords
 end
 
-function getCoordinates(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = get_global_context())
+function getCoordinates!(out::Vector{Float64}, ptr::GEOSCoordSeq, i::Integer, context)
     if !(0 < i <= getSize(ptr, context))
         error(
             "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
         )
     end
     ndim = getDimensions(ptr, context)
-    coord = Array{Float64}(undef, ndim)
-    start = pointer(coord)
-    floatsize = sizeof(Float64)
-    GEOSCoordSeq_getX_r(context, ptr, i - 1, start)
-    GEOSCoordSeq_getY_r(context, ptr, i - 1, start + floatsize)
-    if ndim == 3
-        GEOSCoordSeq_getZ_r(context, ptr, i - 1, start + 2 * floatsize)
+    @assert length(out) == ndim
+    GC.@preserve out begin
+        start = pointer(out)
+        floatsize = sizeof(Float64)
+        GEOSCoordSeq_getX_r(context, ptr, i - 1, start)
+        GEOSCoordSeq_getY_r(context, ptr, i - 1, start + floatsize)
+        if ndim == 3
+            GEOSCoordSeq_getZ_r(context, ptr, i - 1, start + 2 * floatsize)
+        end
     end
-    coord
+    out
+end
+
+function getCoordinates(ptr::GEOSCoordSeq, i::Integer, context::GEOSContext = get_global_context())
+    ndim = getDimensions(ptr, context)
+    out = Array{Float64}(undef, ndim)
+    getCoordinates!(out, ptr, i, context)
+    out
 end
 
 function getCoordinates(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())

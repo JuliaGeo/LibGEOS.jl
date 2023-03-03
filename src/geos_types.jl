@@ -309,6 +309,31 @@ const geomtypes = [
     GeometryCollection,
 ]
 
+const HasCoordSeq = Union{LineString, LinearRing, Point}
+"""
+
+    coordinates!(out::Vector{Float64}, geo::$HasCoordSeq, i::Integer)
+    coordinates!(out::Vector{Float64}, geo::Point)
+
+Copy the coordinates of the ith point of geo into `out`.
+"""
+function coordinates!(out, geo::HasCoordSeq, i::Integer, ctx::GEOSContext=get_context(geo))
+    GC.@preserve out geo begin
+        seq = GEOSGeom_getCoordSeq_r(ctx, geo)::Ptr
+        getCoordinates!(out, seq, i, ctx)
+    end
+end
+function coordinates!(out, geo::Point, ctx::GEOSContext=get_context(geo))
+    coordinates!(out, geo, i, ctx)
+end
+
+function has_coord_seq(geo::AbstractGeometry)
+    false
+end
+function has_coord_seq(::HasCoordSeq)
+    true
+end
+
 Base.@kwdef struct IsApprox
     atol::Float64=0.0
     rtol::Float64=sqrt(eps(Float64))
@@ -323,134 +348,75 @@ end
 function Base.isapprox(geo1::AbstractGeometry, geo2::AbstractGeometry; kw...)::Bool
     compare(IsApprox(;kw...), geo1, geo2)
 end
-function compare(cmp::Eq, geo1::AbstractGeometry, geo2::AbstractGeometry, ctx=get_context(geo1))::Bool where {Eq}
+function compare(cmp, geo1::AbstractGeometry, geo2::AbstractGeometry, ctx=get_context(geo1))::Bool
     (typeof(geo1) === typeof(geo2)) || return false
-    GC.@preserve geo1 geo2 ctx begin
-        unsafe_compare(cmp, geo1.ptr, geo2.ptr, ctx.ptr)
-    end
-end
-
-function unsafe_GEOSGeomTypes(geo::Ptr, ctx::Ptr)::GEOSGeomTypes
-    GEOSGeomTypes(GEOSGeomTypeId_r(ctx, geo))
-end
-
-function unsafe_has_coordseq(geo::Ptr, ctx::Ptr)::Bool
-    typ = unsafe_GEOSGeomTypes(geo, ctx)
-    typ in (GEOS_POINT, GEOS_LINEARRING, GEOS_LINESTRING)
-end
-
-function unsafe_ngeom(geo::Ptr, ctx::Ptr)::Int
-    typ = unsafe_GEOSGeomTypes(geo, ctx)
-    if typ === GEOS_POLYGON
-        GEOSGetNumInteriorRings_r(ctx, geo) + 1
+    if has_coord_seq(geo1)
+        return compare_coord_seqs(cmp, geo1, geo2, ctx)
     else
-        GEOSGetNumGeometries_r(ctx, geo)
-    end
-end
-
-function unsafe_getgeom(geo::Ptr, i, ctx::Ptr)::Ptr
-    typ = unsafe_GEOSGeomTypes(geo, ctx)
-    if typ === GEOS_POLYGON
-        if i == 1
-            GEOSGetExteriorRing_r(ctx, geo)
-        else
-            GEOSGetInteriorRingN_r(ctx, geo, i - 2)
-        end
-    else
-        GEOSGetGeometryN_r(ctx, geo, i-1)
-    end
-end
-
-function unsafe_compare(cmp::Eq, geo1::Ptr, geo2::Ptr, ctx::Ptr) where {Eq}
-    (unsafe_GEOSGeomTypes(geo1, ctx) === unsafe_GEOSGeomTypes(geo2, ctx)) || return false
-    (unsafe_is3d(geo1, ctx) === unsafe_is3d(geo2, ctx)) || return false
-    if unsafe_has_coordseq(geo1, ctx)
-        @assert unsafe_has_coordseq(geo2, ctx)
-        return unsafe_compare_coordseq(cmp, geo1, geo2, ctx)
-    end
-    ng1 = unsafe_ngeom(geo1, ctx)
-    ng2 = unsafe_ngeom(geo2, ctx)
-    (ng1 == ng2) || return false
-    for i in 1:ng1
-        g1 = unsafe_getgeom(geo1, i, ctx)
-        g2 = unsafe_getgeom(geo2, i, ctx)
-        unsafe_compare(cmp, g1, g2, ctx) || return false
-    end
-    return true
-end
-
-function _unsafe_numPoints(geo::Ptr, ctx::Ptr)::Int
-    typ = unsafe_GEOSGeomTypes(geo, ctx)
-    if typ === GEOS_POINT
-        return 1
-    else
-        return GEOSGeomGetNumPoints_r(ctx, geo)
-    end
-end
-
-function unsafe_is3d(geo::Ptr, ctx::Ptr)::Bool
-    GEOSGeom_getCoordinateDimension_r(ctx, geo) == 3
-end
-
-function unsafe_compare_coordseq(cmp::Eq, geo1, geo2, ctx) where {Eq}
-    npts = _unsafe_numPoints(geo1, ctx)
-    npts == _unsafe_numPoints(geo2, ctx) || return false 
-    seq1 = GEOSGeom_getCoordSeq_r(ctx, geo1)
-    seq2 = GEOSGeom_getCoordSeq_r(ctx, geo2)
-    is3d = unsafe_is3d(geo1, ctx)
-    is3d == unsafe_is3d(geo2, ctx) || return false
-    unsafe_compare_coordseq_kernel(cmp, seq1, seq2, npts, is3d, ctx)
-end
-
-function unsafe_compare_coordseq_kernel(cmp, seq1::GEOSCoordSeq, seq2::GEOSCoordSeq, npts, is3d, ctx::Ptr)
-    X1 = Ref(NaN)
-    Y1 = Ref(NaN)
-    Z1 = Ref(NaN)
-    X2 = Ref(NaN)
-    Y2 = Ref(NaN)
-    Z2 = Ref(NaN)
-    GC.@preserve X1 Y1 Z1 X2 Y2 Z2 for i in 0:(npts-1)
-        if is3d
-            GEOSCoordSeq_getXYZ_r(ctx, seq1, i, X1, Y1, Z1)
-            GEOSCoordSeq_getXYZ_r(ctx, seq2, i, X2, Y2, Z2)
-        else
-            GEOSCoordSeq_getXY_r(ctx, seq1, i, X1, Y1)
-            GEOSCoordSeq_getXY_r(ctx, seq2, i, X2, Y2)
-        end
-        cmp(X1[], X2[]) || return false
-        cmp(Y1[], Y2[]) || return false
-        if is3d
-            cmp(Z1[], Z2[]) || return false
+        ng1 = ngeom(geo1)
+        ng2 = ngeom(geo2)
+        ng1 == ng2 || return false
+        for i in 1:ng1
+            compare(cmp, getgeom(geo1, i), getgeom(geo2, i), ctx) || return false
         end
     end
     return true
 end
 
-function unsafe_compare_coordseq_kernel(cmp::IsApprox, seq1::GEOSCoordSeq, seq2::GEOSCoordSeq, npts, is3d, ctx::Ptr)
-    X1 = Ref(NaN)
-    Y1 = Ref(NaN)
-    Z1 = Ref(0.0)
-    X2 = Ref(NaN)
-    Y2 = Ref(NaN)
-    Z2 = Ref(0.0)
+npoints(pt::Point) = 1
+npoints(geo::HasCoordSeq) = GeoInterface.ngeom(geo)
+
+function compare_coord_seqs(cmp, geo1, geo2, ctx)
+    ncoords1 = GeoInterface.ncoord(geo1)
+    ncoords2 = GeoInterface.ncoord(geo2)
+    ncoords1 == ncoords2 || return false
+    ncoords1 == 0 && return true
+    np1 = npoints(geo1)
+    np2 = npoints(geo2)
+    np1 == np2 || return false
+    coords1 = Vector{Float64}(undef, ncoords1)
+    coords2 = Vector{Float64}(undef, ncoords1)
+    for i in 1:np1
+        coordinates!(coords1, geo1, i, ctx)
+        coordinates!(coords2, geo2, i, ctx)
+        cmp(coords1, coords2) || return false
+    end
+    return true
+end
+
+function compare_coord_seqs(cmp::IsApprox, geo1, geo2, ctx)
+    ncoords1 = GeoInterface.ncoord(geo1)
+    ncoords2 = GeoInterface.ncoord(geo2)
+    ncoords1 == ncoords2 || return false
+    ncoords1 == 0 && return true
+    @assert ncoords1 in 2:3
+    ncoords1 == ncoords2 || return false
+    np1 = npoints(geo1)
+    np2 = npoints(geo2)
+    np1 == np2 || return false
+    coords1 = Vector{Float64}(undef, ncoords1)
+    coords2 = Vector{Float64}(undef, ncoords1)
+    # isapprox of two vectors is calculated using their euclidean norms and the norm of their difference
+    # we compute (the squares) of these norms in an allocation free way
     s1 = 0.0
     s2 = 0.0
     s12 = 0.0
-    for i in 0:(npts-1)
-        if is3d
-            GEOSCoordSeq_getXYZ_r(ctx, seq1, i, X1, Y1, Z1)
-            GEOSCoordSeq_getXYZ_r(ctx, seq2, i, X2, Y2, Z2)
+    for i in 1:np1
+        coordinates!(coords1, geo1, i, ctx)
+        coordinates!(coords2, geo2, i, ctx)
+        if ncoords1 == 2
+            x1,y1 = coords1
+            x2,y2 = coords2
+            s12 += (x1 - x2)^2 + (y1 - y2)^2
         else
-            GEOSCoordSeq_getXY_r(ctx, seq1, i, X1, Y1)
-            GEOSCoordSeq_getXY_r(ctx, seq2, i, X2, Y2)
+            x1,y1,z1 = coords1
+            x2,y2,z2 = coords2
+            s12 += (x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2
         end
-        x1 = X1[]; y1 = Y1[]; z1 = Z1[]
-        x2 = X2[]; y2 = Y2[]; z2 = Z2[];
-        s1 += x1^2 + y1^2 + z1^2
-        s2 += x2^2 + y2^2 + z2^2
-        s12 += (x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2
+        s1 += sum(abs2, coords1)
+        s2 += sum(abs2, coords2)
     end
-    return sqrt(s12) <= cmp.atol + cmp.rtol * max(s1, s2)
+    return sqrt(s12) <= cmp.atol + cmp.rtol * sqrt(max(s1, s2))
 end
 
 typesalt(::Type{GeometryCollection} ) = 0xd1fd7c6403c36e5b
@@ -464,47 +430,30 @@ typesalt(::Type{Point}              ) = 0x4b5c101d3843160e
 typesalt(::Type{Polygon}            ) = 0xa5c895d62ef56723
 
 function Base.hash(geo::AbstractGeometry, h::UInt)::UInt
-    ctx = get_context(geo)
     h = hash(typesalt(typeof(geo)), h)
-    GC.@preserve geo ctx begin
-        unsafe_hash(geo.ptr, h, ctx.ptr)
-    end
-end
-
-function unsafe_hash(geo::Ptr, h::UInt, ctx::Ptr)::UInt
-    if unsafe_has_coordseq(geo, ctx)
-        h = unsafe_hash_coordseq(geo, h, ctx::Ptr)
+    if has_coord_seq(geo) 
+        return hash_coord_seq(geo, h)
     else
-        ng = unsafe_ngeom(geo, ctx)
-        for i in 1:ng
-            g = unsafe_getgeom(geo, i, ctx)
-            h = unsafe_hash(g, h, ctx)
+        for i in 1:ngeom(geo)
+            h = hash(getgeom(geo, i), h)
         end
+    end
+    return h
+end
+function hash_coord_seq(geo::HasCoordSeq, h::UInt)::UInt
+    nc = GeoInterface.ncoord(geo)
+    if nc == 0
+        return h
+    end
+    buf = Vector{Float64}(undef, nc)
+    ctx = get_context(geo)
+    for i in 1:npoints(geo)
+        coordinates!(buf, geo, i, ctx)
+        h = hash(buf, h)
     end
     return h
 end
 
-function unsafe_hash_coordseq(geo::Ptr, h::UInt, ctx::Ptr)::UInt
-    seq = GEOSGeom_getCoordSeq_r(ctx, geo)
-    npts = _unsafe_numPoints(geo, ctx)
-    is3d = unsafe_is3d(geo, ctx)
-    X = Ref(NaN)
-    Y = Ref(NaN)
-    Z = Ref(NaN)
-    for i in 0:(npts-1)
-        if is3d
-            GEOSCoordSeq_getXYZ_r(ctx, seq, i, X, Y, Z)
-            h = hash(X[], h)
-            h = hash(Y[], h)
-            h = hash(Z[], h)
-        else
-            GEOSCoordSeq_getXY_r(ctx, seq, i, X, Y)
-            h = hash(X[], h)
-            h = hash(Y[], h)
-        end
-    end
-    return h
-end
 
 # teach ccall how to get the pointer to pass to libgeos
 # this way the Julia compiler will track the lifetimes for us
