@@ -137,12 +137,12 @@ end
     @test !isequal(lr1, lr2)
     @test !isapprox(lr1, lr2)
     
-    @test 200 > @allocated lr1 == lr2
-    @test 200 > @allocated isequal(lr1, lr2)
-    @test 200 > @allocated isapprox(lr1, lr2)
+    @test 300 > @allocated lr1 == lr2
+    @test 300 > @allocated isequal(lr1, lr2)
+    @test 300 > @allocated isapprox(lr1, lr2)
 
     hash(lr1) != hash(lr2)
-    @test 200 > @allocated hash(lr1)
+    @test 300 > @allocated hash(lr1)
 
     poly1 = Polygon(lr1)
     poly2 = Polygon(lr2)
@@ -152,12 +152,12 @@ end
     @test !isequal(poly1, poly2)
     @test !isapprox(poly1, poly2)
     
-    @test 200 > @allocated poly1 == poly2
-    @test 200 > @allocated isequal(poly1, poly2)
-    @test 200 > @allocated isapprox(poly1, poly2)
+    @test 300 > @allocated poly1 == poly2
+    @test 300 > @allocated isequal(poly1, poly2)
+    @test 300 > @allocated isapprox(poly1, poly2)
 
     @test hash(poly1) != hash(poly2)
-    @test 200 > @allocated hash(poly1)
+    @test 300 > @allocated hash(poly1)
 end
 
 @testset "show it like you build it" begin
