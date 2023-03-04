@@ -350,6 +350,7 @@ function Base.isapprox(geo1::AbstractGeometry, geo2::AbstractGeometry; kw...)::B
 end
 function compare(cmp, geo1::AbstractGeometry, geo2::AbstractGeometry, ctx=get_context(geo1))::Bool
     (typeof(geo1) === typeof(geo2)) || return false
+    (geo1 === geo2) && return true
     if has_coord_seq(geo1)
         return compare_coord_seqs(cmp, geo1, geo2, ctx)
     else
