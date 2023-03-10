@@ -47,6 +47,17 @@ end
     @test LibGEOS.intersects(p2, q1, ctx3)
 end
 
+@testset "coordiantes!" begin
+    coordinates! = LibGEOS.coordinates!
+    buf3 = zeros(3)
+    buf2 = zeros(2)
+    @test coordinates!(buf3, readgeom("POINT(1 2 3)")) == Float64[1,2,3] == buf3
+    @test coordinates!(buf2, readgeom("POINT(1 2)")) == Float64[1,2] == buf2
+    @test coordinates!(buf2, readgeom("POINT(1 2)"), 1) == Float64[1,2] == buf2
+    @test coordinates!(buf2, readgeom("LINESTRING (130 240, 650 240)"), 1) == buf2 == [130, 240]
+    @test coordinates!(buf2, readgeom("LINESTRING (130 240, 650 240)"), 2) == buf2 == [650, 240]
+end
+
 @testset "hash eq" begin
     ctx1 = LibGEOS.GEOSContext()
     ctx2 = LibGEOS.GEOSContext()

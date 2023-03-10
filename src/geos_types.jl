@@ -324,7 +324,7 @@ function coordinates!(out, geo::HasCoordSeq, i::Integer, ctx::GEOSContext=get_co
     end
 end
 function coordinates!(out, geo::Point, ctx::GEOSContext=get_context(geo))
-    coordinates!(out, geo, i, ctx)
+    coordinates!(out, geo, 1, ctx)
 end
 
 function has_coord_seq(geo::AbstractGeometry)
