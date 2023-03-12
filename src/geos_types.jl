@@ -1,4 +1,5 @@
 abstract type AbstractGeometry end
+abstract type AbstractMultiGeometry <: AbstractGeometry end
 
 function Base.show(io::IO, geo::AbstractGeometry)
     compact = get(io, :compact, false)
@@ -34,7 +35,7 @@ mutable struct Point <: AbstractGeometry
         Point(createPoint(x, y, z, context), context)
 end
 
-mutable struct MultiPoint <: AbstractGeometry
+mutable struct MultiPoint <: AbstractMultiGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a multipoint from a pointer - only makes sense if it is a pointer to a multipoint
@@ -97,7 +98,7 @@ mutable struct LineString <: AbstractGeometry
     end
 end
 
-mutable struct MultiLineString <: AbstractGeometry
+mutable struct MultiLineString <: AbstractMultiGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a multiline string from a multilinestring or a linestring pointer, else error
@@ -186,7 +187,7 @@ mutable struct Polygon <: AbstractGeometry
             context)
 end
 
-mutable struct MultiPolygon <: AbstractGeometry
+mutable struct MultiPolygon <: AbstractMultiGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create multipolygon using a multipolygon or polygon pointer, else error
@@ -233,7 +234,7 @@ mutable struct MultiPolygon <: AbstractGeometry
             context)
 end
 
-mutable struct GeometryCollection <: AbstractGeometry
+mutable struct GeometryCollection <: AbstractMultiGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a geometric collection from a pointer to a geometric collection, else error

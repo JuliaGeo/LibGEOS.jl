@@ -7,13 +7,18 @@ using Plots
     @test GeoInterface.ncoord(pt) == 2
     @test GeoInterface.getcoord(pt, 1) ≈ 1.0
     @test GeoInterface.testgeometry(pt)
-    @test GeoInterface.extent(pt) == Extent(X = (1.0, 1.0), Y = (2.0, 2.0))
+    @test GeoInterface.extent(pt) == Extent(X=(1.0, 1.0), Y=(2.0, 2.0))
     plot(pt)
 
     pt = LibGEOS.Point(1, 2)
     @test GeoInterface.coordinates(pt) ≈ [1, 2] atol = 1e-5
     @test GeoInterface.geomtrait(pt) == PointTrait()
     @test GeoInterface.testgeometry(pt)
+
+    @inferred GeoInterface.ncoord(pt)
+    @inferred GeoInterface.ngeom(pt)
+    @inferred GeoInterface.getgeom(pt)
+    @inferred GeoInterface.coordinates(pt)
 
     pt = LibGEOS.readgeom("POINT EMPTY")
     @test GeoInterface.coordinates(pt) ≈ Float64[] atol = 1e-5
@@ -32,6 +37,11 @@ using Plots
     @test GeoInterface.testgeometry(mpt)
     plot(mpt)
 
+    @inferred GeoInterface.ncoord(mpt)
+    @inferred GeoInterface.ngeom(mpt)
+    @inferred GeoInterface.getgeom(mpt)
+    @inferred GeoInterface.coordinates(mpt)
+
     coords = Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2]]
     ls = LibGEOS.LineString(coords)
     @test GeoInterface.coordinates(ls) == coords
@@ -42,6 +52,11 @@ using Plots
     @test GeoInterface.coordinates(p) == [9, 2]
     @test GeoInterface.testgeometry(ls)
     plot(ls)
+
+    @inferred GeoInterface.ncoord(ls)
+    @inferred GeoInterface.ngeom(ls)
+    @inferred GeoInterface.getgeom(ls)
+    @inferred GeoInterface.coordinates(ls)
 
     ls = LibGEOS.readgeom("LINESTRING EMPTY")
     @test GeoInterface.coordinates(ls) == []
@@ -55,6 +70,11 @@ using Plots
     @test GeoInterface.testgeometry(mls)
     plot(mls)
 
+    @inferred GeoInterface.ncoord(mls)
+    @inferred GeoInterface.ngeom(mls)
+    @inferred GeoInterface.getgeom(mls)
+    @inferred GeoInterface.coordinates(mls)
+
     coords = Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]]
     lr = LibGEOS.LinearRing(coords)
     @test GeoInterface.coordinates(lr) == coords
@@ -66,6 +86,11 @@ using Plots
     @test GeoInterface.testgeometry(lr)
     # Cannot convert LinearRingTrait to series data for plotting
     # plot(lr)
+
+    @inferred GeoInterface.ncoord(lr)
+    @inferred GeoInterface.ngeom(lr)
+    @inferred GeoInterface.getgeom(lr)
+    @inferred GeoInterface.coordinates(lr)
 
     coords = Vector{Vector{Float64}}[
         Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]],
@@ -81,6 +106,11 @@ using Plots
     @test GeoInterface.coordinates(ls) == coords[2]
     @test GeoInterface.testgeometry(polygon)
     plot(polygon)
+
+    @inferred GeoInterface.ncoord(polygon)
+    @inferred GeoInterface.ngeom(polygon)
+    @inferred GeoInterface.getgeom(polygon)
+    @inferred GeoInterface.coordinates(polygon)
 
     polygon = LibGEOS.readgeom("POLYGON EMPTY")
     @test GeoInterface.coordinates(polygon) == [[]]
@@ -98,13 +128,18 @@ using Plots
     ]]]
     @test GeoInterface.geomtrait(multipolygon) == MultiPolygonTrait()
     @test GeoInterface.testgeometry(multipolygon)
-    @test GeoInterface.extent(multipolygon) == Extent(X = (0.0, 10.0), Y = (0.0, 10.0))
+    @test GeoInterface.extent(multipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
     plot(multipolygon)
+
+    @inferred GeoInterface.ncoord(multipolygon)
+    @inferred GeoInterface.ngeom(multipolygon)
+    @inferred GeoInterface.getgeom(multipolygon)
+    @inferred GeoInterface.coordinates(multipolygon)
 
     pmultipolygon = LibGEOS.prepareGeom(multipolygon)
     @test GeoInterface.geomtrait(pmultipolygon) == MultiPolygonTrait()
     @test GeoInterface.testgeometry(pmultipolygon)
-    @test GeoInterface.extent(pmultipolygon) == Extent(X = (0.0, 10.0), Y = (0.0, 10.0))
+    @test GeoInterface.extent(pmultipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
     LibGEOS.destroyGeom(pmultipolygon)
 
     geomcollection = LibGEOS.readgeom(
@@ -178,6 +213,11 @@ using Plots
     @test GeoInterface.geomtrait(geomcollection) == GeometryCollectionTrait()
     @test GeoInterface.testgeometry(geomcollection)
     plot(geomcollection)
+
+    @inferred GeoInterface.ncoord(geomcollection)
+    @inferred GeoInterface.ngeom(geomcollection)
+    @inferred GeoInterface.getgeom(geomcollection)
+    # @inferred GeoInterface.coordinates(geomcollection)  # can't be inferred
 
     geomcollection = LibGEOS.readgeom(
         "GEOMETRYCOLLECTION(MULTIPOINT(0 0, 0 0, 1 1),LINESTRING(1 1, 2 2, 2 2, 0 0),POLYGON((5 5, 0 0, 0 2, 2 2, 5 5)))",
