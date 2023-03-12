@@ -40,8 +40,9 @@ GeoInterface.getgeom(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
     GeoInterface.getgeom(t, geom.ownedby, i)
 GeoInterface.getgeom(t::AbstractPointTrait, geom::PreparedGeometry, i) = 0
 
-# GeoInterface.coordinates(t::PointTrait, geom::Point) where {T<:AbstractGeometry} = collect(getcoord(geom))
-# GeoInterface.coordinates(t::AbstractGeometryTrait, geom::T) where {T<:AbstractGeometry} = [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
+GeoInterface.coordinates(t::AbstractPointTrait, geom::Point) = collect(getcoord(t, geom))
+GeoInterface.coordinates(t::AbstractPointTrait, geom::T) where {T<:AbstractGeometry} = nothing
+GeoInterface.coordinates(t::AbstractGeometryTrait, geom::T) where {T<:AbstractGeometry} = [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
 GeoInterface.coordinates(t::AbstractGeometryCollectionTrait, geom::T) where {T<:AbstractMultiGeometry} = [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
 
 GeoInterface.ncoord(::AbstractGeometryTrait, geom::T) where {T<:AbstractGeometry} =
