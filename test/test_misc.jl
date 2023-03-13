@@ -1,7 +1,6 @@
 using Test
 using LibGEOS
 import GeoInterface
-using Random: MersenneTwister
 
 @testset "allow_global_context!" begin
     Point(1,2,3)
@@ -137,12 +136,11 @@ end
 end
 
 @testset "performance hash eq" begin
-    rng = MersenneTwister(123)
-    pts1 = [randn(rng, 3) for _ in 1:10^3]
-    pts1[end] = pts1[begin]
+    pts1 = [[sin(x), cos(x), 1] for x in range(0, 2pi, length=1000)]
+    pts1[end] = pts1[1]
     lr1 = LinearRing(pts1)
     pts2 = copy(pts1)
-    pts2[453] = randn(rng, 3)
+    pts2[453] = 2*pts2[453]
     lr2 = LinearRing(pts2)
     @test !(lr1 == lr2)
     @test !isequal(lr1, lr2)
