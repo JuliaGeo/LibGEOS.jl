@@ -47,7 +47,7 @@ end
     @test LibGEOS.intersects(p2, q1, ctx3)
 end
 
-@testset "coordiantes!" begin
+@testset "coordinates!" begin
     coordinates! = LibGEOS.coordinates!
     buf3 = zeros(3)
     buf2 = zeros(2)

@@ -89,7 +89,7 @@ mutable struct LineString <: AbstractGeometry
         finalizer(destroyGeom, line)
         line
     end
-    #create a linestring from a list of coordiantes
+    #create a linestring from a list of coordinates
     function LineString(coords::Vector{Vector{Float64}}, context::GEOSContext = get_global_context())
         line = new(createLineString(coords, context), context)
         finalizer(destroyGeom, line)
@@ -116,7 +116,7 @@ mutable struct MultiLineString <: AbstractGeometry
         finalizer(destroyGeom, multiline)
         multiline
     end
-    # create a multilinestring from a list of linestring coordiantes
+    # create a multilinestring from a list of linestring coordinates
     MultiLineString(multiline::Vector{Vector{Vector{Float64}}},context::GEOSContext = get_global_context()) =
         MultiLineString(
             createCollection(
