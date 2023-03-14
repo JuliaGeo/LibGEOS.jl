@@ -89,7 +89,7 @@ mutable struct LineString <: AbstractGeometry
         finalizer(destroyGeom, line)
         line
     end
-    #create a linestring from a list of coordiantes
+    #create a linestring from a list of coordinates
     function LineString(coords::Vector{Vector{Float64}}, context::GEOSContext = get_global_context())
         line = new(createLineString(coords, context), context)
         finalizer(destroyGeom, line)
@@ -116,7 +116,7 @@ mutable struct MultiLineString <: AbstractGeometry
         finalizer(destroyGeom, multiline)
         multiline
     end
-    # create a multilinestring from a list of linestring coordiantes
+    # create a multilinestring from a list of linestring coordinates
     MultiLineString(multiline::Vector{Vector{Vector{Float64}}},context::GEOSContext = get_global_context()) =
         MultiLineString(
             createCollection(
@@ -309,6 +309,31 @@ const geomtypes = [
     GeometryCollection,
 ]
 
+const HasCoordSeq = Union{LineString, LinearRing, Point}
+"""
+
+    coordinates!(out::Vector{Float64}, geo::$HasCoordSeq, i::Integer)
+    coordinates!(out::Vector{Float64}, geo::Point)
+
+Copy the coordinates of the ith point of geo into `out`.
+"""
+function coordinates!(out, geo::HasCoordSeq, i::Integer, ctx::GEOSContext=get_context(geo))
+    GC.@preserve out geo begin
+        seq = GEOSGeom_getCoordSeq_r(ctx, geo)::Ptr
+        getCoordinates!(out, seq, i, ctx)
+    end
+end
+function coordinates!(out, geo::Point, ctx::GEOSContext=get_context(geo))
+    coordinates!(out, geo, 1, ctx)
+end
+
+function has_coord_seq(geo::AbstractGeometry)
+    false
+end
+function has_coord_seq(::HasCoordSeq)
+    true
+end
+
 Base.@kwdef struct IsApprox
     atol::Float64=0.0
     rtol::Float64=sqrt(eps(Float64))
@@ -323,51 +348,78 @@ end
 function Base.isapprox(geo1::AbstractGeometry, geo2::AbstractGeometry; kw...)::Bool
     compare(IsApprox(;kw...), geo1, geo2)
 end
-function (cmp::IsApprox)(geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
-    compare(cmp, geo1, geo2)
-end
-function compare(≅, geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
+function compare(cmp, geo1::AbstractGeometry, geo2::AbstractGeometry, ctx=get_context(geo1))::Bool
     (typeof(geo1) === typeof(geo2)) || return false
-    ng1 = ngeom(geo1)
-    ng2 = ngeom(geo2)
-    ng1 == ng2 || return false
-    for i in 1:ng1
-        (getgeom(geo1, i) ≅ getgeom(geo2, i)) || return false
+    if (geo1 === geo2) && (cmp === isequal)
+        return true
     end
-    return true
-end
-function compare(≅, pt1::Point, pt2::Point)::Bool
-    is3d = GeoInterface.is3d(pt1)
-    is3d === GeoInterface.is3d(pt2) || return false
-    GeoInterface.getcoord(pt1,1) ≅ GeoInterface.getcoord(pt2,1) || return false
-    GeoInterface.getcoord(pt1,2) ≅ GeoInterface.getcoord(pt2,2) || return false
-    if is3d
-        GeoInterface.getcoord(pt1,3) ≅ GeoInterface.getcoord(pt2,3) || return false
-    end
-    return true
-end
-
-function _norm(x,y,z)
-    return sqrt(x^2 + y^2 + z^2)
-end
-
-function compare(cmp::IsApprox, pt1::Point, pt2::Point)::Bool
-    is3d = GeoInterface.is3d(pt1)
-    is3d === GeoInterface.is3d(pt2) || return false
-    x1 = GeoInterface.getcoord(pt1,1)
-    x2 = GeoInterface.getcoord(pt2,1)
-    y1 = GeoInterface.getcoord(pt1,2)
-    y2 = GeoInterface.getcoord(pt2,2)
-    if is3d
-        z1 = GeoInterface.getcoord(pt1,3) 
-        z2 = GeoInterface.getcoord(pt2,3)
+    if has_coord_seq(geo1)
+        return compare_coord_seqs(cmp, geo1, geo2, ctx)
     else
-        z1 = 0.0
-        z2 = 0.0
+        ng1 = ngeom(geo1)
+        ng2 = ngeom(geo2)
+        ng1 == ng2 || return false
+        for i in 1:ng1
+            compare(cmp, getgeom(geo1, i), getgeom(geo2, i), ctx) || return false
+        end
     end
-    lhs = _norm(x1 - x2, y1 - y2, z1 - z2)
-    rhs = cmp.atol + cmp.rtol * max(_norm(x1,y1,z2), _norm(x2,y2,z2))
-    return lhs <= rhs
+    return true
+end
+
+npoints(pt::Point) = 1
+npoints(geo::HasCoordSeq) = GeoInterface.ngeom(geo)
+
+function compare_coord_seqs(cmp, geo1, geo2, ctx)
+    ncoords1 = GeoInterface.ncoord(geo1)
+    ncoords2 = GeoInterface.ncoord(geo2)
+    ncoords1 == ncoords2 || return false
+    ncoords1 == 0 && return true
+    np1 = npoints(geo1)
+    np2 = npoints(geo2)
+    np1 == np2 || return false
+    coords1 = Vector{Float64}(undef, ncoords1)
+    coords2 = Vector{Float64}(undef, ncoords1)
+    for i in 1:np1
+        coordinates!(coords1, geo1, i, ctx)
+        coordinates!(coords2, geo2, i, ctx)
+        cmp(coords1, coords2) || return false
+    end
+    return true
+end
+
+function compare_coord_seqs(cmp::IsApprox, geo1, geo2, ctx)
+    ncoords1 = GeoInterface.ncoord(geo1)
+    ncoords2 = GeoInterface.ncoord(geo2)
+    ncoords1 == ncoords2 || return false
+    ncoords1 == 0 && return true
+    @assert ncoords1 in 2:3
+    ncoords1 == ncoords2 || return false
+    np1 = npoints(geo1)
+    np2 = npoints(geo2)
+    np1 == np2 || return false
+    coords1 = Vector{Float64}(undef, ncoords1)
+    coords2 = Vector{Float64}(undef, ncoords1)
+    # isapprox of two vectors is calculated using their euclidean norms and the norm of their difference
+    # we compute (the squares) of these norms in an allocation free way
+    s1 = 0.0
+    s2 = 0.0
+    s12 = 0.0
+    for i in 1:np1
+        coordinates!(coords1, geo1, i, ctx)
+        coordinates!(coords2, geo2, i, ctx)
+        if ncoords1 == 2
+            x1,y1 = coords1
+            x2,y2 = coords2
+            s12 += (x1 - x2)^2 + (y1 - y2)^2
+        else
+            x1,y1,z1 = coords1
+            x2,y2,z2 = coords2
+            s12 += (x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2
+        end
+        s1 += sum(abs2, coords1)
+        s2 += sum(abs2, coords2)
+    end
+    return sqrt(s12) <= cmp.atol + cmp.rtol * sqrt(max(s1, s2))
 end
 
 typesalt(::Type{GeometryCollection} ) = 0xd1fd7c6403c36e5b
@@ -381,24 +433,30 @@ typesalt(::Type{Point}              ) = 0x4b5c101d3843160e
 typesalt(::Type{Polygon}            ) = 0xa5c895d62ef56723
 
 function Base.hash(geo::AbstractGeometry, h::UInt)::UInt
-    salt = typesalt(typeof(geo))
-    h = hash(salt, h)
-    for i in 1:ngeom(geo)
-        g = getgeom(geo,i)
-        h = hash(g, h)
+    h = hash(typesalt(typeof(geo)), h)
+    if has_coord_seq(geo) 
+        return hash_coord_seq(geo, h)
+    else
+        for i in 1:ngeom(geo)
+            h = hash(getgeom(geo, i), h)
+        end
+    end
+    return h
+end
+function hash_coord_seq(geo::HasCoordSeq, h::UInt)::UInt
+    nc = GeoInterface.ncoord(geo)
+    if nc == 0
+        return h
+    end
+    buf = Vector{Float64}(undef, nc)
+    ctx = get_context(geo)
+    for i in 1:npoints(geo)
+        coordinates!(buf, geo, i, ctx)
+        h = hash(buf, h)
     end
     return h
 end
 
-function Base.hash(pt::Point, h::UInt)::UInt
-    h = hash(getcoord(pt,1), h)
-    h = hash(getcoord(pt,2), h)
-    if GeoInterface.is3d(pt)
-        h = hash(getcoord(pt,3), h)
-    end
-    h = hash(getcoord(pt,2), h)
-    return h
-end
 
 # teach ccall how to get the pointer to pass to libgeos
 # this way the Julia compiler will track the lifetimes for us

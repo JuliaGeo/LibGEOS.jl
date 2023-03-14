@@ -46,6 +46,17 @@ end
     @test LibGEOS.intersects(p2, q1, ctx3)
 end
 
+@testset "coordinates!" begin
+    coordinates! = LibGEOS.coordinates!
+    buf3 = zeros(3)
+    buf2 = zeros(2)
+    @test coordinates!(buf3, readgeom("POINT(1 2 3)")) == Float64[1,2,3] == buf3
+    @test coordinates!(buf2, readgeom("POINT(1 2)")) == Float64[1,2] == buf2
+    @test coordinates!(buf2, readgeom("POINT(1 2)"), 1) == Float64[1,2] == buf2
+    @test coordinates!(buf2, readgeom("LINESTRING (130 240, 650 240)"), 1) == buf2 == [130, 240]
+    @test coordinates!(buf2, readgeom("LINESTRING (130 240, 650 240)"), 2) == buf2 == [650, 240]
+end
+
 @testset "hash eq" begin
     ctx1 = LibGEOS.GEOSContext()
     ctx2 = LibGEOS.GEOSContext()
@@ -65,6 +76,15 @@ end
     @test !(readgeom("LINESTRING (130 240, 650 240)") ≈ readgeom("LINESTRING (130 240, -650 240)"))
     @test readgeom("LINESTRING (130 240, 650 240)") ≈ readgeom("LINESTRING (130 240, -650 240)") atol=1300
     @test readgeom("LINESTRING (130 240, 650 240)") ≈ readgeom("LINESTRING (130 240, 650 240.00000001)")
+
+    @test isapprox(readgeom("POLYGON((1 1,0 0,            1 2,2 2,2 4,1 1))"),
+                   readgeom("POLYGON((1 1,0 0.00000000001,1 2,2 2,2 4,1 1))"))
+
+    pt = readgeom("POINT(-1 NaN)")
+    @test isequal(pt, pt)
+    @test pt != pt
+    @test !(isapprox(pt, pt))
+    @test !(isapprox(pt, pt, atol=Inf))
 
     pt = readgeom("POINT(0 NaN)")
     @test isequal(pt, pt)
@@ -113,6 +133,40 @@ end
         @test isequal(g, LibGEOS.clone(g))
         @test hash(g) == hash(LibGEOS.clone(g))
     end
+end
+
+@testset "performance hash eq" begin
+    pts1 = [[sin(x), cos(x), 1] for x in range(0, 2pi, length=1000)]
+    pts1[end] = pts1[1]
+    lr1 = LinearRing(pts1)
+    pts2 = copy(pts1)
+    pts2[453] = 2*pts2[453]
+    lr2 = LinearRing(pts2)
+    @test !(lr1 == lr2)
+    @test !isequal(lr1, lr2)
+    @test !isapprox(lr1, lr2)
+    
+    @test 300 > @allocated lr1 == lr2
+    @test 300 > @allocated isequal(lr1, lr2)
+    @test 300 > @allocated isapprox(lr1, lr2)
+
+    hash(lr1) != hash(lr2)
+    @test 300 > @allocated hash(lr1)
+
+    poly1 = Polygon(lr1)
+    poly2 = Polygon(lr2)
+
+    poly2 = LinearRing(pts2)
+    @test !(poly1 == poly2)
+    @test !isequal(poly1, poly2)
+    @test !isapprox(poly1, poly2)
+    
+    @test 300 > @allocated poly1 == poly2
+    @test 300 > @allocated isequal(poly1, poly2)
+    @test 300 > @allocated isapprox(poly1, poly2)
+
+    @test hash(poly1) != hash(poly2)
+    @test 300 > @allocated hash(poly1)
 end
 
 @testset "show it like you build it" begin
