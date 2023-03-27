@@ -6,6 +6,8 @@ using GeoInterfaceRecipes
 using Extents
 using CEnum
 
+const GI = GeoInterface
+
 export Point,
     MultiPoint,
     LineString,

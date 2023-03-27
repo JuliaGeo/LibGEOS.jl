@@ -95,6 +95,12 @@ mutable struct LineString <: AbstractGeometry
         finalizer(destroyGeom, line)
         line
     end
+    #create a linestring from a list of coordiantes
+    function LineString(coords::Vector{Point}, context::GEOSContext = get_global_context())
+        line = new(createLineString(coords, context), context)
+        finalizer(destroyGeom, line)
+        line
+    end
 end
 
 mutable struct MultiLineString <: AbstractGeometry
@@ -122,6 +128,13 @@ mutable struct MultiLineString <: AbstractGeometry
             createCollection(
                 GEOS_MULTILINESTRING,
                 GEOSGeom[createLineString(coords, context) for coords in multiline],
+                context),
+            context)
+    MultiLineString(multiline::Vector{LineString}, context::GEOSContext = get_global_context()) =
+        MultiLineString(
+            createCollection(
+                GEOS_MULTILINESTRING,
+                GEOSGeom[ls.ptr for ls in multiline],
                 context),
             context)
 end
@@ -254,6 +267,13 @@ mutable struct GeometryCollection <: AbstractGeometry
             createCollection(
                 GEOS_GEOMETRYCOLLECTION,
                 collection,
+                context),
+            context)
+    GeometryCollection(collection::Vector{<:AbstractGeometry}, context::GEOSContext = get_global_context()) =
+        GeometryCollection(
+            createCollection(
+                GEOS_GEOMETRYCOLLECTION,
+                GEOSGeom[geom.ptr for geom in collection],
                 context),
             context)
 end

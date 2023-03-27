@@ -145,10 +145,11 @@ function getDimensions(ptr::GEOSCoordSeq, context::GEOSContext = get_global_cont
 end
 
 # convenience functions
+# Use Tuple where possible  
 function setCoordSeq!(
     ptr::GEOSCoordSeq,
     i::Integer,
-    coords::Vector{Float64},
+    coords::Union{Vector{<:Real},Tuple},
     context::GEOSContext = get_global_context(),
 )
     ndim = length(coords)
@@ -158,9 +159,9 @@ function setCoordSeq!(
             "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
         )
     end
-    setX!(ptr, i, coords[1], context)
-    setY!(ptr, i, coords[2], context)
-    ndim >= 3 && setZ!(ptr, i, coords[3], context)
+    setX!(ptr, i, Float64(coords[1]), context)
+    setY!(ptr, i, Float64(coords[2]), context)
+    ndim >= 3 && setZ!(ptr, i, Float64(coords[3]), context)
     ptr
 end
 
@@ -233,7 +234,7 @@ end
 
 function getX(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     ncoords = getSize(ptr, context)
-    xcoords = Array{Float64}(undef, ncoords)
+    xcoords = Vector{Float64}(undef, ncoords)
     start = pointer(xcoords)
     floatsize = sizeof(Float64)
     for i = 0:ncoords-1
@@ -258,7 +259,7 @@ end
 
 function getY(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     ncoords = getSize(ptr, context)
-    ycoords = Array{Float64}(undef, ncoords)
+    ycoords = Vector{Float64}(undef, ncoords)
     start = pointer(ycoords)
     floatsize = sizeof(Float64)
     for i = 0:ncoords-1
@@ -777,7 +778,7 @@ function within(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_conte
     result != 0x00
 end
 
-function Base.contains(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
+function contains(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSContains_r(context, obj1, obj2)
     if result == 0x02
         error("LibGEOS: Error in GEOSContains")
@@ -842,7 +843,7 @@ function destroyPreparedGeom(obj::PreparedGeometry, context::GEOSContext = get_g
     GEOSPreparedGeom_destroy_r(context, obj)
 end
 
-function Base.contains(
+function contains(
     obj1::PreparedGeometry,
     obj2::Geometry,
     context::GEOSContext = get_context(obj1)
