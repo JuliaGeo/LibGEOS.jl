@@ -778,6 +778,9 @@ function within(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_conte
     result != 0x00
 end
 
+Base.contains(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1)) = 
+    contains(obj1, obj2, context)
+
 function contains(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
     result = GEOSContains_r(context, obj1, obj2)
     if result == 0x02
@@ -842,6 +845,9 @@ end
 function destroyPreparedGeom(obj::PreparedGeometry, context::GEOSContext = get_global_context())
     GEOSPreparedGeom_destroy_r(context, obj)
 end
+
+Base.contains(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = get_context(obj1)) =
+    contains(obj1, obj2, context)
 
 function contains(
     obj1::PreparedGeometry,

@@ -123,6 +123,8 @@ end
     # GEOSContainsTest
     geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
     geom2_ = LibGEOS.readgeom("POLYGON EMPTY")
+    @test !Base.contains(geom1_, geom2_)
+    @test !Base.contains(geom2_, geom1_)
     @test !LibGEOS.contains(geom1_, geom2_)
     @test !LibGEOS.contains(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
@@ -130,6 +132,8 @@ end
 
     geom1_ = LibGEOS.readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
     geom2_ = LibGEOS.readgeom("POINT(2 2)")
+    @test Base.contains(geom1_, geom2_)
+    @test !Base.contains(geom2_, geom1_)
     @test LibGEOS.contains(geom1_, geom2_)
     @test !LibGEOS.contains(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
@@ -137,6 +141,8 @@ end
 
     geom1_ = LibGEOS.readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
     geom2_ = LibGEOS.readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))")
+    @test Base.contains(geom1_, geom2_)
+    @test !Base.contains(geom2_, geom1_)
     @test LibGEOS.contains(geom1_, geom2_)
     @test !LibGEOS.contains(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
