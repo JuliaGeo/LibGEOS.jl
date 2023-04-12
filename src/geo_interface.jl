@@ -73,6 +73,7 @@ function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)
     return Extent(X = (getXMin(env), getXMax(env)), Y = (getYMin(env), getYMax(env)))
 end
 
+GI.convert(::Type{Point}, ::PointTrait, geom::Point; context=nothing) = geom
 function GI.convert(::Type{Point}, ::PointTrait, geom; context=get_global_context())
     if GI.is3d(geom)
         return Point(GI.x(geom), GI.y(geom), GI.z(geom), context)
@@ -80,41 +81,41 @@ function GI.convert(::Type{Point}, ::PointTrait, geom; context=get_global_contex
         return Point(GI.x(geom), GI.y(geom), context)
     end
 end
-GI.convert(::Type{MultiPoint}, ::MultiPointTrait, geom::MultiPoint; kw...) = geom
+GI.convert(::Type{MultiPoint}, ::MultiPointTrait, geom::MultiPoint; context=nothing) = geom
 function GI.convert(::Type{MultiPoint}, t::MultiPointTrait, geom; context=get_global_context())
     points = Point[GI.convert(Point, PointTrait(), p) for p in GI.getpoint(t, geom)]
     return MultiPoint(points, context)
 end
-GI.convert(::Type{LineString}, ::LineStringTrait, geom::LineString; kw...) = geom
+GI.convert(::Type{LineString}, ::LineStringTrait, geom::LineString; context=nothing) = geom
 function GI.convert(::Type{LineString}, ::LineStringTrait, geom; context=get_global_context())
     # Faster to make a CoordSeq directly here
     seq = _geom_to_coord_seq(geom, context)
     return LineString(createLineString(seq, context), context)
 end
-GI.convert(::Type{LinearRing}, ::LinearRingTrait, geom::LinearRing; kw...) = geom
+GI.convert(::Type{LinearRing}, ::LinearRingTrait, geom::LinearRing; context=nothing) = geom
 function GI.convert(::Type{LinearRing}, ::LinearRingTrait, geom; context=get_global_context())
     # Faster to make a CoordSeq directly here
     seq = _geom_to_coord_seq(geom, context)
     return LinearRing(createLinearRing(seq, context), context)
 end
-GI.convert(::Type{MultiLineString}, ::MultiLineStringTrait, geom::MultiLineString; kw...) = geom
+GI.convert(::Type{MultiLineString}, ::MultiLineStringTrait, geom::MultiLineString; context=nothing) = geom
 function GI.convert(::Type{MultiLineString}, ::MultiLineStringTrait, geom; context=get_global_context())
     linestrings = LineString[GI.convert(LineString, LineStringTrait(), g; context) for g in getgeom(geom)]
     return MultiLineString(linestrings)
 end
-GI.convert(::Type{Polygon}, ::PolygonTrait, geom::Polygon; kw...) = geom
+GI.convert(::Type{Polygon}, ::PolygonTrait, geom::Polygon; context=nothing) = geom
 function GI.convert(::Type{Polygon}, ::PolygonTrait, geom; context=get_global_context())
     exterior = GI.convert(LinearRing, GI.LinearRingTrait(), GI.getexterior(geom); context)
     holes = LinearRing[GI.convert(LinearRing, GI.LinearRingTrait(), g; context) for g in GI.gethole(geom)]
     return Polygon(exterior, holes)
 end
-GI.convert(::Type{MultiPolygon}, ::MultiPolygonTrait, geom::MultiPolygon; kw...) = geom
+GI.convert(::Type{MultiPolygon}, ::MultiPolygonTrait, geom::MultiPolygon; context=nothing) = geom
 function GI.convert(::Type{MultiPolygon}, ::MultiPolygonTrait, geom; context=get_global_context())
     polygons = Polygon[GI.convert(Polygon, PolygonTrait(), g; context) for g in GI.getgeom(geom)]
     return MultiPolygon(polygons)
 end
 
-function GI.convert(t::Type{<:AbstractGeometry}, ::AbstractGeometryTrait, geom; kw...)
+function GI.convert(t::Type{<:AbstractGeometry}, ::AbstractGeometryTrait, geom; context=nothing)
     error(
         "Cannot convert an object of $(of(geom)) with the $(of()) trait to a $t (yet). Please report an issue.",
     )
