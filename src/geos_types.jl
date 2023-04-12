@@ -89,13 +89,12 @@ mutable struct LineString <: AbstractGeometry
         finalizer(destroyGeom, line)
         line
     end
-    #create a linestring from a list of coordinates
+    # create a linestring from a vector of points
     function LineString(coords::Vector{Vector{Float64}}, context::GEOSContext = get_global_context())
         line = new(createLineString(coords, context), context)
         finalizer(destroyGeom, line)
         line
     end
-    #create a linestring from a list of coordiantes
     function LineString(coords::Vector{Point}, context::GEOSContext = get_global_context())
         line = new(createLineString(coords, context), context)
         finalizer(destroyGeom, line)
