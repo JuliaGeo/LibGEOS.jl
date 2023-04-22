@@ -145,7 +145,7 @@ function getDimensions(ptr::GEOSCoordSeq, context::GEOSContext = get_global_cont
 end
 
 # convenience functions
-# Use Tuple where possible  
+# Use Tuple where possible
 function setCoordSeq!(
     ptr::GEOSCoordSeq,
     i::Integer,
@@ -778,7 +778,7 @@ function within(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_conte
     result != 0x00
 end
 
-Base.contains(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1)) = 
+Base.contains(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1)) =
     contains(obj1, obj2, context)
 
 function contains(obj1::Geometry, obj2::Geometry, context::GEOSContext = get_context(obj1))

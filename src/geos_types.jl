@@ -453,7 +453,7 @@ typesalt(::Type{Polygon}            ) = 0xa5c895d62ef56723
 
 function Base.hash(geo::AbstractGeometry, h::UInt)::UInt
     h = hash(typesalt(typeof(geo)), h)
-    if has_coord_seq(geo) 
+    if has_coord_seq(geo)
         return hash_coord_seq(geo, h)
     else
         for i in 1:ngeom(geo)

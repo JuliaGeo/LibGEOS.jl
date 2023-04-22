@@ -211,15 +211,15 @@ const LG = LibGEOS
     @testset "Conversion" begin
         one_arg_functions = (
             LG.area, LG.geomLength, LG.envelope, LG.minimumRotatedRectangle, LG.convexhull, LG.boundary,
-            LG.uniquePoints, LG.unaryUnion, LG.pointOnSurface, LG.centroid, LG.node, 
+            LG.uniquePoints, LG.unaryUnion, LG.pointOnSurface, LG.centroid, LG.node,
             LG.delaunayTriangulationEdges, LG.delaunayTriangulation, LG.constrainedDelaunayTriangulation,
             # LG.simplify, LG.topologyPreserveSimplify,
         )
         two_arg_functions = (
-            LG.intersection, LG.difference, LG.symmetricDifference, LG.union, 
+            LG.intersection, LG.difference, LG.symmetricDifference, LG.union,
             LG.distance, LG.hausdorffdistance, LG.nearestPoints, LG.disjoint, LG.touches, LG.intersects, LG.crosses,
             LG.within, LG.overlaps, LG.covers, LG.coveredby, LG.equals,
-            # LG.project, LG.projectNormalized, LG.sharedPaths, LG.snap, LG.contains, LG.equalsexact, 
+            # LG.project, LG.projectNormalized, LG.sharedPaths, LG.snap, LG.contains, LG.equalsexact,
         )
 
         mp = LibGEOS.readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
@@ -227,7 +227,7 @@ const LG = LibGEOS
         mp2 = GeoInterface.convert(MultiPolygon, mp)
         @test mp2 isa MultiPolygon
         @test mp === mp2
-        
+
         coords = [0.0, 1.0]
         geom = GeoInterface.convert(Point, GeoInterface.Point(coords))
         @test geom isa Point
@@ -237,12 +237,12 @@ const LG = LibGEOS
         geom = GeoInterface.convert(MultiPoint, GeoInterface.MultiPoint(coords))
         @test geom isa MultiPoint
         @test GeoInterface.coordinates(geom) == coords
-        for f in one_arg_functions            
+        for f in one_arg_functions
             @test f(LibGEOS.MultiPoint(coords)) == f(GeoInterface.MultiPoint(coords))
         end
         coords2 = [[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]
-        for f in two_arg_functions            
-            @test f(LibGEOS.LineString(coords), LibGEOS.LineString(coords)) == 
+        for f in two_arg_functions
+            @test f(LibGEOS.LineString(coords), LibGEOS.LineString(coords)) ==
                   f(GeoInterface.LineString(coords), GeoInterface.LineString(coords))
         end
 
@@ -250,12 +250,12 @@ const LG = LibGEOS
         geom = GeoInterface.convert(LineString, GeoInterface.LineString(coords))
         @test geom isa LineString
         @test GeoInterface.coordinates(geom) == coords
-        for f in one_arg_functions            
+        for f in one_arg_functions
             @test f(LibGEOS.LineString(coords)) == f(GeoInterface.LineString(coords))
         end
         coords2 = [[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]
-        for f in two_arg_functions            
-            @test f(LibGEOS.LineString(coords), LibGEOS.LineString(coords)) == 
+        for f in two_arg_functions
+            @test f(LibGEOS.LineString(coords), LibGEOS.LineString(coords)) ==
                   f(GeoInterface.LineString(coords), GeoInterface.LineString(coords))
         end
 
@@ -263,12 +263,12 @@ const LG = LibGEOS
         geom = GeoInterface.convert(MultiLineString, GeoInterface.MultiLineString(coords))
         @test geom isa MultiLineString
         @test GeoInterface.coordinates(geom) == coords
-        for f in one_arg_functions            
+        for f in one_arg_functions
             @test f(LibGEOS.MultiLineString(coords)) == f(GeoInterface.MultiLineString(coords))
         end
         coords2 = [[[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]]
-        for f in two_arg_functions            
-            @test f(LibGEOS.MultiLineString(coords), LibGEOS.MultiLineString(coords2)) == 
+        for f in two_arg_functions
+            @test f(LibGEOS.MultiLineString(coords), LibGEOS.MultiLineString(coords2)) ==
                   f(GeoInterface.MultiLineString(coords), LibGEOS.MultiLineString(coords2))
         end
 
@@ -279,12 +279,12 @@ const LG = LibGEOS
         @test GeoInterface.nring(geom) == 1
         @test GeoInterface.nhole(geom) == 0
         @test GeoInterface.coordinates(geom) == coords
-        for f in one_arg_functions            
+        for f in one_arg_functions
             @test f(LibGEOS.Polygon(coords)) == f(GeoInterface.Polygon(coords))
         end
         coords2 = [[[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]]
-        for f in two_arg_functions            
-            @test f(LibGEOS.Polygon(coords), LibGEOS.Polygon(coords2)) == 
+        for f in two_arg_functions
+            @test f(LibGEOS.Polygon(coords), LibGEOS.Polygon(coords2)) ==
             f(GeoInterface.Polygon(coords), LibGEOS.Polygon(coords2))
         end
 
@@ -296,12 +296,12 @@ const LG = LibGEOS
         geom = GeoInterface.convert(MultiPolygon, GeoInterface.MultiPolygon(coords))
         @test geom isa MultiPolygon
         @test GeoInterface.coordinates(geom) == coords
-        for f in one_arg_functions            
+        for f in one_arg_functions
             @test f(LibGEOS.MultiPolygon(coords)) == f(GeoInterface.MultiPolygon(coords))
         end
         coords2 = [[[[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]]]
-        for f in two_arg_functions            
-            @test f(LibGEOS.MultiPolygon(coords), LibGEOS.MultiPolygon(coords2)) == 
+        for f in two_arg_functions
+            @test f(LibGEOS.MultiPolygon(coords), LibGEOS.MultiPolygon(coords2)) ==
                   f(GeoInterface.MultiPolygon(coords), LibGEOS.MultiPolygon(coords2))
         end
 
