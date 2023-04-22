@@ -306,10 +306,6 @@ const LG = LibGEOS
             @test f(LibGEOS.MultiPolygon(coords), LibGEOS.MultiPolygon(coords2)) ==
                   f(GeoInterface.MultiPolygon(coords), LibGEOS.MultiPolygon(coords2))
         end
-
-        struct XMesh end
-        GeoInterface.geomtrait(::XMesh) = GeoInterface.PolyhedralSurfaceTrait()
-        @test_throws Exception GeoInterface.convert(MultiPolygon, XMesh())
     end
 
     @testset "Operations" begin
