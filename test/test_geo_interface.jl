@@ -213,12 +213,14 @@ const LG = LibGEOS
             LG.area, LG.geomLength, LG.envelope, LG.minimumRotatedRectangle, LG.convexhull, LG.boundary,
             LG.uniquePoints, LG.unaryUnion, LG.pointOnSurface, LG.centroid, LG.node,
             LG.delaunayTriangulationEdges, LG.delaunayTriangulation, LG.constrainedDelaunayTriangulation,
+            # these have different signatures
             # LG.simplify, LG.topologyPreserveSimplify,
         )
         two_arg_functions = (
             LG.intersection, LG.difference, LG.symmetricDifference, LG.union,
             LG.distance, LG.hausdorffdistance, LG.nearestPoints, LG.disjoint, LG.touches, LG.intersects, LG.crosses,
             LG.within, LG.overlaps, LG.covers, LG.coveredby, LG.equals,
+            # these have different signatures
             # LG.project, LG.projectNormalized, LG.sharedPaths, LG.snap, LG.contains, LG.equalsexact,
         )
 
