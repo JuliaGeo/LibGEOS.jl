@@ -314,7 +314,7 @@ end
         for f in (within, coveredby)
             factcheck(f, g1, g2, testvalue)
         end
-        for f in (contains, covers)
+        for f in (LibGEOS.contains, covers)
             factcheck(f, g2, g1, testvalue)
         end
     end

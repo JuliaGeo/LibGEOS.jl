@@ -145,7 +145,7 @@ end
     @test !(lr1 == lr2)
     @test !isequal(lr1, lr2)
     @test !isapprox(lr1, lr2)
-    
+
     @test 300 > @allocated lr1 == lr2
     @test 300 > @allocated isequal(lr1, lr2)
     @test 300 > @allocated isapprox(lr1, lr2)
@@ -160,7 +160,7 @@ end
     @test !(poly1 == poly2)
     @test !isequal(poly1, poly2)
     @test !isapprox(poly1, poly2)
-    
+
     @test 300 > @allocated poly1 == poly2
     @test 300 > @allocated isequal(poly1, poly2)
     @test 300 > @allocated isapprox(poly1, poly2)

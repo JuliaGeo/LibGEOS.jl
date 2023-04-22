@@ -89,8 +89,13 @@ mutable struct LineString <: AbstractGeometry
         finalizer(destroyGeom, line)
         line
     end
-    #create a linestring from a list of coordinates
+    # create a linestring from a vector of points
     function LineString(coords::Vector{Vector{Float64}}, context::GEOSContext = get_global_context())
+        line = new(createLineString(coords, context), context)
+        finalizer(destroyGeom, line)
+        line
+    end
+    function LineString(coords::Vector{Point}, context::GEOSContext = get_global_context())
         line = new(createLineString(coords, context), context)
         finalizer(destroyGeom, line)
         line
@@ -122,6 +127,13 @@ mutable struct MultiLineString <: AbstractGeometry
             createCollection(
                 GEOS_MULTILINESTRING,
                 GEOSGeom[createLineString(coords, context) for coords in multiline],
+                context),
+            context)
+    MultiLineString(multiline::Vector{LineString}, context::GEOSContext = get_global_context()) =
+        MultiLineString(
+            createCollection(
+                GEOS_MULTILINESTRING,
+                GEOSGeom[ls.ptr for ls in multiline],
                 context),
             context)
 end
@@ -254,6 +266,13 @@ mutable struct GeometryCollection <: AbstractGeometry
             createCollection(
                 GEOS_GEOMETRYCOLLECTION,
                 collection,
+                context),
+            context)
+    GeometryCollection(collection::Vector{<:AbstractGeometry}, context::GEOSContext = get_global_context()) =
+        GeometryCollection(
+            createCollection(
+                GEOS_GEOMETRYCOLLECTION,
+                GEOSGeom[geom.ptr for geom in collection],
                 context),
             context)
 end
@@ -434,7 +453,7 @@ typesalt(::Type{Polygon}            ) = 0xa5c895d62ef56723
 
 function Base.hash(geo::AbstractGeometry, h::UInt)::UInt
     h = hash(typesalt(typeof(geo)), h)
-    if has_coord_seq(geo) 
+    if has_coord_seq(geo)
         return hash_coord_seq(geo, h)
     else
         for i in 1:ngeom(geo)
