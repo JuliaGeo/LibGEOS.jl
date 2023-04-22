@@ -93,7 +93,7 @@ include("context.jl")
 include("wellknown.jl")
 include("geos_types.jl")
 include("geos_functions.jl")
-include("geo_interface.jl")
+include("geointerface.jl")
 include("strtree.jl")
 include("deprecated.jl")
 
