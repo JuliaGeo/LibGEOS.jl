@@ -87,10 +87,10 @@ export Point,
     STRtree,
     query
 
+include("generated/libgeos_api.jl")
 include("error.jl")
 include("context.jl")
 include("wellknown.jl")
-include("libgeos_api.jl")
 include("geos_types.jl")
 include("geos_functions.jl")
 include("geo_interface.jl")
