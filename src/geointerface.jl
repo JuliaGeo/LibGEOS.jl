@@ -70,7 +70,7 @@ GeoInterface.getcoord(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
 function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)
     # minx, miny, maxx, maxy = getExtent(geom)
     env = envelope(geom)
-    return Extent(X = (getXMin(env), getXMax(env)), Y = (getYMin(env), getYMax(env)))
+    return Extents.Extent(X = (getXMin(env), getXMax(env)), Y = (getYMin(env), getYMax(env)))
 end
 
 GI.convert(::Type{Point}, ::PointTrait, geom::Point; context=nothing) = geom
