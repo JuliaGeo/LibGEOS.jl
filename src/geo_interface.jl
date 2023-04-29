@@ -53,10 +53,6 @@ GeoInterface.getgeom(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
     GeoInterface.getgeom(t, geom.ownedby, i)
 GeoInterface.getgeom(t::AbstractPointTrait, geom::PreparedGeometry, i) = 0
 
-GeoInterface.x(::AbstractPointTrait, geom::AbstractGeometry) = getX(geom.ptr, 1, get_context(geom))
-GeoInterface.y(::AbstractPointTrait, geom::AbstractGeometry) = getY(geom.ptr, 1, get_context(geom))
-GeoInterface.z(::AbstractPointTrait, geom::AbstractGeometry) = getZ(geom.ptr, 1, get_context(geom))
-
 GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom) ? 0 : getCoordinateDimension(geom)
 GeoInterface.getcoord(::AbstractGeometryTrait, geom::AbstractGeometry, i) =
@@ -67,6 +63,7 @@ GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) =
 GeoInterface.getcoord(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
     GeoInterface.getcoord(t, geom.ownedby, i)
 
+# FIXME this doesn't work for 3d geoms, Z is missing
 function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)
     # minx, miny, maxx, maxy = getExtent(geom)
     env = envelope(geom)

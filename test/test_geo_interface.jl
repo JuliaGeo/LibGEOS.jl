@@ -4,12 +4,26 @@ const LG = LibGEOS
 
 @testset "Geo interface" begin
     pt = LibGEOS.Point(1.0, 2.0)
+    @test GeoInterface.x(pt) == 1.0
+    @test GeoInterface.y(pt) == 2.0
     @test GeoInterface.coordinates(pt) ≈ [1, 2] atol = 1e-5
     @test GeoInterface.geomtrait(pt) == PointTrait()
     @test GeoInterface.ncoord(pt) == 2
     @test GeoInterface.getcoord(pt, 1) ≈ 1.0
     @test GeoInterface.testgeometry(pt)
     @test GeoInterface.extent(pt) == Extent(X = (1.0, 1.0), Y = (2.0, 2.0))
+    plot(pt)
+
+    pt = LibGEOS.Point(1.0, 2.0, 3.0)
+    @test GeoInterface.x(pt) == 1.0
+    @test GeoInterface.y(pt) == 2.0
+    @test GeoInterface.z(pt) == 3.0
+    @test GeoInterface.coordinates(pt) ≈ [1, 2, 3] atol = 1e-5
+    @test GeoInterface.ncoord(pt) == 3
+    @test GeoInterface.getcoord(pt, 3) ≈ 3.0
+    @test GeoInterface.testgeometry(pt)
+    # This doesn't return the Z extent
+    @test_broken GeoInterface.extent(pt) == Extent(X = (1.0, 1.0), Y=(2.0, 2.0), Z=(3.0, 3.0))
     plot(pt)
 
     pt = LibGEOS.Point(1, 2)
