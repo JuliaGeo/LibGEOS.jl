@@ -23,7 +23,7 @@ const LG = LibGEOS
     @test GeoInterface.getcoord(pt, 3) ≈ 3.0
     @test GeoInterface.testgeometry(pt)
     # This doesn't return the Z extent
-    @tehst_broken GeoInterface.extent(pt) == Extent(X = (1.0, 1.0), Y=(2.0, 2.0), Z=(3.0, 3.0))
+    @test_broken GeoInterface.extent(pt) == Extent(X = (1.0, 1.0), Y=(2.0, 2.0), Z=(3.0, 3.0))
     plot(pt)
 
     pt = LibGEOS.Point(1, 2)
