@@ -27,7 +27,7 @@ const LG = LibGEOS
     plot(pt)
 
     pt = LibGEOS.Point(1, 2)
-    @atest GeoInterface.coordinates(pt) ≈ [1, 2] atol = 1e-5
+    @test GeoInterface.coordinates(pt) ≈ [1, 2] atol = 1e-5
     @test GeoInterface.geomtrait(pt) == PointTrait()
     @test GeoInterface.testgeometry(pt)
 
