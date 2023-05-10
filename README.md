@@ -34,6 +34,92 @@ polygon = LibGEOS.union(g1, g3)
 
 GEOS functionality is extensive, so coverage is incomplete, but the basic functionality for working with geospatial data is already available. I'm learning as I go along, so documentation is lacking, but if you're interested, you can have a look at the examples in the `examples/` folder, or the tests in `test/test_geo_interface.jl` and `test/test_geos_operations.jl`.
 
+Exported geometries:
+--------------------
+
+- `GeometryCollection`
+- `LineString`
+- `LinearRing`
+- `MultiLineString`
+- `MultiPoint`
+- `MultiPolygon`
+- `Point`
+- `Polygon`
+- `STRtree`
+
+Exported functions:
+-------------------
+
+- `area`
+- `boundary`
+- `buffer`
+- `bufferWithStyle`
+- `centroid`
+- `constrainedDelaunayTriangulation`
+- `containsproperly`
+- `convexhull`
+- `coveredby`
+- `covers`
+- `crosses`
+- `delaunayTriangulation`
+- `delaunayTriangulationEdges`
+- `difference`
+- `disjoint`
+- `distance`
+- `endPoint`
+- `envelope`
+- `equals`
+- `equalsexact`
+- `exteriorRing`
+- `geomLength`
+- `getGeometries`
+- `getGeometry`
+- `getPrecision`
+- `getXMax`
+- `getXMin`
+- `getYMax`
+- `getYMin`
+- `hasZ`
+- `hausdorffdistance`
+- `interiorRing`
+- `interiorRings`
+- `interpolate`
+- `interpolateNormalized`
+- `intersection`
+- `intersects`
+- `isClosed`
+- `isEmpty`
+- `isRing`
+- `isSimple`
+- `isValid`
+- `lineMerge`
+- `minimumRotatedRectangle`
+- `nearestPoints`
+- `node`
+- `numGeometries`
+- `numPoints`
+- `overlaps`
+- `pointOnSurface`
+- `polygonize`
+- `prepareGeom`
+- `project`
+- `projectNormalized`
+- `query`
+- `readgeom`
+- `setPrecision`
+- `sharedPaths`
+- `simplify`
+- `snap`
+- `startPoint`
+- `symmetricDifference`
+- `topologyPreserveSimplify`
+- `touches`
+- `unaryUnion`
+- `union`
+- `uniquePoints`
+- `within`
+- `writegeom`
+
 Installation
 ------------
 1. At the Julia prompt, run 
@@ -48,6 +134,7 @@ Installation
   ```
   
   # Ecosystem
+  * All [GeoInterface.jl](https://github.com/JuliaGeo/GeoInterface.jl) compatible geometries will work in LibGEOS without conversion.
   * Makie support for LibGEOS is available via [LibGEOSMakie.jl](https://github.com/jw3126/LibGEOSMakie.jl)
   * LibGEOS integrates with [GeoInterface.jl](https://github.com/JuliaGeo/GeoInterface.jl) making it easy to combine LibGEOS with other geometry packages.
   
