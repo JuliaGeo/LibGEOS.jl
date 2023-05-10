@@ -34,7 +34,61 @@ polygon = LibGEOS.union(g1, g3)
 
 GEOS functionality is extensive, so coverage is incomplete, but the basic functionality for working with geospatial data is already available. I'm learning as I go along, so documentation is lacking, but if you're interested, you can have a look at the examples in the `examples/` folder, or the tests in `test/test_geo_interface.jl` and `test/test_geos_operations.jl`.
 
-Exported geometries:
+
+Conversion to/from GeoInterface objects
+---------------------------------------
+
+[GeoInterface.jl](https://github.com/JuliaGeo/GeoInterface.jl) compatible geometries from many 
+packages including GeometryBasics.jl, Shapefile.jl, GeoJSON.jl, KML.jl, ArchGDAL.jl, GADM.jl 
+and others can be easily converted to LibGEOS geometries using:
+
+```
+GeoInterface.convert(LibGEOS, other_package_geometry)
+```
+
+To broadcast this over a vector or iterable we need to use `Ref` on `LibGEOS`:
+
+```
+GeoInterface.convert.(Ref(LibGEOS), iterable_of_geometries)
+```
+
+The same applies in reverse, such as for interop with the Makie.jl/GeometryBasics.jl ecosystem:
+ 
+```
+GeoInterface.convert(GeometryBasics, libgeos_geometry)
+```
+
+For packages like Shapefile.jl and GeoJSON.jl, converting to their objects isn't 
+possible, as theyre not particularly useful on their own. Instead, we can just write directly:
+
+```
+Shapefile.write("myfile.shp", libgeos_geometry)
+```
+
+GeoInterface methods
+-----------------------
+
+GeoInterace.jl OGC standards methods work on LibGEOS objects:
+
+- `GeoInterface.distance`
+- `GeoInterface.buffer`
+- `GeoInterface.convexhull`
+- `GeoInterface.equals`
+- `GeoInterface.disjoint`
+- `GeoInterface.intersects`
+- `GeoInterface.touches`
+- `GeoInterface.within`
+- `GeoInterface.contains`
+- `GeoInterface.overlaps`
+- `GeoInterface.crosses`
+- `GeoInterface.symdifference`
+- `GeoInterface.difference`
+- `GeoInterface.intersection`
+- `GeoInterface.union`
+
+See the GeoInterface.jl [API docs](https://juliageo.org/GeoInterface.jl/stable/reference/api/) for details.
+
+Exported LibGEOS geometries:
 --------------------
 
 - `GeometryCollection`
@@ -47,7 +101,7 @@ Exported geometries:
 - `Polygon`
 - `STRtree`
 
-Exported functions:
+Exported LibGEOS functions:
 -------------------
 
 - `area`
