@@ -1,23 +1,5 @@
 using Test
 using LibGEOS
-@testset "smoketests" begin
-    p = LibGEOS.createEmptyPolygon()
-    @test p == readgeom("POLYGON EMPTY")
-    @test p isa Polygon
-
-    lss = readgeom("MULTILINESTRING((0 0, 0 1), (0 1, 0 2))")
-    @test lineMerge(lss) == readgeom("MULTILINESTRING ((0 0, 0 1, 0 2))")
-
-    geo_invalid = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, -1 1, 0 0))")
-    @test !LibGEOS.isValid(geo_invalid)
-    geo_valid = LibGEOS.makeValid(geo_invalid)
-    @test geo_valid isa LibGEOS.MultiPolygon
-    @test LibGEOS.isValid(geo_valid)
-
-    @test LibGEOS.reverse(readgeom("LINESTRING(0 0, 1 1)")) == readgeom("LINESTRING(1 1, 0 0)")
-
-
-end
 
 @testset "WKTWriter" begin
     # default writing options
@@ -917,4 +899,19 @@ end
         # LibGEOS.getExtent(geom) == [0, 0, 1, 1]
         GeoInterface.extent(geom) == Extent(X = (0, 1), Y = (0, 1))
     end
+
+    p = LibGEOS.createEmptyPolygon()
+    @test p == readgeom("POLYGON EMPTY")
+    @test p isa Polygon
+
+    lss = readgeom("MULTILINESTRING((0 0, 0 1), (0 1, 0 2))")
+    @test lineMerge(lss) == readgeom("MULTILINESTRING ((0 0, 0 1, 0 2))")
+
+    geo_invalid = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, -1 1, 0 0))")
+    @test !LibGEOS.isValid(geo_invalid)
+    geo_valid = LibGEOS.makeValid(geo_invalid)
+    @test geo_valid isa LibGEOS.MultiPolygon
+    @test LibGEOS.isValid(geo_valid)
+
+    @test LibGEOS.reverse(readgeom("LINESTRING(0 0, 1 1)")) == readgeom("LINESTRING(1 1, 0 0)")
 end
