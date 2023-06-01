@@ -663,12 +663,12 @@ end
 # GEOSPolygonizer_getCutEdges
 # GEOSPolygonize_full
 
-function lineMerge(obj::Geometry, context::GEOSContext = get_context(obj))::MultiLineString
+function lineMerge(obj::Geometry, context::GEOSContext = get_context(obj))
     result = GEOSLineMerge_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSLineMerge")
     end
-    MultiLineString(result, context)
+    geomFromGEOS(result, context)
 end
 
 function simplify(obj::Geometry, tol::Real, context::GEOSContext = get_context(obj))
@@ -676,7 +676,7 @@ function simplify(obj::Geometry, tol::Real, context::GEOSContext = get_context(o
     if result == C_NULL
         error("LibGEOS: Error in GEOSSimplify")
     end
-    geomFromGEOS(result)
+    geomFromGEOS(result, context)
 end
 
 function topologyPreserveSimplify(obj::Geometry, tol::Real, context::GEOSContext = get_context(obj))

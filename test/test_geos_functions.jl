@@ -1,5 +1,7 @@
 using Test
 using LibGEOS
+import GeoInterface
+using Extents
 
 @testset "WKTWriter" begin
     # default writing options
@@ -905,7 +907,16 @@ end
     @test p isa Polygon
 
     lss = readgeom("MULTILINESTRING((0 0, 0 1), (0 1, 0 2))")
-    @test lineMerge(lss) == readgeom("MULTILINESTRING ((0 0, 0 1, 0 2))")
+    @test lineMerge(lss) == readgeom("LINESTRING (0 0, 0 1, 0 2)")
+
+    lss = readgeom("MULTILINESTRING((0 0, 0 1), (0 2, 0 3), (0 3, 0 4))")
+    @test lineMerge(lss) == readgeom("MULTILINESTRING ((0 0, 0 1), (0 2, 0 3, 0 4))")
+
+    lss = readgeom("MULTILINESTRING EMPTY")
+    @test lineMerge(lss) == readgeom("GEOMETRYCOLLECTION EMPTY")
+
+    lss = readgeom("LINESTRING EMPTY")
+    @test lineMerge(lss) == readgeom("GEOMETRYCOLLECTION EMPTY")
 
     geo_invalid = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, -1 1, 0 0))")
     @test !LibGEOS.isValid(geo_invalid)

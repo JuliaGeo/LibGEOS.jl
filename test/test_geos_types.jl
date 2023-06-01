@@ -1,4 +1,14 @@
 
+@testset "open_issue_if_conversion_makes_sense" begin
+    polygon = readgeom("POLYGON EMPTY")
+    GC.@preserve polygon begin
+        res = @test_throws Exception Point(polygon.ptr, polygon.context)
+        msg = res.value.msg
+        @test occursin("GEOS_POLYGON", msg)
+        @test occursin("Point", msg)
+    end
+end
+
 # Function to test if a geomerty is valid and if its type matches the geometry ID and has the correct dimensions
 function testValidTypeDims(geom::LibGEOS.Geometry, typeid::LibGEOS.GEOSGeomTypes, dims::Integer)
     @test LibGEOS.isValid(geom)

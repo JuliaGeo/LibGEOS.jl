@@ -10,6 +10,14 @@ function Base.show(io::IO, geo::AbstractGeometry)
     end
 end
 
+function open_issue_if_conversion_makes_sense(T::Type, id)
+    msg = """LibGEOS: Can't convert a pointer to an element with a GeomType ID id = $id (GEOSGeomType = $(GEOSGeomTypes(id)))
+    to a geometry of type $T (yet).
+    Please open an issue if you think this conversion makes sense.")
+    """
+    error(msg)
+end
+
 mutable struct Point <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
@@ -19,8 +27,7 @@ mutable struct Point <: AbstractGeometry
         point = if id == GEOS_POINT
             point = new(cloneGeom(obj, context), context)
         else
-            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a point (yet).
-                   Please open an issue if you think this conversion makes sense.")
+            open_issue_if_conversion_makes_sense(Point, id)
         end
         finalizer(destroyGeom, point)
         point
@@ -50,8 +57,7 @@ mutable struct MultiPoint <: AbstractGeometry
                 context
                )
         else
-            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multipoint (yet).
-                   Please open an issue if you think this conversion makes sense.")
+            open_issue_if_conversion_makes_sense(MultiPoint, id)
         end
         finalizer(destroyGeom, multipoint)
         multipoint
@@ -83,8 +89,7 @@ mutable struct LineString <: AbstractGeometry
         line = if id == GEOS_LINESTRING
             new(cloneGeom(obj, context), context)
         else
-            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a linestring (yet).
-                   Please open an issue if you think this conversion makes sense.")
+            open_issue_if_conversion_makes_sense(LineString, id)
         end
         finalizer(destroyGeom, line)
         line
@@ -115,8 +120,7 @@ mutable struct MultiLineString <: AbstractGeometry
                                  [cloneGeom(obj, context)],
                                  context), context)
         else
-            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multi-linestring (yet).
-                   Please open an issue if you think this conversion makes sense.")
+            open_issue_if_conversion_makes_sense(MultiLineString, id)
         end
         finalizer(destroyGeom, multiline)
         multiline
@@ -147,8 +151,7 @@ mutable struct LinearRing <: AbstractGeometry
         ring = if id == GEOS_LINEARRING
             new(cloneGeom(obj, context), context)
         else
-            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a linear ring (yet).
-                   Please open an issue if you think this conversion makes sense.")
+            open_issue_if_conversion_makes_sense(LinearRing, id)
         end
         finalizer(destroyGeom, ring)
         ring
@@ -174,8 +177,7 @@ mutable struct Polygon <: AbstractGeometry
         elseif id == GEOS_LINEARRING
             new(cloneGeom(createPolygon(obj, context), context), context)
         else
-            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a polygon (yet).
-                   Please open an issue if you think this conversion makes sense.")
+            open_issue_if_conversion_makes_sense(Polygon, id)
         end
         finalizer(destroyGeom, polygon)
         polygon
@@ -214,8 +216,7 @@ mutable struct MultiPolygon <: AbstractGeometry
                 context
                )
         else
-            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a multi-polygon (yet).
-                   Please open an issue if you think this conversion makes sense.")
+            open_issue_if_conversion_makes_sense(MultiPolygon, id)
         end
         finalizer(destroyGeom, multipolygon)
         multipolygon
@@ -254,8 +255,7 @@ mutable struct GeometryCollection <: AbstractGeometry
         geometrycollection = if id == GEOS_GEOMETRYCOLLECTION
             new(cloneGeom(obj, context), context)
         else
-            error("LibGEOS: Can't convert a pointer to an element with a GeomType ID of $id to a geometry collection (yet).
-                   Please open an issue if you think this conversion makes sense.")
+            open_issue_if_conversion_makes_sense(GeometryCollection, id)
         end
         finalizer(destroyGeom, geometrycollection)
         geometrycollection
