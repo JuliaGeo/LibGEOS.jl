@@ -490,6 +490,30 @@ function createEmptyCollection(geomtype::GEOSGeomTypes, context::GEOSContext = g
     result
 end
 
+function createEmptyPolygon(context::GEOSContext = get_global_context())::Polygon
+    result = GEOSGeom_createEmptyPolygon_r(context)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_createEmptyPolygon")
+    end
+    Polygon(result, context)
+end
+
+function reverse(obj::Geometry, context::GEOSContext = get_context(obj))::LibGEOS.AbstractGeometry
+    result = GEOSReverse_r(context, obj)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSReverse_r")
+    end
+    geomFromGEOS(result, context)
+end
+
+function makeValid(obj::Geometry, context::GEOSContext = get_context(obj))::LibGEOS.AbstractGeometry
+    result = GEOSMakeValid_r(context, obj)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSMakeValid_r")
+    end
+    geomFromGEOS(result, context)
+end
+
 # Memory management
 # cloneGeom result needs to be wrapped in Geometry type
 function cloneGeom(ptr::Union{Geometry,GEOSGeom}, context::GEOSContext = get_global_context())
@@ -639,12 +663,12 @@ end
 # GEOSPolygonizer_getCutEdges
 # GEOSPolygonize_full
 
-function lineMerge(obj::Geometry, context::GEOSContext = get_context(obj))
+function lineMerge(obj::Geometry, context::GEOSContext = get_context(obj))::MultiLineString
     result = GEOSLineMerge_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSLineMerge")
     end
-    LineString(result, context)
+    MultiLineString(result, context)
 end
 
 function simplify(obj::Geometry, tol::Real, context::GEOSContext = get_context(obj))

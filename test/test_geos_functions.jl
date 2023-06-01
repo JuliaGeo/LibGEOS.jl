@@ -1,3 +1,6 @@
+using Test
+using LibGEOS
+
 @testset "WKTWriter" begin
     # default writing options
     p = readgeom("POINT(0.12345 2.000 0.1)")
@@ -60,7 +63,7 @@ end
     seq = Vector{Float64}[[-1, 0], [0, 0], [10, 0], [10, 10], [0, 10], [-1, 0]]
     a = LibGEOS.createCoordSeq(seq)
     @test LibGEOS.isCCW(a)
-    a = LibGEOS.createCoordSeq(reverse(seq))
+    a = LibGEOS.createCoordSeq(Base.reverse(seq))
     @test !LibGEOS.isCCW(a)
 
     # Polygons and Holes
@@ -896,4 +899,19 @@ end
         # LibGEOS.getExtent(geom) == [0, 0, 1, 1]
         GeoInterface.extent(geom) == Extent(X = (0, 1), Y = (0, 1))
     end
+
+    p = LibGEOS.createEmptyPolygon()
+    @test p == readgeom("POLYGON EMPTY")
+    @test p isa Polygon
+
+    lss = readgeom("MULTILINESTRING((0 0, 0 1), (0 1, 0 2))")
+    @test lineMerge(lss) == readgeom("MULTILINESTRING ((0 0, 0 1, 0 2))")
+
+    geo_invalid = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, -1 1, 0 0))")
+    @test !LibGEOS.isValid(geo_invalid)
+    geo_valid = LibGEOS.makeValid(geo_invalid)
+    @test geo_valid isa LibGEOS.MultiPolygon
+    @test LibGEOS.isValid(geo_valid)
+
+    @test LibGEOS.reverse(readgeom("LINESTRING(0 0, 1 1)")) == readgeom("LINESTRING(1 1, 0 0)")
 end
