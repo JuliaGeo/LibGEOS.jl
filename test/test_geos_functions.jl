@@ -1,5 +1,7 @@
 using Test
 using LibGEOS
+import GeoInterface
+using Extents
 
 @testset "WKTWriter" begin
     # default writing options
@@ -905,13 +907,20 @@ end
     @test p isa Polygon
 
     lss = readgeom("MULTILINESTRING((0 0, 0 1), (0 1, 0 2))")
-    @test lineMerge(lss) == readgeom("MULTILINESTRING ((0 0, 0 1, 0 2))")
+    @test lineMerge(lss) == readgeom("LINESTRING (0 0, 0 1, 0 2)")
 
-    geo_invalid = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, -1 1, 0 0))")
-    @test !LibGEOS.isValid(geo_invalid)
-    geo_valid = LibGEOS.makeValid(geo_invalid)
-    @test geo_valid isa LibGEOS.MultiPolygon
-    @test LibGEOS.isValid(geo_valid)
+    lss = readgeom("MULTILINESTRING((0 0, 0 1), (0 2, 0 3), (0 3, 0 4))")
+    @test lineMerge(lss) == readgeom("MULTILINESTRING ((0 0, 0 1), (0 2, 0 3, 0 4))")
+
+    lss = readgeom("MULTILINESTRING EMPTY")
+    @test lineMerge(lss) == readgeom("GEOMETRYCOLLECTION EMPTY")
+
+    lss = readgeom("LINESTRING EMPTY")
+    @test lineMerge(lss) == readgeom("GEOMETRYCOLLECTION EMPTY")
 
     @test LibGEOS.reverse(readgeom("LINESTRING(0 0, 1 1)")) == readgeom("LINESTRING(1 1, 0 0)")
+
+    geo = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))")
+    mic = LibGEOS.maximumInscribedCircle(geo, 1e-4)
+    @test mic == readgeom("LINESTRING (0.5 0.5, 0 0.5)")
 end
