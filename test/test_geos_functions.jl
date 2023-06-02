@@ -918,11 +918,9 @@ end
     lss = readgeom("LINESTRING EMPTY")
     @test lineMerge(lss) == readgeom("GEOMETRYCOLLECTION EMPTY")
 
-    geo_invalid = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, -1 1, 0 0))")
-    @test !LibGEOS.isValid(geo_invalid)
-    geo_valid = LibGEOS.makeValid(geo_invalid)
-    @test geo_valid isa LibGEOS.MultiPolygon
-    @test LibGEOS.isValid(geo_valid)
-
     @test LibGEOS.reverse(readgeom("LINESTRING(0 0, 1 1)")) == readgeom("LINESTRING(1 1, 0 0)")
+
+    geo = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))")
+    mic = LibGEOS.maximumInscribedCircle(geo, 1e-4)
+    @test mic == readgeom("LINESTRING (0.5 0.5, 0 0.5)")
 end

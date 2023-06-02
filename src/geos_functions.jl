@@ -671,6 +671,22 @@ function lineMerge(obj::Geometry, context::GEOSContext = get_context(obj))
     geomFromGEOS(result, context)
 end
 
+function maximumInscribedCircle(obj::Geometry, tolerance, context::GEOSContext = get_context(obj))
+    result = GEOSMaximumInscribedCircle_r(context, obj, tolerance)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSMaximumInscribedCircle")
+    end
+    geomFromGEOS(result, context)
+end
+
+function isValidReason(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSisValidReason_r(context, obj)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSisValidReason")
+    end
+    result
+end
+
 function simplify(obj::Geometry, tol::Real, context::GEOSContext = get_context(obj))
     result = GEOSSimplify_r(context, obj, tol)
     if result == C_NULL
