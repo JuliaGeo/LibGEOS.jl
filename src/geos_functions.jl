@@ -50,6 +50,9 @@ end
 writegeom(obj::Geometry, context::GEOSContext = get_context(obj)) =
     writegeom(obj, WKTWriter(context), context)
 
+writegeom(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
+    writegeom(obj.ownedby, WKTWriter(context), context)
+
 # -----
 # Coordinate Sequence functions
 # -----
