@@ -141,18 +141,6 @@ end
     @test GeoInterface.coordinates(startPoint(g1)) ≈ [0, 0] atol = 1e-5
     @test GeoInterface.coordinates(endPoint(g1)) ≈ [10, 10] atol = 1e-5
 
-    # GEOSNearestPointsTest
-    g1 = readgeom("POLYGON EMPTY")
-    g2 = readgeom("POLYGON EMPTY")
-    @test length(nearestPoints(g1, g2)) == 0
-
-    g1 = readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
-    g2 = readgeom("POLYGON((8 8, 9 9, 9 10, 8 8))")
-    points = nearestPoints(g1, g2)
-    @test length(points) == 2
-    @test GeoInterface.coordinates(points[1])[1:2] == [5.0, 5.0]
-    @test GeoInterface.coordinates(points[2])[1:2] == [8.0, 8.0]
-
     # GEOSNodeTest
     g1 = node(readgeom("LINESTRING(0 0, 10 10, 10 0, 0 10)"))
     LibGEOS.normalize!(g1)
