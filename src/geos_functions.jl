@@ -1481,6 +1481,16 @@ function nearestPoints(obj1::Geometry, obj2::Geometry, context::GEOSContext = ge
     end
 end
 
+function nearestPoints(obj1::PreparedGeometry, obj2::Geometry, context::GEOSContext = get_context(obj1))
+    points = GEOSPreparedNearestPoints_r(context, obj1, obj2)
+    if points == C_NULL
+        return Point[]
+    else
+        return Point[Point(getCoordinates(points, 1, context), context),
+                     Point(getCoordinates(points, 2, context), context)]
+    end
+end
+
 # -----
 # Precision functions
 # -----
