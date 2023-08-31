@@ -170,6 +170,10 @@ end
     @test LibGEOS.getSize(cs_) == 1
     @test LibGEOS.getDimensions(cs_) == 2
     @test LibGEOS.getCoordinates(cs_) == [[5.0, 3.0]]
+    # z coordinate stays NaN for 2D geometry
+    @test isnan(LibGEOS.getZ(cs_, 1))
+    LibGEOS.setZ!(cs_, 1, 2.0)
+    @test isnan(LibGEOS.getZ(cs_, 1))
 
     cs_2 = LibGEOS.createCoordSeq([5.0, 3.0])
     @test LibGEOS.getSize(cs_2) == 1
@@ -186,7 +190,7 @@ end
     @test LibGEOS.getCoordinates(cs_3, 2) == [1.0, 2.0]
     @test LibGEOS.getCoordinates(cs_3, 3) == [1.0, 3.0]
 
-
+    cs_ = LibGEOS.createCoordSeq(0, 0, 0)
     for i = 1:5
         x = i * 10.0
         y = i * 10.0 + 1.0
