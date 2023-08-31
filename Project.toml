@@ -13,7 +13,7 @@ GeoInterfaceRecipes = "0329782f-3d07-4b52-b9f6-d3137cf03c7a"
 [compat]
 CEnum = "0.2, 0.3, 0.4"
 Extents = "0.1.1"
-GEOS_jll = "3.11"
+GEOS_jll = "3.12"
 GeoInterface = "1"
 GeoInterfaceRecipes = "1"
 julia = "1.6"
