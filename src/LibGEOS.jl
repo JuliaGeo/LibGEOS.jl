@@ -18,8 +18,7 @@ export GeometryCollection,
     Polygon,
     STRtree
 
-export 
-    area,
+export area,
     boundary,
     buffer,
     bufferWithStyle,

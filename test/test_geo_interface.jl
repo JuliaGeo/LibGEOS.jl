@@ -23,7 +23,8 @@ const LG = LibGEOS
     @test GeoInterface.getcoord(pt, 3) ≈ 3.0
     @test GeoInterface.testgeometry(pt)
     # This doesn't return the Z extent
-    @test_broken GeoInterface.extent(pt) == Extent(X = (1.0, 1.0), Y=(2.0, 2.0), Z=(3.0, 3.0))
+    @test_broken GeoInterface.extent(pt) ==
+                 Extent(X = (1.0, 1.0), Y = (2.0, 2.0), Z = (3.0, 3.0))
     plot(pt)
 
     pt = LibGEOS.Point(1, 2)
@@ -224,16 +225,40 @@ const LG = LibGEOS
 
     @testset "Conversion" begin
         one_arg_functions = (
-            LG.area, LG.geomLength, LG.envelope, LG.minimumRotatedRectangle, LG.convexhull, LG.boundary,
-            LG.uniquePoints, LG.unaryUnion, LG.pointOnSurface, LG.centroid, LG.node,
-            LG.delaunayTriangulationEdges, LG.delaunayTriangulation, LG.constrainedDelaunayTriangulation,
+            LG.area,
+            LG.geomLength,
+            LG.envelope,
+            LG.minimumRotatedRectangle,
+            LG.convexhull,
+            LG.boundary,
+            LG.uniquePoints,
+            LG.unaryUnion,
+            LG.pointOnSurface,
+            LG.centroid,
+            LG.node,
+            LG.delaunayTriangulationEdges,
+            LG.delaunayTriangulation,
+            LG.constrainedDelaunayTriangulation,
             # these have different signatures
             # LG.simplify, LG.topologyPreserveSimplify,
         )
         two_arg_functions = (
-            LG.intersection, LG.difference, LG.symmetricDifference, LG.union,
-            LG.distance, LG.hausdorffdistance, LG.nearestPoints, LG.disjoint, LG.touches, LG.intersects, LG.crosses,
-            LG.within, LG.overlaps, LG.covers, LG.coveredby, LG.equals,
+            LG.intersection,
+            LG.difference,
+            LG.symmetricDifference,
+            LG.union,
+            LG.distance,
+            LG.hausdorffdistance,
+            LG.nearestPoints,
+            LG.disjoint,
+            LG.touches,
+            LG.intersects,
+            LG.crosses,
+            LG.within,
+            LG.overlaps,
+            LG.covers,
+            LG.coveredby,
+            LG.equals,
             # these have different signatures
             # LG.project, LG.projectNormalized, LG.sharedPaths, LG.snap, LG.contains, LG.equalsexact,
         )
@@ -280,7 +305,8 @@ const LG = LibGEOS
         @test geom isa MultiLineString
         @test GeoInterface.coordinates(geom) == coords
         for f in one_arg_functions
-            @test f(LibGEOS.MultiLineString(coords)) == f(GeoInterface.MultiLineString(coords))
+            @test f(LibGEOS.MultiLineString(coords)) ==
+                  f(GeoInterface.MultiLineString(coords))
         end
         coords2 = [[[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]]
         for f in two_arg_functions
@@ -301,7 +327,7 @@ const LG = LibGEOS
         coords2 = [[[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]]
         for f in two_arg_functions
             @test f(LibGEOS.Polygon(coords), LibGEOS.Polygon(coords2)) ==
-            f(GeoInterface.Polygon(coords), LibGEOS.Polygon(coords2))
+                  f(GeoInterface.Polygon(coords), LibGEOS.Polygon(coords2))
         end
 
         pgeom = LibGEOS.prepareGeom(geom)
