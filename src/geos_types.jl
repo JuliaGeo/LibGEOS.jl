@@ -46,16 +46,15 @@ mutable struct MultiPoint <: AbstractGeometry
     context::GEOSContext
     # create a multipoint from a pointer - only makes sense if it is a pointer to a multipoint
     # or to a point, otherwise error
-    function MultiPoint(obj::Union{Point,MultiPoint,GEOSGeom}, context::GEOSContext = get_global_context())
+    function MultiPoint(
+        obj::Union{Point,MultiPoint,GEOSGeom},
+        context::GEOSContext = get_global_context(),
+    )
         id = LibGEOS.geomTypeId(obj, context)
         multipoint = if id == GEOS_MULTIPOINT
             new(cloneGeom(obj, context), context)
         elseif id == GEOS_POINT
-            new(createCollection(GEOS_MULTIPOINT,
-                                 [cloneGeom(obj, context)],
-                                 context),
-                context
-               )
+            new(createCollection(GEOS_MULTIPOINT, [cloneGeom(obj, context)], context), context)
         else
             open_issue_if_conversion_makes_sense(MultiPoint, id)
         end
@@ -63,28 +62,30 @@ mutable struct MultiPoint <: AbstractGeometry
         multipoint
     end
     # create a multipoint frome a vector of vector coordinates
-    MultiPoint(multipoint::Vector{Vector{Float64}}, context::GEOSContext = get_global_context()) =
-        MultiPoint(
-            createCollection(
-                GEOS_MULTIPOINT,
-                GEOSGeom[createPoint(coords, context) for coords in multipoint],
-                context),
-            context)
+    MultiPoint(
+        multipoint::Vector{Vector{Float64}},
+        context::GEOSContext = get_global_context(),
+    ) = MultiPoint(
+        createCollection(
+            GEOS_MULTIPOINT,
+            GEOSGeom[createPoint(coords, context) for coords in multipoint],
+            context,
+        ),
+        context,
+    )
     # create a multipoint from a list of points
     MultiPoint(points::Vector{LibGEOS.Point}, context::GEOSContext = get_context(points)) =
-        MultiPoint(
-            createCollection(
-                GEOS_MULTIPOINT,
-                points,
-                context),
-            context)
+        MultiPoint(createCollection(GEOS_MULTIPOINT, points, context), context)
 end
 
 mutable struct LineString <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a linestring from a linestring pointer, otherwise error
-    function LineString(obj::Union{LineString,GEOSGeom}, context::GEOSContext = get_global_context())
+    function LineString(
+        obj::Union{LineString,GEOSGeom},
+        context::GEOSContext = get_global_context(),
+    )
         id = LibGEOS.geomTypeId(obj, context)
         line = if id == GEOS_LINESTRING
             new(cloneGeom(obj, context), context)
@@ -95,7 +96,10 @@ mutable struct LineString <: AbstractGeometry
         line
     end
     # create a linestring from a vector of points
-    function LineString(coords::Vector{Vector{Float64}}, context::GEOSContext = get_global_context())
+    function LineString(
+        coords::Vector{Vector{Float64}},
+        context::GEOSContext = get_global_context(),
+    )
         line = new(createLineString(coords, context), context)
         finalizer(destroyGeom, line)
         line
@@ -111,14 +115,18 @@ mutable struct MultiLineString <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a multiline string from a multilinestring or a linestring pointer, else error
-    function MultiLineString(obj::Union{LineString,MultiLineString,GEOSGeom}, context::GEOSContext = get_global_context())
+    function MultiLineString(
+        obj::Union{LineString,MultiLineString,GEOSGeom},
+        context::GEOSContext = get_global_context(),
+    )
         id = LibGEOS.geomTypeId(obj, context)
         multiline = if id == GEOS_MULTILINESTRING
             new(cloneGeom(obj, context), context)
         elseif id == GEOS_LINESTRING
-            new(createCollection(GEOS_MULTILINESTRING,
-                                 [cloneGeom(obj, context)],
-                                 context), context)
+            new(
+                createCollection(GEOS_MULTILINESTRING, [cloneGeom(obj, context)], context),
+                context,
+            )
         else
             open_issue_if_conversion_makes_sense(MultiLineString, id)
         end
@@ -126,27 +134,38 @@ mutable struct MultiLineString <: AbstractGeometry
         multiline
     end
     # create a multilinestring from a list of linestring coordinates
-    MultiLineString(multiline::Vector{Vector{Vector{Float64}}},context::GEOSContext = get_global_context()) =
-        MultiLineString(
-            createCollection(
-                GEOS_MULTILINESTRING,
-                GEOSGeom[createLineString(coords, context) for coords in multiline],
-                context),
-            context)
-    MultiLineString(multiline::Vector{LineString}, context::GEOSContext = get_global_context()) =
-        MultiLineString(
-            createCollection(
-                GEOS_MULTILINESTRING,
-                GEOSGeom[ls.ptr for ls in multiline],
-                context),
-            context)
+    MultiLineString(
+        multiline::Vector{Vector{Vector{Float64}}},
+        context::GEOSContext = get_global_context(),
+    ) = MultiLineString(
+        createCollection(
+            GEOS_MULTILINESTRING,
+            GEOSGeom[createLineString(coords, context) for coords in multiline],
+            context,
+        ),
+        context,
+    )
+    MultiLineString(
+        multiline::Vector{LineString},
+        context::GEOSContext = get_global_context(),
+    ) = MultiLineString(
+        createCollection(
+            GEOS_MULTILINESTRING,
+            GEOSGeom[ls.ptr for ls in multiline],
+            context,
+        ),
+        context,
+    )
 end
 
 mutable struct LinearRing <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a linear ring from a linear ring pointer, otherwise error
-    function LinearRing(obj::Union{LinearRing,GEOSGeom}, context::GEOSContext = get_global_context())
+    function LinearRing(
+        obj::Union{LinearRing,GEOSGeom},
+        context::GEOSContext = get_global_context(),
+    )
         id = LibGEOS.geomTypeId(obj, context)
         ring = if id == GEOS_LINEARRING
             new(cloneGeom(obj, context), context)
@@ -158,7 +177,10 @@ mutable struct LinearRing <: AbstractGeometry
     end
     # create linear ring from a list of coordinates -
     # first and last coordinates must be the same
-    function LinearRing(coords::Vector{Vector{Float64}}, context::GEOSContext = get_global_context())
+    function LinearRing(
+        coords::Vector{Vector{Float64}},
+        context::GEOSContext = get_global_context(),
+    )
         ring = new(createLinearRing(coords, context), context)
         finalizer(destroyGeom, ring)
         ring
@@ -170,7 +192,10 @@ mutable struct Polygon <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create polygon using GEOSGeom pointer - only makes sense if pointer points to a polygon or a linear ring to start with.
-    function Polygon(obj::Union{Polygon,LinearRing,GEOSGeom}, context::GEOSContext = get_global_context())
+    function Polygon(
+        obj::Union{Polygon,LinearRing,GEOSGeom},
+        context::GEOSContext = get_global_context(),
+    )
         id = LibGEOS.geomTypeId(obj, context)
         polygon = if id == GEOS_POLYGON
             new(cloneGeom(obj, context), context)
@@ -184,7 +209,10 @@ mutable struct Polygon <: AbstractGeometry
     end
     # using vector of coordinates in following form:
     # [[exterior], [hole1], [hole2], ...] where exterior and holeN are coordinates where the first and last point are the same
-    function Polygon(coords::Vector{Vector{Vector{Float64}}}, context::GEOSContext = get_global_context())
+    function Polygon(
+        coords::Vector{Vector{Vector{Float64}}},
+        context::GEOSContext = get_global_context(),
+    )
         exterior = createLinearRing(coords[1], context)
         interiors = GEOSGeom[createLinearRing(lr, context) for lr in coords[2:end]]
         polygon = new(createPolygon(exterior, interiors, context), context)
@@ -192,29 +220,29 @@ mutable struct Polygon <: AbstractGeometry
         polygon
     end
     # using multiple linear rings to form polygon with holes - exterior linear ring will be polygon boundary and list of interior linear rings will form holes
-    Polygon(exterior::LinearRing, holes::Vector{LinearRing}, context::GEOSContext = get_context(exterior)) =
-        Polygon(
-            createPolygon(exterior,
-                          holes,
-                          context),
-            context)
+    Polygon(
+        exterior::LinearRing,
+        holes::Vector{LinearRing},
+        context::GEOSContext = get_context(exterior),
+    ) = Polygon(createPolygon(exterior, holes, context), context)
 end
 
 mutable struct MultiPolygon <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create multipolygon using a multipolygon or polygon pointer, else error
-    function MultiPolygon(obj::Union{Polygon,MultiPolygon,GEOSGeom}, context::GEOSContext = get_global_context())
+    function MultiPolygon(
+        obj::Union{Polygon,MultiPolygon,GEOSGeom},
+        context::GEOSContext = get_global_context(),
+    )
         id = LibGEOS.geomTypeId(obj, context)
         multipolygon = if id == GEOS_MULTIPOLYGON
             new(cloneGeom(obj, context), context)
         elseif id == GEOS_POLYGON
-            new(createCollection(
-                    GEOS_MULTIPOLYGON,
-                    [cloneGeom(obj, context)],
-                    context),
-                context
-               )
+            new(
+                createCollection(GEOS_MULTIPOLYGON, [cloneGeom(obj, context)], context),
+                context,
+            )
         else
             open_issue_if_conversion_makes_sense(MultiPolygon, id)
         end
@@ -224,33 +252,36 @@ mutable struct MultiPolygon <: AbstractGeometry
 
     # create multipolygon from list of Polygon objects
     MultiPolygon(polygons::Vector{Polygon}, context::GEOSContext = get_context(polygons)) =
-        MultiPolygon(
-            createCollection(
-                GEOS_MULTIPOLYGON,
-                polygons,
-                context),
-            context)
+        MultiPolygon(createCollection(GEOS_MULTIPOLYGON, polygons, context), context)
 
     # create multipolygon using list of polygon coordinates - note that each polygon can have holes as explained above in Polygon comments
-    MultiPolygon(multipolygon::Vector{Vector{Vector{Vector{Float64}}}}, context::GEOSContext = get_global_context()) =
-        MultiPolygon(
-            createCollection(
-                GEOS_MULTIPOLYGON,
-                GEOSGeom[
-                    createPolygon(
-                        createLinearRing(coords[1], context),
-                        GEOSGeom[createLinearRing(c, context) for c in coords[2:end]],
-                        context)
-                    for coords in multipolygon],
-                context),
-            context)
+    MultiPolygon(
+        multipolygon::Vector{Vector{Vector{Vector{Float64}}}},
+        context::GEOSContext = get_global_context(),
+    ) = MultiPolygon(
+        createCollection(
+            GEOS_MULTIPOLYGON,
+            GEOSGeom[
+                createPolygon(
+                    createLinearRing(coords[1], context),
+                    GEOSGeom[createLinearRing(c, context) for c in coords[2:end]],
+                    context,
+                ) for coords in multipolygon
+            ],
+            context,
+        ),
+        context,
+    )
 end
 
 mutable struct GeometryCollection <: AbstractGeometry
     ptr::GEOSGeom
     context::GEOSContext
     # create a geometric collection from a pointer to a geometric collection, else error
-    function GeometryCollection(obj::Union{GeometryCollection,GEOSGeom}, context::GEOSContext = get_global_context())
+    function GeometryCollection(
+        obj::Union{GeometryCollection,GEOSGeom},
+        context::GEOSContext = get_global_context(),
+    )
         id = LibGEOS.geomTypeId(obj, context)
         geometrycollection = if id == GEOS_GEOMETRYCOLLECTION
             new(cloneGeom(obj, context), context)
@@ -261,20 +292,24 @@ mutable struct GeometryCollection <: AbstractGeometry
         geometrycollection
     end
     # create a geometric collection from a list of pointers to geometric objects
-    GeometryCollection(collection::AbstractVector, context::GEOSContext = get_global_context()) =
-        GeometryCollection(
-            createCollection(
-                GEOS_GEOMETRYCOLLECTION,
-                collection,
-                context),
-            context)
-    GeometryCollection(collection::Vector{<:AbstractGeometry}, context::GEOSContext = get_global_context()) =
-        GeometryCollection(
-            createCollection(
-                GEOS_GEOMETRYCOLLECTION,
-                GEOSGeom[geom.ptr for geom in collection],
-                context),
-            context)
+    GeometryCollection(
+        collection::AbstractVector,
+        context::GEOSContext = get_global_context(),
+    ) = GeometryCollection(
+        createCollection(GEOS_GEOMETRYCOLLECTION, collection, context),
+        context,
+    )
+    GeometryCollection(
+        collection::Vector{<:AbstractGeometry},
+        context::GEOSContext = get_global_context(),
+    ) = GeometryCollection(
+        createCollection(
+            GEOS_GEOMETRYCOLLECTION,
+            GEOSGeom[geom.ptr for geom in collection],
+            context,
+        ),
+        context,
+    )
 end
 
 const Geometry = Union{
@@ -293,7 +328,7 @@ const Geometry = Union{
 
 Create a deep copy of obj, optionally also moving it to a new context.
 """
-function clone(obj::Geometry, context=get_context(obj))
+function clone(obj::Geometry, context = get_context(obj))
     G = typeof(obj)
     # Note that all Geometry constructors
     # implicitly clone the pointer, in the following line
@@ -328,7 +363,7 @@ const geomtypes = [
     GeometryCollection,
 ]
 
-const HasCoordSeq = Union{LineString, LinearRing, Point}
+const HasCoordSeq = Union{LineString,LinearRing,Point}
 """
 
     coordinates!(out::Vector{Float64}, geo::$HasCoordSeq, i::Integer)
@@ -336,13 +371,18 @@ const HasCoordSeq = Union{LineString, LinearRing, Point}
 
 Copy the coordinates of the ith point of geo into `out`.
 """
-function coordinates!(out, geo::HasCoordSeq, i::Integer, ctx::GEOSContext=get_context(geo))
+function coordinates!(
+    out,
+    geo::HasCoordSeq,
+    i::Integer,
+    ctx::GEOSContext = get_context(geo),
+)
     GC.@preserve out geo begin
         seq = GEOSGeom_getCoordSeq_r(ctx, geo)::Ptr
         getCoordinates!(out, seq, i, ctx)
     end
 end
-function coordinates!(out, geo::Point, ctx::GEOSContext=get_context(geo))
+function coordinates!(out, geo::Point, ctx::GEOSContext = get_context(geo))
     coordinates!(out, geo, 1, ctx)
 end
 
@@ -354,8 +394,8 @@ function has_coord_seq(::HasCoordSeq)
 end
 
 Base.@kwdef struct IsApprox
-    atol::Float64=0.0
-    rtol::Float64=sqrt(eps(Float64))
+    atol::Float64 = 0.0
+    rtol::Float64 = sqrt(eps(Float64))
 end
 
 function Base.:(==)(geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
@@ -365,9 +405,14 @@ function Base.isequal(geo1::AbstractGeometry, geo2::AbstractGeometry)::Bool
     compare(isequal, geo1, geo2)
 end
 function Base.isapprox(geo1::AbstractGeometry, geo2::AbstractGeometry; kw...)::Bool
-    compare(IsApprox(;kw...), geo1, geo2)
+    compare(IsApprox(; kw...), geo1, geo2)
 end
-function compare(cmp, geo1::AbstractGeometry, geo2::AbstractGeometry, ctx=get_context(geo1))::Bool
+function compare(
+    cmp,
+    geo1::AbstractGeometry,
+    geo2::AbstractGeometry,
+    ctx = get_context(geo1),
+)::Bool
     (typeof(geo1) === typeof(geo2)) || return false
     if (geo1 === geo2) && (cmp === isequal)
         return true
@@ -378,7 +423,7 @@ function compare(cmp, geo1::AbstractGeometry, geo2::AbstractGeometry, ctx=get_co
         ng1 = ngeom(geo1)
         ng2 = ngeom(geo2)
         ng1 == ng2 || return false
-        for i in 1:ng1
+        for i = 1:ng1
             compare(cmp, getgeom(geo1, i), getgeom(geo2, i), ctx) || return false
         end
     end
@@ -398,7 +443,7 @@ function compare_coord_seqs(cmp, geo1, geo2, ctx)
     np1 == np2 || return false
     coords1 = Vector{Float64}(undef, ncoords1)
     coords2 = Vector{Float64}(undef, ncoords1)
-    for i in 1:np1
+    for i = 1:np1
         coordinates!(coords1, geo1, i, ctx)
         coordinates!(coords2, geo2, i, ctx)
         cmp(coords1, coords2) || return false
@@ -423,16 +468,16 @@ function compare_coord_seqs(cmp::IsApprox, geo1, geo2, ctx)
     s1 = 0.0
     s2 = 0.0
     s12 = 0.0
-    for i in 1:np1
+    for i = 1:np1
         coordinates!(coords1, geo1, i, ctx)
         coordinates!(coords2, geo2, i, ctx)
         if ncoords1 == 2
-            x1,y1 = coords1
-            x2,y2 = coords2
+            x1, y1 = coords1
+            x2, y2 = coords2
             s12 += (x1 - x2)^2 + (y1 - y2)^2
         else
-            x1,y1,z1 = coords1
-            x2,y2,z2 = coords2
+            x1, y1, z1 = coords1
+            x2, y2, z2 = coords2
             s12 += (x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2
         end
         s1 += sum(abs2, coords1)
@@ -441,22 +486,22 @@ function compare_coord_seqs(cmp::IsApprox, geo1, geo2, ctx)
     return sqrt(s12) <= cmp.atol + cmp.rtol * sqrt(max(s1, s2))
 end
 
-typesalt(::Type{GeometryCollection} ) = 0xd1fd7c6403c36e5b
-typesalt(::Type{PreparedGeometry}   ) = 0xbc1a26fe2f5b7537
-typesalt(::Type{LineString}         ) = 0x712352fe219fca15
-typesalt(::Type{LinearRing}         ) = 0xac7644fd36955ef1
-typesalt(::Type{MultiLineString}    ) = 0x85aff0a53a2f2a32
-typesalt(::Type{MultiPoint}         ) = 0x6213e67dbfd3b570
-typesalt(::Type{MultiPolygon}       ) = 0xff2f957b4cdb5832
-typesalt(::Type{Point}              ) = 0x4b5c101d3843160e
-typesalt(::Type{Polygon}            ) = 0xa5c895d62ef56723
+typesalt(::Type{GeometryCollection}) = 0xd1fd7c6403c36e5b
+typesalt(::Type{PreparedGeometry}) = 0xbc1a26fe2f5b7537
+typesalt(::Type{LineString}) = 0x712352fe219fca15
+typesalt(::Type{LinearRing}) = 0xac7644fd36955ef1
+typesalt(::Type{MultiLineString}) = 0x85aff0a53a2f2a32
+typesalt(::Type{MultiPoint}) = 0x6213e67dbfd3b570
+typesalt(::Type{MultiPolygon}) = 0xff2f957b4cdb5832
+typesalt(::Type{Point}) = 0x4b5c101d3843160e
+typesalt(::Type{Polygon}) = 0xa5c895d62ef56723
 
 function Base.hash(geo::AbstractGeometry, h::UInt)::UInt
     h = hash(typesalt(typeof(geo)), h)
     if has_coord_seq(geo)
         return hash_coord_seq(geo, h)
     else
-        for i in 1:ngeom(geo)
+        for i = 1:ngeom(geo)
             h = hash(getgeom(geo, i), h)
         end
     end
@@ -469,7 +514,7 @@ function hash_coord_seq(geo::HasCoordSeq, h::UInt)::UInt
     end
     buf = Vector{Float64}(undef, nc)
     ctx = get_context(geo)
-    for i in 1:npoints(geo)
+    for i = 1:npoints(geo)
         coordinates!(buf, geo, i, ctx)
         h = hash(buf, h)
     end
@@ -497,7 +542,10 @@ const GEOMTYPE = Dict{GEOSGeomTypes,Symbol}(
     GEOS_GEOMETRYCOLLECTION => :GeometryCollection,
 )
 
-function geomFromGEOS(ptr::Union{Geometry, Ptr{Cvoid}}, context::GEOSContext = get_global_context())
+function geomFromGEOS(
+    ptr::Union{Geometry,Ptr{Cvoid}},
+    context::GEOSContext = get_global_context(),
+)
     id = geomTypeId(ptr, context)
     if id == GEOS_POINT
         return Point(ptr, context)

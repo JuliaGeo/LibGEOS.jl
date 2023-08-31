@@ -70,49 +70,97 @@ function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)
     return Extent(X = (getXMin(env), getXMax(env)), Y = (getYMin(env), getYMax(env)))
 end
 
-GI.convert(::Type{Point}, ::PointTrait, geom::Point; context=nothing) = geom
-function GI.convert(::Type{Point}, ::PointTrait, geom; context=get_global_context())
+GI.convert(::Type{Point}, ::PointTrait, geom::Point; context = nothing) = geom
+function GI.convert(::Type{Point}, ::PointTrait, geom; context = get_global_context())
     if GI.is3d(geom)
         return Point(GI.x(geom), GI.y(geom), GI.z(geom), context)
     else
         return Point(GI.x(geom), GI.y(geom), context)
     end
 end
-GI.convert(::Type{MultiPoint}, ::MultiPointTrait, geom::MultiPoint; context=nothing) = geom
-function GI.convert(::Type{MultiPoint}, t::MultiPointTrait, geom; context=get_global_context())
+GI.convert(::Type{MultiPoint}, ::MultiPointTrait, geom::MultiPoint; context = nothing) =
+    geom
+function GI.convert(
+    ::Type{MultiPoint},
+    t::MultiPointTrait,
+    geom;
+    context = get_global_context(),
+)
     points = Point[GI.convert(Point, PointTrait(), p) for p in GI.getpoint(t, geom)]
     return MultiPoint(points, context)
 end
-GI.convert(::Type{LineString}, ::LineStringTrait, geom::LineString; context=nothing) = geom
-function GI.convert(::Type{LineString}, ::LineStringTrait, geom; context=get_global_context())
+GI.convert(::Type{LineString}, ::LineStringTrait, geom::LineString; context = nothing) =
+    geom
+function GI.convert(
+    ::Type{LineString},
+    ::LineStringTrait,
+    geom;
+    context = get_global_context(),
+)
     # Faster to make a CoordSeq directly here
     seq = _geom_to_coord_seq(geom, context)
     return LineString(createLineString(seq, context), context)
 end
-GI.convert(::Type{LinearRing}, ::LinearRingTrait, geom::LinearRing; context=nothing) = geom
-function GI.convert(::Type{LinearRing}, ::LinearRingTrait, geom; context=get_global_context())
+GI.convert(::Type{LinearRing}, ::LinearRingTrait, geom::LinearRing; context = nothing) =
+    geom
+function GI.convert(
+    ::Type{LinearRing},
+    ::LinearRingTrait,
+    geom;
+    context = get_global_context(),
+)
     # Faster to make a CoordSeq directly here
     seq = _geom_to_coord_seq(geom, context)
     return LinearRing(createLinearRing(seq, context), context)
 end
-GI.convert(::Type{MultiLineString}, ::MultiLineStringTrait, geom::MultiLineString; context=nothing) = geom
-function GI.convert(::Type{MultiLineString}, ::MultiLineStringTrait, geom; context=get_global_context())
-    linestrings = LineString[GI.convert(LineString, LineStringTrait(), g; context) for g in getgeom(geom)]
+GI.convert(
+    ::Type{MultiLineString},
+    ::MultiLineStringTrait,
+    geom::MultiLineString;
+    context = nothing,
+) = geom
+function GI.convert(
+    ::Type{MultiLineString},
+    ::MultiLineStringTrait,
+    geom;
+    context = get_global_context(),
+)
+    linestrings = LineString[
+        GI.convert(LineString, LineStringTrait(), g; context) for g in getgeom(geom)
+    ]
     return MultiLineString(linestrings)
 end
-GI.convert(::Type{Polygon}, ::PolygonTrait, geom::Polygon; context=nothing) = geom
-function GI.convert(::Type{Polygon}, ::PolygonTrait, geom; context=get_global_context())
+GI.convert(::Type{Polygon}, ::PolygonTrait, geom::Polygon; context = nothing) = geom
+function GI.convert(::Type{Polygon}, ::PolygonTrait, geom; context = get_global_context())
     exterior = GI.convert(LinearRing, GI.LinearRingTrait(), GI.getexterior(geom); context)
-    holes = LinearRing[GI.convert(LinearRing, GI.LinearRingTrait(), g; context) for g in GI.gethole(geom)]
+    holes = LinearRing[
+        GI.convert(LinearRing, GI.LinearRingTrait(), g; context) for g in GI.gethole(geom)
+    ]
     return Polygon(exterior, holes)
 end
-GI.convert(::Type{MultiPolygon}, ::MultiPolygonTrait, geom::MultiPolygon; context=nothing) = geom
-function GI.convert(::Type{MultiPolygon}, ::MultiPolygonTrait, geom; context=get_global_context())
-    polygons = Polygon[GI.convert(Polygon, PolygonTrait(), g; context) for g in GI.getgeom(geom)]
+GI.convert(
+    ::Type{MultiPolygon},
+    ::MultiPolygonTrait,
+    geom::MultiPolygon;
+    context = nothing,
+) = geom
+function GI.convert(
+    ::Type{MultiPolygon},
+    ::MultiPolygonTrait,
+    geom;
+    context = get_global_context(),
+)
+    polygons =
+        Polygon[GI.convert(Polygon, PolygonTrait(), g; context) for g in GI.getgeom(geom)]
     return MultiPolygon(polygons)
 end
 
-function GI.convert(t::Type{<:AbstractGeometry}, ::AbstractGeometryTrait, geom; context=nothing)
+function GI.convert(
+    t::Type{<:AbstractGeometry},
+    ::AbstractGeometryTrait,
+    geom;
+    context = nothing,
+)
     error(
         "Cannot convert an object of $(of(geom)) with the $(of()) trait to a $t (yet). Please report an issue.",
     )
@@ -237,9 +285,22 @@ bufferWithStyle(obj, dist::Real; kw...) = bufferWithStyle(to_geos(obj), dist; kw
 
 # 1 geom methods
 for f in (
-    :area, :geomLength, :envelope, :minimumRotatedRectangle, :convexhull, :boundary,
-    :unaryUnion, :pointOnSurface, :centroid, :node, :simplify, :topologyPreserveSimplify, :uniquePoints,
-    :delaunayTriangulationEdges, :delaunayTriangulation, :constrainedDelaunayTriangulation,
+    :area,
+    :geomLength,
+    :envelope,
+    :minimumRotatedRectangle,
+    :convexhull,
+    :boundary,
+    :unaryUnion,
+    :pointOnSurface,
+    :centroid,
+    :node,
+    :simplify,
+    :topologyPreserveSimplify,
+    :uniquePoints,
+    :delaunayTriangulationEdges,
+    :delaunayTriangulation,
+    :constrainedDelaunayTriangulation,
 )
     # We convert the geometry to a GEOS geometry and forward it to the geos method
     @eval $f(geom, args...; kw...) = $f(to_geos(geom), args...; kw...)
@@ -249,12 +310,32 @@ end
 
 # 2 geom methods
 for f in (
-    :project, :projectNormalized, :intersection, :difference, :symmetricDifference, :union, :sharedPaths,
-    :snap, :distance, :hausdorffdistance, :nearestPoints, :disjoint, :touches, :intersects, :crosses,
-    :within, :contains, :overlaps, :equalsexact, :covers, :coveredby, :equals,
+    :project,
+    :projectNormalized,
+    :intersection,
+    :difference,
+    :symmetricDifference,
+    :union,
+    :sharedPaths,
+    :snap,
+    :distance,
+    :hausdorffdistance,
+    :nearestPoints,
+    :disjoint,
+    :touches,
+    :intersects,
+    :crosses,
+    :within,
+    :contains,
+    :overlaps,
+    :equalsexact,
+    :covers,
+    :coveredby,
+    :equals,
 )
     # We convert the geometries to GEOS geometries and forward them to the geos method
-    @eval $f(geom1, geom2, args...; kw...) = $f(to_geos(geom1), to_geos(geom2), args...; kw...)
+    @eval $f(geom1, geom2, args...; kw...) =
+        $f(to_geos(geom1), to_geos(geom2), args...; kw...)
     @eval $f(geom1::AbstractGeometry, geom2::AbstractGeometry, args...; kw...) =
         throw(MethodError($f, (geom1, geom2, args...)))
 end

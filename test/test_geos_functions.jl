@@ -69,13 +69,9 @@ end
     @test !LibGEOS.isCCW(a)
 
     # Polygons and Holes
-    shell = LibGEOS.LinearRing(
-        Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]],
-    )
-    hole1 =
-        LibGEOS.LinearRing(Vector{Float64}[[1, 8], [2, 8], [2, 9], [1, 9], [1, 8]])
-    hole2 =
-        LibGEOS.LinearRing(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]])
+    shell = LibGEOS.LinearRing(Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]])
+    hole1 = LibGEOS.LinearRing(Vector{Float64}[[1, 8], [2, 8], [2, 9], [1, 9], [1, 8]])
+    hole2 = LibGEOS.LinearRing(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]])
     polygon = LibGEOS.Polygon(shell, [hole1, hole2])
     @test LibGEOS.getGeomDimensions(polygon) == 2
     @test LibGEOS.geomTypeId(polygon) == LibGEOS.GEOS_POLYGON
@@ -443,12 +439,22 @@ end
     LibGEOS.destroyPreparedGeom(prepGeom1_)
 
     for (wkt1_, wkt2_, wkt3_, wkt4_) in [
-        ["POLYGON((1 1,1 5,5 5,5 1,1 1))", "POLYGON((8 8, 9 9, 9 10, 8 8))", "POINT(5 5)", "POINT(8 8)"],
+        [
+            "POLYGON((1 1,1 5,5 5,5 1,1 1))",
+            "POLYGON((8 8, 9 9, 9 10, 8 8))",
+            "POINT(5 5)",
+            "POINT(8 8)",
+        ],
         ["POLYGON((1 1,1 5,5 5,5 1,1 1))", "POINT(2 2)", "POINT(2 2)", "POINT(2 2)"],
         ["LINESTRING(1 5,5 5,5 1,1 1)", "POINT(2 2)", "POINT(2 1)", "POINT(2 2)"],
         ["LINESTRING(0 0,10 10)", "LINESTRING(0 10,10 0)", "POINT(5 5)", "POINT(5 5)"],
-        ["POLYGON((0 0,10 0,10 10,0 10,0 0))", "LINESTRING(8 5,12 5)", "POINT(8 5)", "POINT(8 5)"]
-        ]
+        [
+            "POLYGON((0 0,10 0,10 10,0 10,0 0))",
+            "LINESTRING(8 5,12 5)",
+            "POINT(8 5)",
+            "POINT(8 5)",
+        ],
+    ]
         geom1_ = LibGEOS.readgeom(wkt1_)
         geom2_ = LibGEOS.readgeom(wkt2_)
         geom3_ = LibGEOS.readgeom(wkt3_)
@@ -949,7 +955,8 @@ end
     lss = readgeom("LINESTRING EMPTY")
     @test lineMerge(lss) == readgeom("GEOMETRYCOLLECTION EMPTY")
 
-    @test LibGEOS.reverse(readgeom("LINESTRING(0 0, 1 1)")) == readgeom("LINESTRING(1 1, 0 0)")
+    @test LibGEOS.reverse(readgeom("LINESTRING(0 0, 1 1)")) ==
+          readgeom("LINESTRING(1 1, 0 0)")
 
     geo = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))")
     mic = LibGEOS.maximumInscribedCircle(geo, 1e-4)
