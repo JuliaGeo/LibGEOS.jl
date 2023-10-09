@@ -157,12 +157,12 @@ end
 
 function GI.convert(
     t::Type{<:AbstractGeometry},
-    ::AbstractGeometryTrait,
+    tr::AbstractGeometryTrait,
     geom;
     context = nothing,
 )
     error(
-        "Cannot convert an object of $(of(geom)) with the $(of()) trait to a $t (yet). Please report an issue.",
+        "Cannot convert an object of $(typeof(geom)) with the $(typeof(tr)) trait to a $t (yet). Please report an issue.",
     )
 end
 
