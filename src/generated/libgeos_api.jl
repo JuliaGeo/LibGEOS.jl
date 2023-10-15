@@ -70,7 +70,9 @@ const GEOSTransformXYCallback = Ptr{Cvoid}
 const GEOSInterruptCallback = Cvoid
 
 function GEOS_interruptRegisterCallback(cb)
-    @ccall libgeos.GEOS_interruptRegisterCallback(cb::Ptr{Cvoid})::Ptr{Cvoid}
+    @ccall libgeos.GEOS_interruptRegisterCallback(
+        cb::Ptr{GEOSInterruptCallback},
+    )::Ptr{GEOSInterruptCallback}
 end
 
 function GEOS_interruptRequest()
@@ -542,6 +544,14 @@ function GEOSGeom_createCollection_r(handle, type, geoms, ngeoms)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSGeom_releaseCollection_r(handle, collection, ngeoms)
+    @ccall libgeos.GEOSGeom_releaseCollection_r(
+        handle::GEOSContextHandle_t,
+        collection::Ptr{GEOSGeometry},
+        ngeoms::Ptr{Cuint},
+    )::Ptr{Ptr{GEOSGeometry}}
+end
+
 function GEOSGeom_createEmptyCollection_r(handle, type)
     @ccall libgeos.GEOSGeom_createEmptyCollection_r(
         handle::GEOSContextHandle_t,
@@ -571,6 +581,31 @@ function GEOSGeom_destroy_r(handle, g)
         handle::GEOSContextHandle_t,
         g::Ptr{GEOSGeometry},
     )::Cvoid
+end
+
+function GEOSCoverageUnion_r(handle, g)
+    @ccall libgeos.GEOSCoverageUnion_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSCoverageIsValid_r(extHandle, input, gapWidth, output)
+    @ccall libgeos.GEOSCoverageIsValid_r(
+        extHandle::GEOSContextHandle_t,
+        input::Ptr{GEOSGeometry},
+        gapWidth::Cdouble,
+        output::Ptr{Ptr{GEOSGeometry}},
+    )::Cint
+end
+
+function GEOSCoverageSimplifyVW_r(extHandle, input, tolerance, preserveBoundary)
+    @ccall libgeos.GEOSCoverageSimplifyVW_r(
+        extHandle::GEOSContextHandle_t,
+        input::Ptr{GEOSGeometry},
+        tolerance::Cdouble,
+        preserveBoundary::Cint,
+    )::Ptr{GEOSGeometry}
 end
 
 function GEOSEnvelope_r(handle, g)
@@ -606,6 +641,15 @@ end
 
 function GEOSConcaveHull_r(handle, g, ratio, allowHoles)
     @ccall libgeos.GEOSConcaveHull_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        ratio::Cdouble,
+        allowHoles::Cuint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSConcaveHullByLength_r(handle, g, ratio, allowHoles)
+    @ccall libgeos.GEOSConcaveHullByLength_r(
         handle::GEOSContextHandle_t,
         g::Ptr{GEOSGeometry},
         ratio::Cdouble,
@@ -761,8 +805,8 @@ function GEOSUnaryUnionPrec_r(handle, g, gridSize)
     )::Ptr{GEOSGeometry}
 end
 
-function GEOSCoverageUnion_r(handle, g)
-    @ccall libgeos.GEOSCoverageUnion_r(
+function GEOSDisjointSubsetUnion_r(handle, g)
+    @ccall libgeos.GEOSDisjointSubsetUnion_r(
         handle::GEOSContextHandle_t,
         g::Ptr{GEOSGeometry},
     )::Ptr{GEOSGeometry}
@@ -864,6 +908,15 @@ function GEOSLineMergeDirected_r(handle, g)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSLineSubstring_r(handle, g, start_fraction, end_fdraction)
+    @ccall libgeos.GEOSLineSubstring_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        start_fraction::Cdouble,
+        end_fdraction::Cdouble,
+    )::Ptr{GEOSGeometry}
+end
+
 function GEOSReverse_r(handle, g)
     @ccall libgeos.GEOSReverse_r(
         handle::GEOSContextHandle_t,
@@ -927,13 +980,13 @@ function GEOSConstrainedDelaunayTriangulation_r(handle, g)
     )::Ptr{GEOSGeometry}
 end
 
-function GEOSVoronoiDiagram_r(extHandle, g, env, tolerance, onlyEdges)
+function GEOSVoronoiDiagram_r(extHandle, g, env, tolerance, flags)
     @ccall libgeos.GEOSVoronoiDiagram_r(
         extHandle::GEOSContextHandle_t,
         g::Ptr{GEOSGeometry},
         env::Ptr{GEOSGeometry},
         tolerance::Cdouble,
-        onlyEdges::Cint,
+        flags::Cint,
     )::Ptr{GEOSGeometry}
 end
 
@@ -1038,6 +1091,14 @@ function GEOSEqualsExact_r(handle, g1, g2, tolerance)
     )::Cchar
 end
 
+function GEOSEqualsIdentical_r(handle, g1, g2)
+    @ccall libgeos.GEOSEqualsIdentical_r(
+        handle::GEOSContextHandle_t,
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+    )::Cchar
+end
+
 function GEOSCovers_r(handle, g1, g2)
     @ccall libgeos.GEOSCovers_r(
         handle::GEOSContextHandle_t,
@@ -1073,6 +1134,15 @@ function GEOSPreparedContains_r(handle, pg1, g2)
         handle::GEOSContextHandle_t,
         pg1::Ptr{GEOSPreparedGeometry},
         g2::Ptr{GEOSGeometry},
+    )::Cchar
+end
+
+function GEOSPreparedContainsXY_r(handle, pg1, x, y)
+    @ccall libgeos.GEOSPreparedContainsXY_r(
+        handle::GEOSContextHandle_t,
+        pg1::Ptr{GEOSPreparedGeometry},
+        x::Cdouble,
+        y::Cdouble,
     )::Cchar
 end
 
@@ -1121,6 +1191,15 @@ function GEOSPreparedIntersects_r(handle, pg1, g2)
         handle::GEOSContextHandle_t,
         pg1::Ptr{GEOSPreparedGeometry},
         g2::Ptr{GEOSGeometry},
+    )::Cchar
+end
+
+function GEOSPreparedIntersectsXY_r(handle, pg1, x, y)
+    @ccall libgeos.GEOSPreparedIntersectsXY_r(
+        handle::GEOSContextHandle_t,
+        pg1::Ptr{GEOSPreparedGeometry},
+        x::Cdouble,
+        y::Cdouble,
     )::Cchar
 end
 
@@ -1179,6 +1258,13 @@ function GEOSSTRtree_create_r(handle, nodeCapacity)
         handle::GEOSContextHandle_t,
         nodeCapacity::Csize_t,
     )::Ptr{GEOSSTRtree}
+end
+
+function GEOSSTRtree_build_r(handle, tree)
+    @ccall libgeos.GEOSSTRtree_build_r(
+        handle::GEOSContextHandle_t,
+        tree::Ptr{GEOSSTRtree},
+    )::Cint
 end
 
 function GEOSSTRtree_insert_r(handle, tree, g, item)
@@ -1265,6 +1351,10 @@ end
 
 function GEOSHasZ_r(handle, g)
     @ccall libgeos.GEOSHasZ_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+end
+
+function GEOSHasM_r(handle, g)
+    @ccall libgeos.GEOSHasM_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
 end
 
 function GEOSisClosed_r(handle, g)
@@ -1472,6 +1562,14 @@ function GEOSNormalize_r(handle, g)
     @ccall libgeos.GEOSNormalize_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cint
 end
 
+function GEOSOrientPolygons_r(handle, g, exteriorCW)
+    @ccall libgeos.GEOSOrientPolygons_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        exteriorCW::Cint,
+    )::Cint
+end
+
 @cenum GEOSPrecisionRules::UInt32 begin
     GEOS_PREC_VALID_OUTPUT = 0
     GEOS_PREC_NO_TOPO = 1
@@ -1529,6 +1627,14 @@ function GEOSGeomGetZ_r(handle, g, z)
         handle::GEOSContextHandle_t,
         g::Ptr{GEOSGeometry},
         z::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSGeomGetM_r(handle, g, m)
+    @ccall libgeos.GEOSGeomGetM_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        m::Ptr{Cdouble},
     )::Cint
 end
 
@@ -2292,6 +2398,13 @@ function GEOSGeom_createCollection(type, geoms, ngeoms)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSGeom_releaseCollection(collection, ngeoms)
+    @ccall libgeos.GEOSGeom_releaseCollection(
+        collection::Ptr{GEOSGeometry},
+        ngeoms::Ptr{Cuint},
+    )::Ptr{Ptr{GEOSGeometry}}
+end
+
 function GEOSGeom_createEmptyCollection(type)
     @ccall libgeos.GEOSGeom_createEmptyCollection(type::Cint)::Ptr{GEOSGeometry}
 end
@@ -2359,6 +2472,10 @@ end
 
 function GEOSGeomGetZ(g, z)
     @ccall libgeos.GEOSGeomGetZ(g::Ptr{GEOSGeometry}, z::Ptr{Cdouble})::Cint
+end
+
+function GEOSGeomGetM(g, m)
+    @ccall libgeos.GEOSGeomGetM(g::Ptr{GEOSGeometry}, m::Ptr{Cdouble})::Cint
 end
 
 function GEOSGetInteriorRingN(g, n)
@@ -2435,6 +2552,10 @@ function GEOSHasZ(g)
     @ccall libgeos.GEOSHasZ(g::Ptr{GEOSGeometry})::Cchar
 end
 
+function GEOSHasM(g)
+    @ccall libgeos.GEOSHasM(g::Ptr{GEOSGeometry})::Cchar
+end
+
 function GEOSisClosed(g)
     @ccall libgeos.GEOSisClosed(g::Ptr{GEOSGeometry})::Cchar
 end
@@ -2449,6 +2570,10 @@ end
 
 function GEOSNormalize(g)
     @ccall libgeos.GEOSNormalize(g::Ptr{GEOSGeometry})::Cint
+end
+
+function GEOSOrientPolygons(g, exteriorCW)
+    @ccall libgeos.GEOSOrientPolygons(g::Ptr{GEOSGeometry}, exteriorCW::Cint)::Cint
 end
 
 function GEOSisSimple(g)
@@ -2690,8 +2815,8 @@ function GEOSUnaryUnionPrec(g, gridSize)
     )::Ptr{GEOSGeometry}
 end
 
-function GEOSCoverageUnion(g)
-    @ccall libgeos.GEOSCoverageUnion(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+function GEOSDisjointSubsetUnion(g)
+    @ccall libgeos.GEOSDisjointSubsetUnion(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
 end
 
 function GEOSClipByRect(g, xmin, ymin, xmax, ymax)
@@ -2791,6 +2916,26 @@ function GEOSOffsetCurve(g, width, quadsegs, joinStyle, mitreLimit)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSCoverageUnion(g)
+    @ccall libgeos.GEOSCoverageUnion(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSCoverageIsValid(input, gapWidth, invalidEdges)
+    @ccall libgeos.GEOSCoverageIsValid(
+        input::Ptr{GEOSGeometry},
+        gapWidth::Cdouble,
+        invalidEdges::Ptr{Ptr{GEOSGeometry}},
+    )::Cint
+end
+
+function GEOSCoverageSimplifyVW(input, tolerance, preserveBoundary)
+    @ccall libgeos.GEOSCoverageSimplifyVW(
+        input::Ptr{GEOSGeometry},
+        tolerance::Cdouble,
+        preserveBoundary::Cint,
+    )::Ptr{GEOSGeometry}
+end
+
 function GEOSEnvelope(g)
     @ccall libgeos.GEOSEnvelope(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
 end
@@ -2808,6 +2953,23 @@ function GEOSConcaveHull(g, ratio, allowHoles)
         g::Ptr{GEOSGeometry},
         ratio::Cdouble,
         allowHoles::Cuint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSConcaveHullByLength(g, length, allowHoles)
+    @ccall libgeos.GEOSConcaveHullByLength(
+        g::Ptr{GEOSGeometry},
+        length::Cdouble,
+        allowHoles::Cuint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSConcaveHullOfPolygons(g, lengthRatio, isTight, isHolesAllowed)
+    @ccall libgeos.GEOSConcaveHullOfPolygons(
+        g::Ptr{GEOSGeometry},
+        lengthRatio::Cdouble,
+        isTight::Cuint,
+        isHolesAllowed::Cuint,
     )::Ptr{GEOSGeometry}
 end
 
@@ -2830,15 +2992,6 @@ function GEOSPolygonHullSimplifyMode(g, isOuter, parameterMode, parameter)
         isOuter::Cuint,
         parameterMode::Cuint,
         parameter::Cdouble,
-    )::Ptr{GEOSGeometry}
-end
-
-function GEOSConcaveHullOfPolygons(g, lengthRatio, isTight, isHolesAllowed)
-    @ccall libgeos.GEOSConcaveHullOfPolygons(
-        g::Ptr{GEOSGeometry},
-        lengthRatio::Cdouble,
-        isTight::Cuint,
-        isHolesAllowed::Cuint,
     )::Ptr{GEOSGeometry}
 end
 
@@ -2895,12 +3048,17 @@ function GEOSConstrainedDelaunayTriangulation(g)
     )::Ptr{GEOSGeometry}
 end
 
-function GEOSVoronoiDiagram(g, env, tolerance, onlyEdges)
+@cenum GEOSVoronoiFlags::UInt32 begin
+    GEOS_VORONOI_ONLY_EDGES = 1
+    GEOS_VORONOI_PRESERVE_ORDER = 2
+end
+
+function GEOSVoronoiDiagram(g, env, tolerance, flags)
     @ccall libgeos.GEOSVoronoiDiagram(
         g::Ptr{GEOSGeometry},
         env::Ptr{GEOSGeometry},
         tolerance::Cdouble,
-        onlyEdges::Cint,
+        flags::Cint,
     )::Ptr{GEOSGeometry}
 end
 
@@ -2952,6 +3110,14 @@ end
 
 function GEOSLineMergeDirected(g)
     @ccall libgeos.GEOSLineMergeDirected(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSLineSubstring(g, start_fraction, end_fraction)
+    @ccall libgeos.GEOSLineSubstring(
+        g::Ptr{GEOSGeometry},
+        start_fraction::Cdouble,
+        end_fraction::Cdouble,
+    )::Ptr{GEOSGeometry}
 end
 
 function GEOSReverse(g)
@@ -3054,6 +3220,10 @@ function GEOSEqualsExact(g1, g2, tolerance)
     )::Cchar
 end
 
+function GEOSEqualsIdentical(g1, g2)
+    @ccall libgeos.GEOSEqualsIdentical(g1::Ptr{GEOSGeometry}, g2::Ptr{GEOSGeometry})::Cchar
+end
+
 function GEOSRelatePattern(g1, g2, pat)
     @ccall libgeos.GEOSRelatePattern(
         g1::Ptr{GEOSGeometry},
@@ -3099,6 +3269,14 @@ function GEOSPreparedContains(pg1, g2)
     )::Cchar
 end
 
+function GEOSPreparedContainsXY(pg1, x, y)
+    @ccall libgeos.GEOSPreparedContainsXY(
+        pg1::Ptr{GEOSPreparedGeometry},
+        x::Cdouble,
+        y::Cdouble,
+    )::Cchar
+end
+
 function GEOSPreparedContainsProperly(pg1, g2)
     @ccall libgeos.GEOSPreparedContainsProperly(
         pg1::Ptr{GEOSPreparedGeometry},
@@ -3138,6 +3316,14 @@ function GEOSPreparedIntersects(pg1, g2)
     @ccall libgeos.GEOSPreparedIntersects(
         pg1::Ptr{GEOSPreparedGeometry},
         g2::Ptr{GEOSGeometry},
+    )::Cchar
+end
+
+function GEOSPreparedIntersectsXY(pg1, x, y)
+    @ccall libgeos.GEOSPreparedIntersectsXY(
+        pg1::Ptr{GEOSPreparedGeometry},
+        x::Cdouble,
+        y::Cdouble,
     )::Cchar
 end
 
@@ -3187,6 +3373,10 @@ end
 
 function GEOSSTRtree_create(nodeCapacity)
     @ccall libgeos.GEOSSTRtree_create(nodeCapacity::Csize_t)::Ptr{GEOSSTRtree}
+end
+
+function GEOSSTRtree_build(tree)
+    @ccall libgeos.GEOSSTRtree_build(tree::Ptr{GEOSSTRtree})::Cint
 end
 
 function GEOSSTRtree_insert(tree, g, item)
@@ -3632,21 +3822,21 @@ end
 
 const GEOS_VERSION_MAJOR = 3
 
-const GEOS_VERSION_MINOR = 11
+const GEOS_VERSION_MINOR = 12
 
 const GEOS_VERSION_PATCH = 0
 
-const GEOS_VERSION = "3.11.0"
+const GEOS_VERSION = "3.12.0"
 
 const GEOS_JTS_PORT = "1.18.0"
 
 const GEOS_CAPI_VERSION_MAJOR = 1
 
-const GEOS_CAPI_VERSION_MINOR = 17
+const GEOS_CAPI_VERSION_MINOR = 18
 
 const GEOS_CAPI_VERSION_PATCH = 0
 
-const GEOS_CAPI_VERSION = "3.11.0-CAPI-1.17.0"
+const GEOS_CAPI_VERSION = "3.12.0-CAPI-1.18.0"
 
 const GEOS_CAPI_FIRST_INTERFACE = GEOS_CAPI_VERSION_MAJOR
 

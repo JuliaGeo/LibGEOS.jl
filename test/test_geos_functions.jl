@@ -1,3 +1,8 @@
+using Test
+using LibGEOS
+import GeoInterface
+using Extents
+
 @testset "WKTWriter" begin
     # default writing options
     p = readgeom("POINT(0.12345 2.000 0.1)")
@@ -60,17 +65,13 @@ end
     seq = Vector{Float64}[[-1, 0], [0, 0], [10, 0], [10, 10], [0, 10], [-1, 0]]
     a = LibGEOS.createCoordSeq(seq)
     @test LibGEOS.isCCW(a)
-    a = LibGEOS.createCoordSeq(reverse(seq))
+    a = LibGEOS.createCoordSeq(Base.reverse(seq))
     @test !LibGEOS.isCCW(a)
 
     # Polygons and Holes
-    shell = LibGEOS.LinearRing(
-        Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]],
-    )
-    hole1 =
-        LibGEOS.LinearRing(Vector{Float64}[[1, 8], [2, 8], [2, 9], [1, 9], [1, 8]])
-    hole2 =
-        LibGEOS.LinearRing(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]])
+    shell = LibGEOS.LinearRing(Vector{Float64}[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]])
+    hole1 = LibGEOS.LinearRing(Vector{Float64}[[1, 8], [2, 8], [2, 9], [1, 9], [1, 8]])
+    hole2 = LibGEOS.LinearRing(Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2], [8, 1]])
     polygon = LibGEOS.Polygon(shell, [hole1, hole2])
     @test LibGEOS.getGeomDimensions(polygon) == 2
     @test LibGEOS.geomTypeId(polygon) == LibGEOS.GEOS_POLYGON
@@ -123,22 +124,28 @@ end
     # GEOSContainsTest
     geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
     geom2_ = LibGEOS.readgeom("POLYGON EMPTY")
-    @test !contains(geom1_, geom2_)
-    @test !contains(geom2_, geom1_)
+    @test !Base.contains(geom1_, geom2_)
+    @test !Base.contains(geom2_, geom1_)
+    @test !LibGEOS.contains(geom1_, geom2_)
+    @test !LibGEOS.contains(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
     geom1_ = LibGEOS.readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
     geom2_ = LibGEOS.readgeom("POINT(2 2)")
-    @test contains(geom1_, geom2_)
-    @test !contains(geom2_, geom1_)
+    @test Base.contains(geom1_, geom2_)
+    @test !Base.contains(geom2_, geom1_)
+    @test LibGEOS.contains(geom1_, geom2_)
+    @test !LibGEOS.contains(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
     geom1_ = LibGEOS.readgeom("MULTIPOLYGON(((0 0,0 10,10 10,10 0,0 0)))")
     geom2_ = LibGEOS.readgeom("POLYGON((1 1,1 2,2 2,2 1,1 1))")
-    @test contains(geom1_, geom2_)
-    @test !contains(geom2_, geom1_)
+    @test Base.contains(geom1_, geom2_)
+    @test !Base.contains(geom2_, geom1_)
+    @test LibGEOS.contains(geom1_, geom2_)
+    @test !LibGEOS.contains(geom2_, geom1_)
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
 
@@ -159,6 +166,10 @@ end
     @test LibGEOS.getSize(cs_) == 1
     @test LibGEOS.getDimensions(cs_) == 2
     @test LibGEOS.getCoordinates(cs_) == [[5.0, 3.0]]
+    # z coordinate stays NaN for 2D geometry
+    @test isnan(LibGEOS.getZ(cs_, 1))
+    LibGEOS.setZ!(cs_, 1, 2.0)
+    @test isnan(LibGEOS.getZ(cs_, 1))
 
     cs_2 = LibGEOS.createCoordSeq([5.0, 3.0])
     @test LibGEOS.getSize(cs_2) == 1
@@ -175,7 +186,7 @@ end
     @test LibGEOS.getCoordinates(cs_3, 2) == [1.0, 2.0]
     @test LibGEOS.getCoordinates(cs_3, 3) == [1.0, 3.0]
 
-
+    cs_ = LibGEOS.createCoordSeq(0, 0, 0)
     for i = 1:5
         x = i * 10.0
         y = i * 10.0 + 1.0
@@ -420,21 +431,58 @@ end
     # GEOSNearestPointsTest
     geom1_ = LibGEOS.readgeom("POLYGON EMPTY")
     geom2_ = LibGEOS.readgeom("POLYGON EMPTY")
+    prepGeom1_ = LibGEOS.prepareGeom(geom1_)
     @test LibGEOS.nearestPoints(geom1_, geom2_) == Point[]
+    @test LibGEOS.nearestPoints(prepGeom1_, geom2_) == Point[]
     LibGEOS.destroyGeom(geom1_)
     LibGEOS.destroyGeom(geom2_)
+    LibGEOS.destroyPreparedGeom(prepGeom1_)
 
-    geom1_ = LibGEOS.readgeom("POLYGON((1 1,1 5,5 5,5 1,1 1))")
-    geom2_ = LibGEOS.readgeom("POLYGON((8 8, 9 9, 9 10, 8 8))")
-    coords_ = LibGEOS.nearestPoints(geom1_, geom2_)
-    @test coords_ isa Vector{Point}
-    @test length(coords_) == 2
-    @test GeoInterface.coordinates(coords_[1]) ≈ [5.0, 5.0] atol = 1e-5
-    @test GeoInterface.coordinates(coords_[2]) ≈ [8.0, 8.0] atol = 1e-5
-    LibGEOS.destroyGeom(geom1_)
-    LibGEOS.destroyGeom(geom2_)
-    LibGEOS.destroyGeom(coords_[1])
-    LibGEOS.destroyGeom(coords_[2])
+    for (wkt1_, wkt2_, wkt3_, wkt4_) in [
+        [
+            "POLYGON((1 1,1 5,5 5,5 1,1 1))",
+            "POLYGON((8 8, 9 9, 9 10, 8 8))",
+            "POINT(5 5)",
+            "POINT(8 8)",
+        ],
+        ["POLYGON((1 1,1 5,5 5,5 1,1 1))", "POINT(2 2)", "POINT(2 2)", "POINT(2 2)"],
+        ["LINESTRING(1 5,5 5,5 1,1 1)", "POINT(2 2)", "POINT(2 1)", "POINT(2 2)"],
+        ["LINESTRING(0 0,10 10)", "LINESTRING(0 10,10 0)", "POINT(5 5)", "POINT(5 5)"],
+        [
+            "POLYGON((0 0,10 0,10 10,0 10,0 0))",
+            "LINESTRING(8 5,12 5)",
+            "POINT(8 5)",
+            "POINT(8 5)",
+        ],
+    ]
+        geom1_ = LibGEOS.readgeom(wkt1_)
+        geom2_ = LibGEOS.readgeom(wkt2_)
+        geom3_ = LibGEOS.readgeom(wkt3_)
+        geom4_ = LibGEOS.readgeom(wkt4_)
+        prepGeom1_ = LibGEOS.prepareGeom(geom1_)
+
+        coords_ = LibGEOS.nearestPoints(geom1_, geom2_)
+        @test coords_ isa Vector{Point}
+        @test length(coords_) == 2
+        @test LibGEOS.equals(coords_[1], geom3_)
+        @test LibGEOS.equals(coords_[2], geom4_)
+
+        prepCoords_ = LibGEOS.nearestPoints(prepGeom1_, geom2_)
+        @test prepCoords_ isa Vector{Point}
+        @test length(prepCoords_) == 2
+        @test LibGEOS.equals(prepCoords_[1], geom3_)
+        @test LibGEOS.equals(prepCoords_[2], geom4_)
+
+        LibGEOS.destroyGeom(geom1_)
+        LibGEOS.destroyGeom(geom2_)
+        LibGEOS.destroyGeom(geom3_)
+        LibGEOS.destroyGeom(geom4_)
+        LibGEOS.destroyGeom(coords_[1])
+        LibGEOS.destroyGeom(coords_[2])
+        LibGEOS.destroyGeom(prepCoords_[1])
+        LibGEOS.destroyGeom(prepCoords_[2])
+        LibGEOS.destroyPreparedGeom(prepGeom1_)
+    end
 
     # GEOSNodeTest
     geom1_ = LibGEOS.readgeom("LINESTRING(0 0, 10 10, 10 0, 0 10)")
@@ -890,4 +938,27 @@ end
         # LibGEOS.getExtent(geom) == [0, 0, 1, 1]
         GeoInterface.extent(geom) == Extent(X = (0, 1), Y = (0, 1))
     end
+
+    p = LibGEOS.createEmptyPolygon()
+    @test p == readgeom("POLYGON EMPTY")
+    @test p isa Polygon
+
+    lss = readgeom("MULTILINESTRING((0 0, 0 1), (0 1, 0 2))")
+    @test lineMerge(lss) == readgeom("LINESTRING (0 0, 0 1, 0 2)")
+
+    lss = readgeom("MULTILINESTRING((0 0, 0 1), (0 2, 0 3), (0 3, 0 4))")
+    @test lineMerge(lss) == readgeom("MULTILINESTRING ((0 0, 0 1), (0 2, 0 3, 0 4))")
+
+    lss = readgeom("MULTILINESTRING EMPTY")
+    @test lineMerge(lss) == readgeom("GEOMETRYCOLLECTION EMPTY")
+
+    lss = readgeom("LINESTRING EMPTY")
+    @test lineMerge(lss) == readgeom("GEOMETRYCOLLECTION EMPTY")
+
+    @test LibGEOS.reverse(readgeom("LINESTRING(0 0, 1 1)")) ==
+          readgeom("LINESTRING(1 1, 0 0)")
+
+    geo = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))")
+    mic = LibGEOS.maximumInscribedCircle(geo, 1e-4)
+    @test mic == readgeom("LINESTRING (0.5 0.5, 0 0.5)")
 end
