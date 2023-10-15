@@ -19,47 +19,59 @@ GeoInterface.geomtrait(::MultiPolygon) = MultiPolygonTrait()
 GeoInterface.geomtrait(::GeometryCollection) = GeometryCollectionTrait()
 GeoInterface.geomtrait(geom::PreparedGeometry) = GeoInterface.geomtrait(geom.ownedby)
 
-GeoInterface.ngeom(::AbstractGeometryTrait, geom::AbstractGeometry) =
-    isEmpty(geom) ? 0 : numGeometries(geom)
-GeoInterface.ngeom(::AbstractPointTrait, geom::AbstractGeometry) = 0
+GeoInterface.ngeom(::AbstractGeometryCollectionTrait, geom::AbstractMultiGeometry) =
+    isEmpty(geom) ? 0 : Int(numGeometries(geom))
+GeoInterface.ngeom(::LineStringTrait, geom::LineString) = Int(numPoints(geom))
+GeoInterface.ngeom(::LinearRingTrait, geom::LinearRing) = Int(numPoints(geom))
+GeoInterface.ngeom(::PolygonTrait, geom::Polygon) = Int(numInteriorRings(geom)) + 1
+GeoInterface.ngeom(t::AbstractGeometryTrait, geom::PreparedGeometry) =
+    GeoInterface.ngeom(t, geom.ownedby)
+GeoInterface.ngeom(::AbstractPointTrait, geom::Point) = 0
+GeoInterface.ngeom(::AbstractPointTrait, geom::PreparedGeometry) = 0
 
-function GeoInterface.getgeom(::AbstractGeometryTrait, geom::AbstractGeometry, i)
+function GeoInterface.getgeom(
+    ::AbstractGeometryCollectionTrait,
+    geom::AbstractMultiGeometry,
+    i,
+)
     getGeometry(geom, i)
 end
-
-GeoInterface.getgeom(::AbstractPointTrait, geom::AbstractGeometry, i) = nothing
-GeoInterface.ngeom(::AbstractGeometryTrait, geom::Union{LineString,LinearRing}) =
-    numPoints(geom)
-GeoInterface.ngeom(t::AbstractPointTrait, geom::Union{LineString,LinearRing}) = 0
-GeoInterface.getgeom(::AbstractGeometryTrait, geom::Union{LineString,LinearRing}, i) =
-    Point(getPoint(geom, i))
-GeoInterface.getgeom(::AbstractPointTrait, geom::Union{LineString,LinearRing}, i) = nothing
-
-GeoInterface.ngeom(::AbstractGeometryTrait, geom::Polygon) = numInteriorRings(geom) + 1
-GeoInterface.ngeom(::AbstractPointTrait, geom::Polygon) = 0
-function GeoInterface.getgeom(::AbstractGeometryTrait, geom::Polygon, i)
+GeoInterface.getgeom(::MultiPointTrait, geom::MultiPoint, i) = getGeometry(geom, i)::Point
+GeoInterface.getgeom(::MultiLineStringTrait, geom::MultiLineString, i) =
+    getGeometry(geom, i)::LineString
+GeoInterface.getgeom(::MultiPolygonTrait, geom::MultiPolygon, i) =
+    getGeometry(geom, i)::Polygon
+GeoInterface.getgeom(
+    ::Union{LineStringTrait,LinearRingTrait},
+    geom::Union{LineString,LinearRing},
+    i,
+) = Point(getPoint(geom, i))
+GeoInterface.getgeom(t::AbstractPointTrait, geom::PreparedGeometry) = nothing
+function GeoInterface.getgeom(::PolygonTrait, geom::Polygon, i::Int)
     if i == 1
         LinearRing(exteriorRing(geom))
     else
         LinearRing(interiorRing(geom, i - 1))
     end
 end
-GeoInterface.getgeom(::AbstractPointTrait, geom::Polygon, i) = nothing
-
-GeoInterface.ngeom(t::AbstractGeometryTrait, geom::PreparedGeometry) =
-    GeoInterface.ngeom(t, geom.ownedby)
-GeoInterface.ngeom(t::AbstractPointTrait, geom::PreparedGeometry) = 0
 GeoInterface.getgeom(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
     GeoInterface.getgeom(t, geom.ownedby, i)
 GeoInterface.getgeom(t::AbstractPointTrait, geom::PreparedGeometry, i) = 0
 
-GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
-    isEmpty(geom) ? 0 : getCoordinateDimension(geom)
-GeoInterface.getcoord(::AbstractGeometryTrait, geom::AbstractGeometry, i) =
-    getCoordinates(getCoordSeq(geom), 1)[i]
+GeoInterface.coordinates(t::AbstractPointTrait, geom::Point) = collect(getcoord(t, geom))
+GeoInterface.coordinates(t::AbstractPointTrait, geom::AbstractGeometry) = nothing
+GeoInterface.coordinates(t::AbstractGeometryTrait, geom::AbstractGeometry) =
+    [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
+GeoInterface.coordinates(t::AbstractGeometryCollectionTrait, geom::AbstractMultiGeometry) =
+    [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
 
+GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
+    isEmpty(geom) ? 0 : Int(getCoordinateDimension(geom))
 GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) =
     GeoInterface.ncoord(t, geom.ownedby)
+
+GeoInterface.getcoord(::AbstractGeometryTrait, geom::AbstractGeometry, i) =
+    getCoordinates(getCoordSeq(geom), 1)[i]
 GeoInterface.getcoord(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
     GeoInterface.getcoord(t, geom.ownedby, i)
 
@@ -67,7 +79,7 @@ GeoInterface.getcoord(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
 function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)
     # minx, miny, maxx, maxy = getExtent(geom)
     env = envelope(geom)
-    return Extent(X = (getXMin(env), getXMax(env)), Y = (getYMin(env), getYMax(env)))
+    return Extent(; X = (getXMin(env), getXMax(env)), Y = (getYMin(env), getYMax(env)))
 end
 
 GI.convert(::Type{Point}, ::PointTrait, geom::Point; context = nothing) = geom
@@ -180,7 +192,6 @@ function _geom_to_coord_seq(geom, context)
     return seq
 end
 
-
 GeoInterface.distance(
     ::AbstractGeometryTrait,
     ::AbstractGeometryTrait,
@@ -267,7 +278,6 @@ GeoInterface.union(
 ) = union(a, b)
 
 GeoInterfaceRecipes.@enable_geo_plots AbstractGeometry
-
 
 # -----
 # LibGeos operations for any GeoInterface.jl compatible geometries
