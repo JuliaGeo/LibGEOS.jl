@@ -19,10 +19,8 @@ GeoInterface.geomtrait(::MultiPolygon) = MultiPolygonTrait()
 GeoInterface.geomtrait(::GeometryCollection) = GeometryCollectionTrait()
 GeoInterface.geomtrait(geom::PreparedGeometry) = GeoInterface.geomtrait(geom.ownedby)
 
-GeoInterface.ngeom(
-    ::AbstractGeometryCollectionTrait,
-    geom::T,
-) where {T<:AbstractMultiGeometry} = isEmpty(geom) ? 0 : Int(numGeometries(geom))
+GeoInterface.ngeom(::AbstractGeometryCollectionTrait, geom::AbstractMultiGeometry) =
+    isEmpty(geom) ? 0 : Int(numGeometries(geom))
 GeoInterface.ngeom(::LineStringTrait, geom::LineString) = Int(numPoints(geom))
 GeoInterface.ngeom(::LinearRingTrait, geom::LinearRing) = Int(numPoints(geom))
 GeoInterface.ngeom(::PolygonTrait, geom::Polygon) = Int(numInteriorRings(geom)) + 1
