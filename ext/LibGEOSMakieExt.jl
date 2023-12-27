@@ -1,4 +1,4 @@
-module LibGEOSMakie
+module LibGEOSMakieExt
 using GeoInterfaceMakie: GeoInterfaceMakie
 using LibGEOS: LibGEOS
 
