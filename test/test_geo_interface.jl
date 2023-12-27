@@ -1,5 +1,4 @@
-using Test, Makie, Plots, 
-using Test, GeoInterface, LibGEOS, Extents
+using Test, Makie, Plots, GeoInterface, LibGEOS, Extents
 const GI = GeoInterface
 const LG = LibGEOS
 
