@@ -19,6 +19,7 @@ Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 LibGEOSMakie = "Makie"
 
 [compat]
+Aqua = "0.8"
 CEnum = "0.2, 0.3, 0.4, 0.5"
 Extents = "0.1.1"
 GEOS_jll = "3.12"
@@ -26,6 +27,7 @@ GeoInterface = "1"
 GeoInterfaceMakie = "0.1"
 GeoInterfaceRecipes = "1"
 Makie = "0.20"
+Plots = "1"
 julia = "1.6"
 
 [extras]
