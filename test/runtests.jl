@@ -14,6 +14,12 @@ if version != LibGEOS.GEOS_CAPI_VERSION
 end
 
 @testset "LibGEOS" begin
+    @testset "Aqua.jl" begin
+        Aqua.test_all(
+            LibGEOS;
+            stale_deps=(ignore=[:GeoInterfaceMakie],),
+        )
+    end
     include("test_geos_types.jl")
     include("test_geos_functions.jl")
     include("test_geos_operations.jl")
@@ -22,5 +28,4 @@ end
     include("test_invalid_geometry.jl")
     include("test_strtree.jl")
     include("test_misc.jl")
-    Aqua.test_all(LibGEOS)
 end
