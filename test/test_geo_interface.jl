@@ -1,4 +1,5 @@
-using Test, Plots, GeoInterface, LibGEOS, Extents
+using Test, Makie, Plots, 
+using Test, GeoInterface, LibGEOS, Extents
 const GI = GeoInterface
 const LG = LibGEOS
 
@@ -12,7 +13,8 @@ const LG = LibGEOS
     @test GeoInterface.getcoord(pt, 1) ≈ 1.0
     @test GeoInterface.testgeometry(pt)
     @test GeoInterface.extent(pt) == Extent(X=(1.0, 1.0), Y=(2.0, 2.0))
-    plot(pt)
+    Plots.plot(pt)
+    Makie.plot(pt)
 
     pt = LibGEOS.Point(1.0, 2.0, 3.0)
     @test GeoInterface.x(pt) == 1.0
@@ -25,7 +27,9 @@ const LG = LibGEOS
     # This doesn't return the Z extent
     @test_broken GeoInterface.extent(pt) ==
                  Extent(X = (1.0, 1.0), Y = (2.0, 2.0), Z = (3.0, 3.0))
-    plot(pt)
+    Plots.plot(pt)
+    Makie.plot(pt)
+    Makie.plot(pt)
 
     pt = LibGEOS.Point(1, 2)
     @test GeoInterface.coordinates(pt) ≈ [1, 2] atol = 1e-5
@@ -52,7 +56,8 @@ const LG = LibGEOS
     @test p isa LibGEOS.Point
     @test GeoInterface.coordinates(p) == [10, 0]
     @test GeoInterface.testgeometry(mpt)
-    plot(mpt)
+    Plots.plot(mpt)
+    Makie.plot(mpt)
 
     @inferred GeoInterface.ncoord(mpt)
     @inferred GeoInterface.ngeom(mpt)
@@ -68,7 +73,8 @@ const LG = LibGEOS
     @test p isa LibGEOS.Point
     @test GeoInterface.coordinates(p) == [9, 2]
     @test GeoInterface.testgeometry(ls)
-    plot(ls)
+    Plots.plot(ls)
+    Makie.plot(ls)
 
     @inferred GeoInterface.ncoord(ls)
     @inferred GeoInterface.ngeom(ls)
@@ -85,7 +91,8 @@ const LG = LibGEOS
     @test GeoInterface.geomtrait(mls) == MultiLineStringTrait()
     @test GeoInterface.ngeom(mls) == 2
     @test GeoInterface.testgeometry(mls)
-    plot(mls)
+    Plots.plot(mls)
+    Makie.plot(mls)
 
     @inferred GeoInterface.ncoord(mls)
     @inferred GeoInterface.ngeom(mls)
@@ -102,7 +109,8 @@ const LG = LibGEOS
     @test GeoInterface.coordinates(p) == [9, 2]
     @test GeoInterface.testgeometry(lr)
     # Cannot convert LinearRingTrait to series data for plotting
-    # plot(lr)
+    # Plots.plot(lr)
+    # Makie.plot(lr)
 
     @inferred GeoInterface.ncoord(lr)
     @inferred GeoInterface.ngeom(lr)
@@ -122,7 +130,8 @@ const LG = LibGEOS
     @test ls isa LibGEOS.LinearRing
     @test GeoInterface.coordinates(ls) == coords[2]
     @test GeoInterface.testgeometry(polygon)
-    plot(polygon)
+    Plots.plot(polygon)
+    Makie.plot(polygon)
 
     @inferred GeoInterface.ncoord(polygon)
     @inferred GeoInterface.ngeom(polygon)
@@ -146,7 +155,8 @@ const LG = LibGEOS
     @test GeoInterface.geomtrait(multipolygon) == MultiPolygonTrait()
     @test GeoInterface.testgeometry(multipolygon)
     @test GeoInterface.extent(multipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
-    plot(multipolygon)
+    Plots.plot(multipolygon)
+    Makie.plot(multipolygon)
 
     @inferred GeoInterface.ncoord(multipolygon)
     @inferred GeoInterface.ngeom(multipolygon)
@@ -229,7 +239,9 @@ const LG = LibGEOS
     end
     @test GeoInterface.geomtrait(geomcollection) == GeometryCollectionTrait()
     @test GeoInterface.testgeometry(geomcollection)
-    plot(geomcollection)
+    Plots.plot(geomcollection)
+    # Can't plot geometry collection yet with Makie
+    @test_broken Makie.plot(geomcollection)
 
     @inferred GeoInterface.ncoord(geomcollection)
     @inferred GeoInterface.ngeom(geomcollection)
