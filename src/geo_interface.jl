@@ -19,6 +19,8 @@ GeoInterface.geomtrait(::MultiPolygon) = MultiPolygonTrait()
 GeoInterface.geomtrait(::GeometryCollection) = GeometryCollectionTrait()
 GeoInterface.geomtrait(geom::PreparedGeometry) = GeoInterface.geomtrait(geom.ownedby)
 
+GeoInterface.isempty(::AbstractGeometryTrait, geom::AbstractGeometry) = isEmpty(geom)
+
 GeoInterface.ngeom(::AbstractGeometryCollectionTrait, geom::AbstractMultiGeometry) =
     isEmpty(geom) ? 0 : Int(numGeometries(geom))
 GeoInterface.ngeom(::LineStringTrait, geom::LineString) = Int(numPoints(geom))

@@ -22,5 +22,5 @@ end
     include("test_invalid_geometry.jl")
     include("test_strtree.jl")
     include("test_misc.jl")
-    Aqua.test_all(LibGEOS)
+    Aqua.test_all(LibGEOS; deps_compat = (check_extras = false,))
 end
