@@ -22,7 +22,7 @@ end
     include("test_invalid_geometry.jl")
     include("test_strtree.jl")
     include("test_misc.jl")
-    Aqua.test_all(LibGEOS
+    Aqua.test_all(LibGEOS;
         ambiguities=(exclude=[RecipesBase.apply_recipe],),
     )
 end
