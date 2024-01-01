@@ -1,3 +1,5 @@
+
+using GeoInterface, GeoInterfaceRecipes, Extents
 using GeoInterface, Extents
 using Test, LibGEOS, RecipesBase
 import Aqua
@@ -25,4 +27,5 @@ end
     include("test_invalid_geometry.jl")
     include("test_strtree.jl")
     include("test_misc.jl")
+
 end
