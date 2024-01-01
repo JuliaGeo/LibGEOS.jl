@@ -12,7 +12,6 @@ GeoInterfaceRecipes = "0329782f-3d07-4b52-b9f6-d3137cf03c7a"
 
 [compat]
 Aqua = "0.8"
-CEnum = "0.2, 0.3, 0.4"
 CEnum = "0.2, 0.3, 0.4, 0.5"
 Extents = "0.1.1"
 GEOS_jll = "3.12"
