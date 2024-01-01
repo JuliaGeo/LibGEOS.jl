@@ -47,7 +47,7 @@ GeoInterface.getgeom(
     ::Union{LineStringTrait,LinearRingTrait},
     geom::Union{LineString,LinearRing},
     i,
-) = Point(getPoint(geom, i))
+) = getPoint(geom, i)
 GeoInterface.getgeom(t::AbstractPointTrait, geom::PreparedGeometry) = nothing
 function GeoInterface.getgeom(::PolygonTrait, geom::Polygon, i::Int)
     if i == 1
@@ -72,13 +72,14 @@ GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
 GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) =
     GeoInterface.ncoord(t, geom.ownedby)
 
-GeoInterface.getcoord(::AbstractGeometryTrait, geom::AbstractGeometry, i) =
+GeoInterface.getcoord(::AbstractPointTrait, geom::Point, i) =
     getCoordinates(getCoordSeq(geom), 1)[i]
-GeoInterface.getcoord(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
+GeoInterface.getcoord(t::AbstractPointTrait, geom::PreparedGeometry, i) =
     GeoInterface.getcoord(t, geom.ownedby, i)
 
 GeoInterface.x(::AbstractPointTrait, point::AbstractGeometry) = getGeomX(point)
 GeoInterface.y(::AbstractPointTrait, point::AbstractGeometry) = getGeomY(point)
+GeoInterface.z(::AbstractPointTrait, point::AbstractGeometry) = getGeomZ(point)
 
 # FIXME this doesn't work for 3d geoms, Z is missing
 function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)

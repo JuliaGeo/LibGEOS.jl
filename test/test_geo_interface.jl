@@ -31,11 +31,17 @@ const LG = LibGEOS
     @test GeoInterface.coordinates(pt) ≈ [1, 2] atol = 1e-5
     @test GeoInterface.geomtrait(pt) == PointTrait()
     @test GeoInterface.testgeometry(pt)
+    @test GeoInterface.x(pt) == 1
+    @test GeoInterface.y(pt) == 2
+    @test GeoInterface.z(pt) == NaN
 
     @inferred GeoInterface.ncoord(pt)
     @inferred GeoInterface.ngeom(pt)
     @inferred GeoInterface.getgeom(pt)
     @inferred GeoInterface.coordinates(pt)
+    @inferred GeoInterface.x(pt)
+    @inferred GeoInterface.y(pt)
+    @inferred GeoInterface.z(pt)
 
     pt = LibGEOS.readgeom("POINT EMPTY")
     @test GeoInterface.coordinates(pt) ≈ Float64[] atol = 1e-5
