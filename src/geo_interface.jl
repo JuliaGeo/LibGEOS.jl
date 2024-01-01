@@ -77,6 +77,9 @@ GeoInterface.getcoord(::AbstractGeometryTrait, geom::AbstractGeometry, i) =
 GeoInterface.getcoord(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
     GeoInterface.getcoord(t, geom.ownedby, i)
 
+GeoInterface.x(::AbstractPointTrait, point::AbstractGeometry) = getGeomX(point)
+GeoInterface.y(::AbstractPointTrait, point::AbstractGeometry) = getGeomY(point)
+
 # FIXME this doesn't work for 3d geoms, Z is missing
 function GeoInterface.extent(::AbstractGeometryTrait, geom::AbstractGeometry)
     # minx, miny, maxx, maxy = getExtent(geom)
