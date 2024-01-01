@@ -33,7 +33,7 @@ const LG = LibGEOS
     @test GeoInterface.testgeometry(pt)
     @test GeoInterface.x(pt) == 1
     @test GeoInterface.y(pt) == 2
-    @test GeoInterface.z(pt) == NaN
+    @test isnan(GeoInterface.z(pt))
 
     @inferred GeoInterface.ncoord(pt)
     @inferred GeoInterface.ngeom(pt)
