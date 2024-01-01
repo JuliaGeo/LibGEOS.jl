@@ -1,5 +1,7 @@
+
 using GeoInterface, GeoInterfaceRecipes, Extents
-using Test, LibGEOS
+using GeoInterface, Extents
+using Test, LibGEOS, RecipesBase
 import Aqua
 
 version = LibGEOS.GEOSversion()
@@ -14,6 +16,9 @@ if version != LibGEOS.GEOS_CAPI_VERSION
 end
 
 @testset "LibGEOS" begin
+    Aqua.test_all(LibGEOS;
+        ambiguities=(exclude=[RecipesBase.apply_recipe],),
+    )
     include("test_geos_types.jl")
     include("test_geos_functions.jl")
     include("test_geos_operations.jl")
@@ -22,9 +27,5 @@ end
     include("test_invalid_geometry.jl")
     include("test_strtree.jl")
     include("test_misc.jl")
-    Aqua.test_all(
-        LibGEOS;
-        deps_compat = (; check_extras = false,),
-        ambiguities = (; exclude = [GeoInterfaceRecipes.RecipesBase.apply_recipe]),
-    )
+
 end
