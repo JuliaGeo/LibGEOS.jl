@@ -31,6 +31,8 @@ GeoInterface.ngeom(t::AbstractGeometryTrait, geom::PreparedGeometry) =
 GeoInterface.ngeom(::AbstractPointTrait, geom::Point) = 0
 GeoInterface.ngeom(::AbstractPointTrait, geom::PreparedGeometry) = 0
 
+GI.is3d(::AbstractGeometryTrait, geom::AbstractGeometry) = hasZ(geom)
+
 function GeoInterface.getgeom(
     ::AbstractGeometryCollectionTrait,
     geom::AbstractMultiGeometry,
