@@ -1188,6 +1188,8 @@ function hasZ(obj::Geometry, context::GEOSContext = get_context(obj))
     end
     result != 0x00
 end
+hasZ(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
+    hasZ(obj.ownedby, context)
 
 # Call only on LINESTRING (return 2 on exception, 1 on true, 0 on false)
 function isClosed(obj::LineString, context::GEOSContext = get_context(obj))
