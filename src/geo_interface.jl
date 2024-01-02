@@ -31,6 +31,9 @@ GeoInterface.ngeom(t::AbstractGeometryTrait, geom::PreparedGeometry) =
 GeoInterface.ngeom(::AbstractPointTrait, geom::Point) = 0
 GeoInterface.ngeom(::AbstractPointTrait, geom::PreparedGeometry) = 0
 
+GI.getexterior(::AbstractPolygonTrait, geom::Polygon) = exteriorRing(geom)
+GI.gethole(::AbstractPolygonTrait, geom::Polygon, n) = interiorRing(geom, n)
+
 function GeoInterface.getgeom(
     ::AbstractGeometryCollectionTrait,
     geom::AbstractMultiGeometry,
@@ -51,9 +54,9 @@ GeoInterface.getgeom(
 GeoInterface.getgeom(t::AbstractPointTrait, geom::PreparedGeometry) = nothing
 function GeoInterface.getgeom(::PolygonTrait, geom::Polygon, i::Int)
     if i == 1
-        LinearRing(exteriorRing(geom))
+        exteriorRing(geom)
     else
-        LinearRing(interiorRing(geom, i - 1))
+        interiorRing(geom, i - 1)
     end
 end
 GeoInterface.getgeom(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
