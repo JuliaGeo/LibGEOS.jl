@@ -31,6 +31,7 @@ GeoInterface.ngeom(t::AbstractGeometryTrait, geom::PreparedGeometry) =
 GeoInterface.ngeom(::AbstractPointTrait, geom::Point) = 0
 GeoInterface.ngeom(::AbstractPointTrait, geom::PreparedGeometry) = 0
 
+GI.is3d(::AbstractGeometryTrait, geom::AbstractGeometry) = hasZ(geom)
 GI.getexterior(::AbstractPolygonTrait, geom::Polygon) = exteriorRing(geom)
 GI.gethole(::AbstractPolygonTrait, geom::Polygon, n) = interiorRing(geom, n)
 
