@@ -45,12 +45,14 @@ end
     expected = readgeom("LINESTRING (130 240, 650 240)")
     output = convexhull(input)
     @test !isEmpty(output)
+    @test !GeoInterface.isempty(output)
     @test writegeom(output) == writegeom(expected)
 
     # LibGEOS.delaunayTriangulationTest
     g1 = readgeom("POLYGON EMPTY")
     g2 = delaunayTriangulationEdges(g1)
     @test isEmpty(g1)
+    @test GeoInterface.isempty(g1)
     @test isEmpty(g2)
     @test GeoInterface.geomtrait(g2) == MultiLineStringTrait()
 

@@ -347,14 +347,19 @@ function getCoordinates!(out::Vector{Float64}, ptr::GEOSCoordSeq, i::Integer, co
     end
     ndim = getDimensions(ptr, context)
     @assert length(out) == ndim
-    GC.@preserve out begin
-        start = pointer(out)
-        floatsize = sizeof(Float64)
-        GEOSCoordSeq_getX_r(context, ptr, i - 1, start)
-        GEOSCoordSeq_getY_r(context, ptr, i - 1, start + floatsize)
-        if ndim == 3
-            GEOSCoordSeq_getZ_r(context, ptr, i - 1, start + 2 * floatsize)
-        end
+    start = pointer(out)
+    floatsize = sizeof(Float64)
+    if ndim == 3
+        GEOSCoordSeq_getXYZ_r(
+            context,
+            ptr,
+            i - 1,
+            start,
+            start + floatsize,
+            start + 2 * floatsize,
+        )
+    else
+        GEOSCoordSeq_getXY_r(context, ptr, i - 1, start, start + floatsize)
     end
     out
 end
@@ -365,13 +370,12 @@ function getCoordinates(
     context::GEOSContext = get_global_context(),
 )
     ndim = getDimensions(ptr, context)
-    out = Array{Float64}(undef, ndim)
+    out = Vector{Float64}(undef, ndim)
     getCoordinates!(out, ptr, i, context)
     out
 end
 
 function getCoordinates(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
-    ndim = getDimensions(ptr, context)
     ncoords = getSize(ptr, context)
     coordseq = Vector{Float64}[]
     sizehint!(coordseq, ncoords)
@@ -1184,6 +1188,8 @@ function hasZ(obj::Geometry, context::GEOSContext = get_context(obj))
     end
     result != 0x00
 end
+hasZ(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
+    hasZ(obj.ownedby, context)
 
 # Call only on LINESTRING (return 2 on exception, 1 on true, 0 on false)
 function isClosed(obj::LineString, context::GEOSContext = get_context(obj))
@@ -1363,6 +1369,15 @@ end
 function getGeomY(obj::Point, context::GEOSContext = get_context(obj))
     out = Ref{Float64}()
     result = GEOSGeomGetY_r(context, obj, out)
+    if result == -1
+        error("LibGEOS: Error in GEOSGeomGetY")
+    end
+    out[]
+end
+
+function getGeomZ(obj::Point, context::GEOSContext = get_context(obj))
+    out = Ref{Float64}()
+    result = GEOSGeomGetZ_r(context, obj, out)
     if result == -1
         error("LibGEOS: Error in GEOSGeomGetY")
     end

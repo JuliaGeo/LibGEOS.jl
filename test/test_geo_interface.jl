@@ -11,6 +11,7 @@ const LG = LibGEOS
     @test GeoInterface.ncoord(pt) == 2
     @test GeoInterface.getcoord(pt, 1) ≈ 1.0
     @test GeoInterface.testgeometry(pt)
+    @test GeoInterface.is3d(pt) == false
     @test GeoInterface.extent(pt) == Extent(X=(1.0, 1.0), Y=(2.0, 2.0))
     Plots.plot(pt)
     Makie.plot(pt)
@@ -23,6 +24,7 @@ const LG = LibGEOS
     @test GeoInterface.ncoord(pt) == 3
     @test GeoInterface.getcoord(pt, 3) ≈ 3.0
     @test GeoInterface.testgeometry(pt)
+    @test GeoInterface.is3d(pt) == true
     # This doesn't return the Z extent
     @test_broken GeoInterface.extent(pt) ==
                  Extent(X = (1.0, 1.0), Y = (2.0, 2.0), Z = (3.0, 3.0))
@@ -34,16 +36,24 @@ const LG = LibGEOS
     @test GeoInterface.coordinates(pt) ≈ [1, 2] atol = 1e-5
     @test GeoInterface.geomtrait(pt) == PointTrait()
     @test GeoInterface.testgeometry(pt)
+    @test GeoInterface.x(pt) == 1
+    @test GeoInterface.y(pt) == 2
+    @test GeoInterface.is3d(pt) == false
+    @test isnan(GeoInterface.z(pt))
 
     @inferred GeoInterface.ncoord(pt)
     @inferred GeoInterface.ngeom(pt)
     @inferred GeoInterface.getgeom(pt)
     @inferred GeoInterface.coordinates(pt)
+    @inferred GeoInterface.x(pt)
+    @inferred GeoInterface.y(pt)
+    @inferred GeoInterface.z(pt)
 
     pt = LibGEOS.readgeom("POINT EMPTY")
     @test GeoInterface.coordinates(pt) ≈ Float64[] atol = 1e-5
     @test GeoInterface.geomtrait(pt) == PointTrait()
     @test GeoInterface.ncoord(pt) == 0
+    @test GeoInterface.is3d(pt) == false
     @test GeoInterface.testgeometry(pt)
 
     mpt = LibGEOS.readgeom("MULTIPOINT(0 0, 10 0, 10 10, 11 10)")
@@ -55,8 +65,11 @@ const LG = LibGEOS
     @test p isa LibGEOS.Point
     @test GeoInterface.coordinates(p) == [10, 0]
     @test GeoInterface.testgeometry(mpt)
+    @test GeoInterface.is3d(mpt) == false
     Plots.plot(mpt)
     Makie.plot(mpt)
+
+
 
     @inferred GeoInterface.ncoord(mpt)
     @inferred GeoInterface.ngeom(mpt)
@@ -71,10 +84,12 @@ const LG = LibGEOS
     p = GeoInterface.getgeom(ls, 3)
     @test p isa LibGEOS.Point
     @test GeoInterface.coordinates(p) == [9, 2]
-    @test GeoInterface.testgeometry(ls)
+    @test GeoInterface.testgeometry(ls)  
+    @test GeoInterface.is3d(ls) == false
     Plots.plot(ls)
     Makie.plot(ls)
 
+  
     @inferred GeoInterface.ncoord(ls)
     @inferred GeoInterface.ngeom(ls)
     @inferred GeoInterface.getgeom(ls)
@@ -90,8 +105,10 @@ const LG = LibGEOS
     @test GeoInterface.geomtrait(mls) == MultiLineStringTrait()
     @test GeoInterface.ngeom(mls) == 2
     @test GeoInterface.testgeometry(mls)
+    @test GeoInterface.is3d(mls) == false
     Plots.plot(mls)
     Makie.plot(mls)
+  
 
     @inferred GeoInterface.ncoord(mls)
     @inferred GeoInterface.ngeom(mls)
@@ -106,6 +123,7 @@ const LG = LibGEOS
     p = GeoInterface.getgeom(lr, 3)
     @test p isa LibGEOS.Point
     @test GeoInterface.coordinates(p) == [9, 2]
+    @test GeoInterface.is3d(lr) == false
     @test GeoInterface.testgeometry(lr)
     # Cannot convert LinearRingTrait to series data for plotting
     # Plots.plot(lr)
@@ -129,8 +147,10 @@ const LG = LibGEOS
     @test ls isa LibGEOS.LinearRing
     @test GeoInterface.coordinates(ls) == coords[2]
     @test GeoInterface.testgeometry(polygon)
+    @test GeoInterface.is3d(polygon) == false
     Plots.plot(polygon)
     Makie.plot(polygon)
+  
 
     @inferred GeoInterface.ncoord(polygon)
     @inferred GeoInterface.ngeom(polygon)
@@ -153,6 +173,7 @@ const LG = LibGEOS
     ]]]
     @test GeoInterface.geomtrait(multipolygon) == MultiPolygonTrait()
     @test GeoInterface.testgeometry(multipolygon)
+    @test GeoInterface.is3d(multipolygon) == false
     @test GeoInterface.extent(multipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
     Plots.plot(multipolygon)
     Makie.plot(multipolygon)
@@ -165,6 +186,7 @@ const LG = LibGEOS
     pmultipolygon = LibGEOS.prepareGeom(multipolygon)
     @test GeoInterface.geomtrait(pmultipolygon) == MultiPolygonTrait()
     @test GeoInterface.testgeometry(pmultipolygon)
+    @test GeoInterface.is3d(pmultipolygon) == false
     @test GeoInterface.extent(pmultipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
     LibGEOS.destroyGeom(pmultipolygon)
 
@@ -238,9 +260,11 @@ const LG = LibGEOS
     end
     @test GeoInterface.geomtrait(geomcollection) == GeometryCollectionTrait()
     @test GeoInterface.testgeometry(geomcollection)
+    @test GeoInterface.is3d(geomcollection) == false
     Plots.plot(geomcollection)
     # Can't plot geometry collection yet with Makie
     @test_broken Makie.plot(geomcollection)
+  
 
     @inferred GeoInterface.ncoord(geomcollection)
     @inferred GeoInterface.ngeom(geomcollection)
@@ -272,6 +296,7 @@ const LG = LibGEOS
     geomcollection = LibGEOS.readgeom("GEOMETRYCOLLECTION EMPTY")
     @test GeoInterface.ngeom(geomcollection) == 0
     @test GeoInterface.geomtrait(geomcollection) == GeometryCollectionTrait()
+    @test GeoInterface.is3d(geomcollection) == false
     @test GeoInterface.testgeometry(geomcollection)
 
     @testset "Conversion" begin
