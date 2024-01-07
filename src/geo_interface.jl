@@ -47,7 +47,7 @@ GeoInterface.getgeom(::MultiLineStringTrait, geom::MultiLineString, i) =
     getGeometry(geom, i)::LineString
 GeoInterface.getgeom(::MultiPolygonTrait, geom::MultiPolygon, i) =
     getGeometry(geom, i)::Polygon
-function GeoInterface.getgeom(::AbstractGeometryTrait, geom::Union{LineString,LinearRing}, i)
+function GeoInterface.getgeom(::Union{GI.LineStringTrait,GI.LinearRingTrait}, geom::Union{LineString,LinearRing}, i)
     refs = Ref{Float64}(), Ref{Float64}(), Ref{Float64}() # 3 Refs is faster than a Vector
     seq = getCoordSeq(geom::Union{LineString, LinearRing})
     return _get_tuple_point(geom, seq, refs, i)
