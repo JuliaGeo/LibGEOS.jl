@@ -10,7 +10,6 @@ GEOS_jll = "d604d12d-fa86-5845-992e-78dc15976526"
 GeoInterface = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
 GeoInterfaceMakie = "0edc0954-3250-4c18-859d-ec71c1660c08"
 GeoInterfaceRecipes = "0329782f-3d07-4b52-b9f6-d3137cf03c7a"
-Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 
 [weakdeps]
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
