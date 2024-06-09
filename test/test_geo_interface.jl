@@ -129,6 +129,9 @@ const LG = LibGEOS
     # Plots.plot(lr)
     # Makie.plot(lr)
 
+    gi_gc = GeoInterface.GeometryCollection([ls, mls, pt])
+    @test GeoInterface.convert(LibGEOS, gi_gc) isa LibGEOS.GeometryCollection
+
     @inferred GeoInterface.ncoord(lr)
     @inferred GeoInterface.ngeom(lr)
     @inferred GeoInterface.getgeom(lr)
