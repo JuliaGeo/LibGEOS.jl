@@ -176,6 +176,29 @@ function GI.convert(
         Polygon[GI.convert(Polygon, PolygonTrait(), g; context) for g in GI.getgeom(geom)]
     return MultiPolygon(polygons)
 end
+GI.convert(
+    ::Type{GeometryCollection},
+    ::GeometryCollectionTrait,
+    geom::GeometryCollection;
+    context = nothing,
+) = geom
+function GI.convert(
+    ::Type{GeometryCollection},
+    ::GeometryCollectionTrait,
+    geom;
+    context = get_global_context(),
+)
+    geometries =
+        [
+            begin
+                t = GI.trait(g)
+                lg = geointerface_geomtype(t)
+                GI.convert(lg, t, g; context) 
+            end
+            for g in GI.getgeom(geom)
+        ]
+    return GeometryCollection(geometries)
+end
 
 function GI.convert(
     t::Type{<:AbstractGeometry},
