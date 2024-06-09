@@ -188,15 +188,14 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    geometries =
-        [
-            begin
-                t = GI.trait(g)
-                lg = geointerface_geomtype(t)
-                GI.convert(lg, t, g; context) 
-            end
-            for g in GI.getgeom(geom)
-        ]
+    geometries = map(GI.getgeom(geom)) do g
+        t = GI.trait(g)
+        lg = geointerface_geomtype(t)
+        # We call the full invocation for LibGEOS directly, 
+        # so the context can be passed through, since
+        # `GI.convert(Mod, x)` does not allow kwargs.
+        GI.convert(lg, t, g; context) 
+    end
     return GeometryCollection(geometries)
 end
 
