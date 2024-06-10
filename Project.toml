@@ -1,7 +1,7 @@
 name = "LibGEOS"
 uuid = "a90b1aa1-3769-5649-ba7e-abc5a9d163eb"
 license = "MIT"
-version = "0.9.1"
+version = "0.9.2"
 
 [deps]
 CEnum = "fa961155-64e5-5f13-b03f-caf6b980ea82"
