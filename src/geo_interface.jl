@@ -47,11 +47,33 @@ GeoInterface.getgeom(::MultiLineStringTrait, geom::MultiLineString, i) =
     getGeometry(geom, i)::LineString
 GeoInterface.getgeom(::MultiPolygonTrait, geom::MultiPolygon, i) =
     getGeometry(geom, i)::Polygon
-GeoInterface.getgeom(
-    ::Union{LineStringTrait,LinearRingTrait},
-    geom::Union{LineString,LinearRing},
-    i,
-) = getPoint(geom, i)
+function GeoInterface.getgeom(::Union{GI.LineStringTrait,GI.LinearRingTrait}, geom::Union{LineString,LinearRing}, i)
+    refs = Ref{Float64}(), Ref{Float64}(), Ref{Float64}() # 3 Refs is faster than a Vector
+    seq = getCoordSeq(geom::Union{LineString, LinearRing})
+    return _get_tuple_point(geom, seq, refs, i)
+end
+function GeoInterface.getgeom(::AbstractGeometryTrait, geom::Union{LineString,LinearRing})
+    context = get_context(geom)
+    seq = getCoordSeq(geom, context)
+    n = getSize(seq, context) # Faster thatn `GI.ngeom(geom)` when we already have `seq`
+    # Preallocate refse
+    refs = Ref{Float64}(), Ref{Float64}(), Ref{Float64}()
+    # Pretetermin if there is a z coordinate
+    hasz = hasZ(geom, context)
+    # We specify Unit32 in the generator to avoid unnecesary conversion later
+    return (_get_tuple_point(geom, seq, refs, i, context, hasz) for i in UInt32(1):UInt32(n))
+end
+
+function _get_tuple_point(geom, seq, (x, y, z), i, context=get_context(geom), hasz=hasZ(geom, context))
+    if hasz
+        GEOSCoordSeq_getXYZ_r(context, seq, i - UInt32(1), x, y, z)
+        return x[], y[], Z[]
+    else
+        GEOSCoordSeq_getXY_r(context, seq, i - UInt32(1), x, y)
+        return x[], y[]
+    end
+end
+
 GeoInterface.getgeom(t::AbstractPointTrait, geom::PreparedGeometry) = nothing
 function GeoInterface.getgeom(::PolygonTrait, geom::Polygon, i::Int)
     if i == 1
