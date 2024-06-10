@@ -176,6 +176,28 @@ function GI.convert(
         Polygon[GI.convert(Polygon, PolygonTrait(), g; context) for g in GI.getgeom(geom)]
     return MultiPolygon(polygons)
 end
+GI.convert(
+    ::Type{GeometryCollection},
+    ::GeometryCollectionTrait,
+    geom::GeometryCollection;
+    context = nothing,
+) = geom
+function GI.convert(
+    ::Type{GeometryCollection},
+    ::GeometryCollectionTrait,
+    geom;
+    context = get_global_context(),
+)
+    geometries = map(GI.getgeom(geom)) do g
+        t = GI.trait(g)
+        lg = geointerface_geomtype(t)
+        # We call the full invocation for LibGEOS directly, 
+        # so the context can be passed through, since
+        # `GI.convert(Mod, x)` does not allow kwargs.
+        GI.convert(lg, t, g; context) 
+    end
+    return GeometryCollection(geometries)
+end
 
 function GI.convert(
     t::Type{<:AbstractGeometry},
