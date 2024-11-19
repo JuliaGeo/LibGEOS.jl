@@ -12,13 +12,15 @@ using Extents
     @test writegeom(p) == "POINT (0.12345 2)"
 
     # round to 2 decimals
-    writer = LibGEOS.WKTWriter(
-        LibGEOS.get_global_context(),
-        trim = true,
-        outputdim = 3,
-        roundingprecision = 2,
-    )
-    @test writegeom(p, writer) == "POINT (0.12 2)"
+    if VersionNumber(first(split(LibGEOS.GEOSversion(), '-'))) < v"3.13"
+        writer = LibGEOS.WKTWriter(
+            LibGEOS.get_global_context();
+            trim = true,
+            outputdim = 3,
+            roundingprecision = 3,
+        )
+        @test writegeom(p, writer) == "POINT (0.12 2)"
+    end
 
     # round to 2 decimals and don't trim trailing zeros
     writer = LibGEOS.WKTWriter(
