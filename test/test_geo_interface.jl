@@ -82,9 +82,10 @@ const LG = LibGEOS
     @test GeoInterface.geomtrait(ls) == LineStringTrait()
     p = GeoInterface.ngeom(ls) == 4
     p = GeoInterface.getgeom(ls, 3)
-    @test p isa LibGEOS.Point
+    @test p isa Tuple{Float64,Float64}
     @test GeoInterface.coordinates(p) == [9, 2]
-    @test GeoInterface.testgeometry(ls)  
+    @test GeoInterface.testgeometry(ls)
+    @test collect(GeoInterface.getpoint(ls)) == [(8, 1), (9, 1), (9, 2), (8, 2)]
     @test GeoInterface.is3d(ls) == false
     Plots.plot(ls)
     Makie.plot(ls)
@@ -121,10 +122,11 @@ const LG = LibGEOS
     @test GeoInterface.geomtrait(lr) == LinearRingTrait()
     @test GeoInterface.ngeom(lr) == 5
     p = GeoInterface.getgeom(lr, 3)
-    @test p isa LibGEOS.Point
+    @test p isa Tuple{Float64,Float64}
     @test GeoInterface.coordinates(p) == [9, 2]
     @test GeoInterface.is3d(lr) == false
     @test GeoInterface.testgeometry(lr)
+    @test collect(GeoInterface.getpoint(lr)) == [(8, 1), (9, 1), (9, 2), (8, 2), (8, 1)]
     # Cannot convert LinearRingTrait to series data for plotting
     # Plots.plot(lr)
     # Makie.plot(lr)
