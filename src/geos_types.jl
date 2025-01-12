@@ -501,7 +501,7 @@ function compare(
         ng1 = ngeom(geo1)
         ng2 = ngeom(geo2)
         ng1 == ng2 || return false
-        for i in 1:ng1
+        for i = 1:ng1
             compare(cmp, getgeom(geo1, i), getgeom(geo2, i), ctx) || return false
         end
     end
@@ -521,7 +521,7 @@ function compare_coord_seqs(cmp, geo1, geo2, ctx)
     np1 == np2 || return false
     coords1 = Vector{Float64}(undef, ncoords1)
     coords2 = Vector{Float64}(undef, ncoords1)
-    for i in 1:np1
+    for i = 1:np1
         coordinates!(coords1, geo1, i, ctx)
         coordinates!(coords2, geo2, i, ctx)
         cmp(coords1, coords2) || return false
@@ -546,7 +546,7 @@ function compare_coord_seqs(cmp::IsApprox, geo1, geo2, ctx)
     s1 = 0.0
     s2 = 0.0
     s12 = 0.0
-    for i in 1:np1
+    for i = 1:np1
         coordinates!(coords1, geo1, i, ctx)
         coordinates!(coords2, geo2, i, ctx)
         if ncoords1 == 2
@@ -579,7 +579,7 @@ function Base.hash(geo::AbstractGeometry, h::UInt)::UInt
     if has_coord_seq(geo)
         return hash_coord_seq(geo, h)
     else
-        for i in 1:ngeom(geo)
+        for i = 1:ngeom(geo)
             h = hash(getgeom(geo, i), h)
         end
     end
@@ -592,7 +592,7 @@ function hash_coord_seq(geo::HasCoordSeq, h::UInt)::UInt
     end
     buf = Vector{Float64}(undef, nc)
     ctx = get_context(geo)
-    for i in 1:npoints(geo)
+    for i = 1:npoints(geo)
         coordinates!(buf, geo, i, ctx)
         h = hash(buf, h)
     end
