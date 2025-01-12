@@ -12,7 +12,7 @@ const LG = LibGEOS
     @test GeoInterface.getcoord(pt, 1) ≈ 1.0
     @test GeoInterface.testgeometry(pt)
     @test GeoInterface.is3d(pt) == false
-    @test GeoInterface.extent(pt) == Extent(X=(1.0, 1.0), Y=(2.0, 2.0))
+    @test GeoInterface.extent(pt) == Extent(X = (1.0, 1.0), Y = (2.0, 2.0))
     Plots.plot(pt)
     Makie.plot(pt)
 
@@ -84,12 +84,12 @@ const LG = LibGEOS
     p = GeoInterface.getgeom(ls, 3)
     @test p isa LibGEOS.Point
     @test GeoInterface.coordinates(p) == [9, 2]
-    @test GeoInterface.testgeometry(ls)  
+    @test GeoInterface.testgeometry(ls)
     @test GeoInterface.is3d(ls) == false
     Plots.plot(ls)
     Makie.plot(ls)
 
-  
+
     @inferred GeoInterface.ncoord(ls)
     @inferred GeoInterface.ngeom(ls)
     @inferred GeoInterface.getgeom(ls)
@@ -108,7 +108,7 @@ const LG = LibGEOS
     @test GeoInterface.is3d(mls) == false
     Plots.plot(mls)
     Makie.plot(mls)
-  
+
 
     @inferred GeoInterface.ncoord(mls)
     @inferred GeoInterface.ngeom(mls)
@@ -153,7 +153,7 @@ const LG = LibGEOS
     @test GeoInterface.is3d(polygon) == false
     Plots.plot(polygon)
     Makie.plot(polygon)
-  
+
 
     @inferred GeoInterface.ncoord(polygon)
     @inferred GeoInterface.ngeom(polygon)
@@ -177,7 +177,7 @@ const LG = LibGEOS
     @test GeoInterface.geomtrait(multipolygon) == MultiPolygonTrait()
     @test GeoInterface.testgeometry(multipolygon)
     @test GeoInterface.is3d(multipolygon) == false
-    @test GeoInterface.extent(multipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
+    @test GeoInterface.extent(multipolygon) == Extent(X = (0.0, 10.0), Y = (0.0, 10.0))
     Plots.plot(multipolygon)
     Makie.plot(multipolygon)
 
@@ -190,7 +190,7 @@ const LG = LibGEOS
     @test GeoInterface.geomtrait(pmultipolygon) == MultiPolygonTrait()
     @test GeoInterface.testgeometry(pmultipolygon)
     @test GeoInterface.is3d(pmultipolygon) == false
-    @test GeoInterface.extent(pmultipolygon) == Extent(X=(0.0, 10.0), Y=(0.0, 10.0))
+    @test GeoInterface.extent(pmultipolygon) == Extent(X = (0.0, 10.0), Y = (0.0, 10.0))
     LibGEOS.destroyGeom(pmultipolygon)
 
     geomcollection = LibGEOS.readgeom(
@@ -267,7 +267,7 @@ const LG = LibGEOS
     Plots.plot(geomcollection)
     # Can't plot geometry collection yet with Makie
     @test_broken Makie.plot(geomcollection)
-  
+
 
     @inferred GeoInterface.ncoord(geomcollection)
     @inferred GeoInterface.ngeom(geomcollection)

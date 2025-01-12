@@ -194,7 +194,7 @@ function GI.convert(
         # We call the full invocation for LibGEOS directly, 
         # so the context can be passed through, since
         # `GI.convert(Mod, x)` does not allow kwargs.
-        GI.convert(lg, t, g; context) 
+        GI.convert(lg, t, g; context)
     end
     return GeometryCollection(geometries)
 end
