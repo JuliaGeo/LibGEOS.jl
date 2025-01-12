@@ -2,7 +2,7 @@ const GEOSContextHandle_HS = Cvoid
 
 const GEOSContextHandle_t = Ptr{GEOSContextHandle_HS}
 
-# typedef void ( * GEOSMessageHandler ) ( const char * fmt , ... )
+# typedef void ( * GEOSMessageHandler ) ( GEOS_PRINTF_FORMAT const char * fmt , ... )
 const GEOSMessageHandler = Ptr{Cvoid}
 
 # typedef void ( * GEOSMessageHandler_r ) ( const char * message , void * userdata )
@@ -45,6 +45,11 @@ const GEOSCoordSeq = Ptr{GEOSCoordSequence}
     GEOS_MULTILINESTRING = 5
     GEOS_MULTIPOLYGON = 6
     GEOS_GEOMETRYCOLLECTION = 7
+    GEOS_CIRCULARSTRING = 8
+    GEOS_COMPOUNDCURVE = 9
+    GEOS_CURVEPOLYGON = 10
+    GEOS_MULTICURVE = 11
+    GEOS_MULTISURFACE = 12
 end
 
 @cenum GEOSWKBByteOrders::UInt32 begin
@@ -573,6 +578,48 @@ function GEOSGeom_clone_r(handle, g)
     @ccall libgeos.GEOSGeom_clone_r(
         handle::GEOSContextHandle_t,
         g::Ptr{GEOSGeometry},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSGeom_createCircularString_r(handle, s)
+    @ccall libgeos.GEOSGeom_createCircularString_r(
+        handle::GEOSContextHandle_t,
+        s::Ptr{GEOSCoordSequence},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSGeom_createEmptyCircularString_r(handle)
+    @ccall libgeos.GEOSGeom_createEmptyCircularString_r(
+        handle::GEOSContextHandle_t,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSGeom_createCompoundCurve_r(handle, curves, ncurves)
+    @ccall libgeos.GEOSGeom_createCompoundCurve_r(
+        handle::GEOSContextHandle_t,
+        curves::Ptr{Ptr{GEOSGeometry}},
+        ncurves::Cuint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSGeom_createEmptyCompoundCurve_r(handle)
+    @ccall libgeos.GEOSGeom_createEmptyCompoundCurve_r(
+        handle::GEOSContextHandle_t,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSGeom_createCurvePolygon_r(handle, shell, holes, nholes)
+    @ccall libgeos.GEOSGeom_createCurvePolygon_r(
+        handle::GEOSContextHandle_t,
+        shell::Ptr{GEOSGeometry},
+        holes::Ptr{Ptr{GEOSGeometry}},
+        nholes::Cuint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSGeom_createEmptyCurvePolygon_r(handle)
+    @ccall libgeos.GEOSGeom_createEmptyCurvePolygon_r(
+        handle::GEOSContextHandle_t,
     )::Ptr{GEOSGeometry}
 end
 
@@ -1227,6 +1274,28 @@ function GEOSPreparedWithin_r(handle, pg1, g2)
     )::Cchar
 end
 
+function GEOSPreparedRelate_r(handle, pg1, g2)
+    string_copy_free(
+        @ccall(
+            libgeos.GEOSPreparedRelate_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cstring
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedRelatePattern_r(handle, pg1, g2, im)
+    @ccall libgeos.GEOSPreparedRelatePattern_r(
+        handle::GEOSContextHandle_t,
+        pg1::Ptr{GEOSPreparedGeometry},
+        g2::Ptr{GEOSGeometry},
+        im::Cstring,
+    )::Cchar
+end
+
 function GEOSPreparedNearestPoints_r(handle, pg1, g2)
     @ccall libgeos.GEOSPreparedNearestPoints_r(
         handle::GEOSContextHandle_t,
@@ -1369,12 +1438,12 @@ end
     GEOSRELATE_BNR_MONOVALENT_ENDPOINT = 4
 end
 
-function GEOSRelatePattern_r(handle, g1, g2, pat)
+function GEOSRelatePattern_r(handle, g1, g2, imPattern)
     @ccall libgeos.GEOSRelatePattern_r(
         handle::GEOSContextHandle_t,
         g1::Ptr{GEOSGeometry},
         g2::Ptr{GEOSGeometry},
-        pat::Cstring,
+        imPattern::Cstring,
     )::Cchar
 end
 
@@ -1391,11 +1460,11 @@ function GEOSRelate_r(handle, g1, g2)
     )
 end
 
-function GEOSRelatePatternMatch_r(handle, mat, pat)
+function GEOSRelatePatternMatch_r(handle, intMatrix, imPattern)
     @ccall libgeos.GEOSRelatePatternMatch_r(
         handle::GEOSContextHandle_t,
-        mat::Cstring,
-        pat::Cstring,
+        intMatrix::Cstring,
+        imPattern::Cstring,
     )::Cchar
 end
 
@@ -1988,6 +2057,10 @@ function GEOSWKTWriter_setOld3D_r(handle, writer, useOld3D)
     )::Cvoid
 end
 
+function GEOS_printDouble(d, precision, result)
+    @ccall libgeos.GEOS_printDouble(d::Cdouble, precision::Cuint, result::Cstring)::Cint
+end
+
 function GEOSWKBReader_create_r(handle)
     @ccall libgeos.GEOSWKBReader_create_r(handle::GEOSContextHandle_t)::Ptr{GEOSWKBReader}
 end
@@ -2388,6 +2461,42 @@ function GEOSGeom_createPolygon(shell, holes, nholes)
         holes::Ptr{Ptr{GEOSGeometry}},
         nholes::Cuint,
     )::Ptr{GEOSGeometry}
+end
+
+function GEOSGeom_createCircularString(s)
+    @ccall libgeos.GEOSGeom_createCircularString(
+        s::Ptr{GEOSCoordSequence},
+    )::Ptr{GEOSGeometry}
+end
+
+# no prototype is found for this function at geos_c.h:2519:31, please use with caution
+function GEOSGeom_createEmptyCircularString()
+    @ccall libgeos.GEOSGeom_createEmptyCircularString()::Ptr{GEOSGeometry}
+end
+
+function GEOSGeom_createCompoundCurve(curves, ncurves)
+    @ccall libgeos.GEOSGeom_createCompoundCurve(
+        curves::Ptr{Ptr{GEOSGeometry}},
+        ncurves::Cuint,
+    )::Ptr{GEOSGeometry}
+end
+
+# no prototype is found for this function at geos_c.h:2538:31, please use with caution
+function GEOSGeom_createEmptyCompoundCurve()
+    @ccall libgeos.GEOSGeom_createEmptyCompoundCurve()::Ptr{GEOSGeometry}
+end
+
+function GEOSGeom_createCurvePolygon(shell, holes, nholes)
+    @ccall libgeos.GEOSGeom_createCurvePolygon(
+        shell::Ptr{GEOSGeometry},
+        holes::Ptr{Ptr{GEOSGeometry}},
+        nholes::Cuint,
+    )::Ptr{GEOSGeometry}
+end
+
+# no prototype is found for this function at geos_c.h:2564:31, please use with caution
+function GEOSGeom_createEmptyCurvePolygon()
+    @ccall libgeos.GEOSGeom_createEmptyCurvePolygon()::Ptr{GEOSGeometry}
 end
 
 function GEOSGeom_createCollection(type, geoms, ngeoms)
@@ -3224,11 +3333,11 @@ function GEOSEqualsIdentical(g1, g2)
     @ccall libgeos.GEOSEqualsIdentical(g1::Ptr{GEOSGeometry}, g2::Ptr{GEOSGeometry})::Cchar
 end
 
-function GEOSRelatePattern(g1, g2, pat)
+function GEOSRelatePattern(g1, g2, imPattern)
     @ccall libgeos.GEOSRelatePattern(
         g1::Ptr{GEOSGeometry},
         g2::Ptr{GEOSGeometry},
-        pat::Cstring,
+        imPattern::Cstring,
     )::Cchar
 end
 
@@ -3238,8 +3347,8 @@ function GEOSRelate(g1, g2)
     )
 end
 
-function GEOSRelatePatternMatch(mat, pat)
-    @ccall libgeos.GEOSRelatePatternMatch(mat::Cstring, pat::Cstring)::Cchar
+function GEOSRelatePatternMatch(intMatrix, imPattern)
+    @ccall libgeos.GEOSRelatePatternMatch(intMatrix::Cstring, imPattern::Cstring)::Cchar
 end
 
 function GEOSRelateBoundaryNodeRule(g1, g2, bnr)
@@ -3345,6 +3454,25 @@ function GEOSPreparedWithin(pg1, g2)
     @ccall libgeos.GEOSPreparedWithin(
         pg1::Ptr{GEOSPreparedGeometry},
         g2::Ptr{GEOSGeometry},
+    )::Cchar
+end
+
+function GEOSPreparedRelate(pg1, g2)
+    string_copy_free(
+        @ccall(
+            libgeos.GEOSPreparedRelate(
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cstring
+        )
+    )
+end
+
+function GEOSPreparedRelatePattern(pg1, g2, imPattern)
+    @ccall libgeos.GEOSPreparedRelatePattern(
+        pg1::Ptr{GEOSPreparedGeometry},
+        g2::Ptr{GEOSGeometry},
+        imPattern::Cstring,
     )::Cchar
 end
 
@@ -3822,21 +3950,21 @@ end
 
 const GEOS_VERSION_MAJOR = 3
 
-const GEOS_VERSION_MINOR = 12
+const GEOS_VERSION_MINOR = 13
 
 const GEOS_VERSION_PATCH = 0
 
-const GEOS_VERSION = "3.12.0"
+const GEOS_VERSION = "3.13.0"
 
 const GEOS_JTS_PORT = "1.18.0"
 
 const GEOS_CAPI_VERSION_MAJOR = 1
 
-const GEOS_CAPI_VERSION_MINOR = 18
+const GEOS_CAPI_VERSION_MINOR = 19
 
 const GEOS_CAPI_VERSION_PATCH = 0
 
-const GEOS_CAPI_VERSION = "3.12.0-CAPI-1.18.0"
+const GEOS_CAPI_VERSION = "3.13.0-CAPI-1.19.0"
 
 const GEOS_CAPI_FIRST_INTERFACE = GEOS_CAPI_VERSION_MAJOR
 
