@@ -638,8 +638,9 @@ function geomFromGEOS(
         return MultiLineString(ptr, context)
     elseif id == GEOS_MULTIPOLYGON
         return MultiPolygon(ptr, context)
-    else
-        @assert id == GEOS_GEOMETRYCOLLECTION
+    elseif id == GEOS_GEOMETRYCOLLECTION
         return GeometryCollection(ptr, context)
+    else
+        throw(ErrorException("Geometric type with code $id not implemented."))
     end
 end
