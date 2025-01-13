@@ -461,4 +461,18 @@ end
 
     @test all(geomLength.(geos) .≈ [pi, 4pi, 4 + 2 * sqrt(2), 4pi, pi + 4, pi + 4, 4pi, 1])
     @test all(area.(geos) .≈ [0, 0, 2, 2pi, 0, pi / 2 + 2, 2pi, 0])
+
+    cp = readgeom(
+        "CURVEPOLYGON (COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 2 0), (2 0, 2 -1, 0 -1, 0 0)))",
+    )
+    @test_broken isequal(cp, CurvePolygon(cp))
+
+    cp = readgeom(
+        "CURVEPOLYGON (COMPOUNDCURVE (CIRCULARSTRING (0 0, 2 2, 4 0), (4 0, 4 -1, 0 -1, 0 0)), LINEARRING (1 0, 3 0, 3 1, 1 1, 1 0))",
+    )
+    @test area(cp) ≈ 2pi + 2
+    @test geomLength(cp) ≈ 2pi + 12
+    @test length(interiorRings(cp)) == 1
+    @test typeof(exteriorRing(cp)) == CompoundCurve
+    @test typeof(interiorRings(cp)[1]) == LinearRing
 end

@@ -1336,7 +1336,10 @@ function normalize!(obj::Geometry, context::GEOSContext = get_context(obj))
 end
 
 # Return -1 on exception
-function numInteriorRings(obj::Polygon, context::GEOSContext = get_context(obj))
+function numInteriorRings(
+    obj::Union{Polygon,CurvePolygon},
+    context::GEOSContext = get_context(obj),
+)
     result = GEOSGetNumInteriorRings_r(context, obj)
     if result == -1
         error("LibGEOS: Error in GEOSGetNumInteriorRings")
@@ -1346,7 +1349,7 @@ end
 
 # Call only on LINESTRING (returns -1 on exception)
 function numPoints(
-    obj::Union{LineString,LinearRing},
+    obj::Union{LineString,LinearRing,CircularString},
     context::GEOSContext = get_context(obj),
 )
     result = GEOSGeomGetNumPoints_r(context, obj)
@@ -1408,14 +1411,46 @@ function interiorRings(obj::Polygon, context::GEOSContext = get_context(obj))
     end
 end
 
+# Polygon rings are of type LinearRingcan, and can be inferred, but CurvePolygon rings can be Union{LinearRing, CompoundCurve}
+function interiorRing(
+    obj::CurvePolygon,
+    n::Integer,
+    context::GEOSContext = get_context(obj),
+)
+    if !(0 < n <= numInteriorRings(obj, context))
+        error(
+            "LibGEOS: n=$n is out of bounds for CurvePolygon with $(numInteriorRings(obj, context)) interior ring(s)",
+        )
+    end
+    result = GEOSGetInteriorRingN_r(context, obj, n - 1)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGetInteriorRingN")
+    end
+    geomFromGEOS(cloneGeom(result, context), context)
+end
+
+function interiorRings(obj::CurvePolygon, context::GEOSContext = get_context(obj))
+    n = numInteriorRings(obj, context)
+    if n == 0
+        return LinearRing[]
+    else
+        return [interiorRing(obj, i, context) for i = 1:n]
+    end
+end
+
+
 # Return NULL on exception, Geometry must be a Polygon.
 # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
-function exteriorRing(obj::Polygon, context::GEOSContext = get_context(obj))
+function exteriorRing(
+    obj::Union{Polygon,CurvePolygon},
+    context::GEOSContext = get_context(obj),
+)::Union{LinearRing,CompoundCurve}
     result = GEOSGetExteriorRing_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetExteriorRing")
     end
-    LinearRing(cloneGeom(result, context), context)
+    geomFromGEOS(cloneGeom(result, context), context)
+    #    LinearRing(cloneGeom(result, context), context)
 end
 
 # Return -1 on exception
