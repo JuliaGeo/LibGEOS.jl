@@ -442,3 +442,23 @@ end
         @test LibGEOS.equals(g1, g2)
     end
 end
+
+@testset "Curved geometry types" begin
+    geos = [
+        readgeom("CIRCULARSTRING(0 0,1 1,2 0)")
+        readgeom("CIRCULARSTRING (0 0, 1 1, 2 0, 3 -1, 4 0, 2 2, 0 0)")
+        readgeom("CURVEPOLYGON ((0 0, 2 0, 0 2, 0 0))")
+        readgeom("CURVEPOLYGON (CIRCULARSTRING (0 0, 1 1, 2 0, 3 -1, 4 0, 2 2, 0 0))")
+        readgeom("COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 2 0), (2 0, 2 -1, 0 -1, 0 0))")
+        readgeom(
+            "CURVEPOLYGON (COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 2 0), (2 0, 2 -1, 0 -1, 0 0)))",
+        )
+        readgeom(
+            "MULTISURFACE (CURVEPOLYGON (CIRCULARSTRING (0 0, 1 1, 2 0, 3 -1, 4 0, 2 2, 0 0)))",
+        )
+        readgeom("MULTICURVE((1 0, 2 0))")
+    ]
+
+    @test all(geomLength.(geos) .≈ [pi, 4pi, 4 + 2 * sqrt(2), 4pi, pi + 4, pi + 4, 4pi, 1])
+    @test all(area.(geos) .≈ [0, 0, 2, 2pi, 0, pi / 2 + 2, 2pi, 0])
+end
