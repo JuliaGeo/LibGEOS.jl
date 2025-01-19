@@ -412,6 +412,20 @@ mutable struct CircularString <: AbstractGeometry
         finalizer(destroyGeom, circularstring)
         circularstring
     end
+    # create a circularstring from a vector of points
+    function CircularString(
+        coords::Vector{Vector{Float64}},
+        context::GEOSContext = get_global_context(),
+    )
+        circularstring = new(createCircularString(coords, context), context)
+        finalizer(destroyGeom, circularstring)
+        circularstring
+    end
+    function CircularString(coords::Vector{Point}, context::GEOSContext = get_global_context())
+        circularstring = new(createCircularString(coords, context), context)
+        finalizer(destroyGeom, circularstring)
+        circularstring
+    end
 end
 
 mutable struct CompoundCurve <: AbstractGeometry
@@ -443,16 +457,49 @@ mutable struct CurvePolygon <: AbstractGeometry
         finalizer(destroyGeom, curvepolygon)
         curvepolygon
     end
+    function CurvePolygon(obj::Union{LinearRing,CircularString,CompoundCurve}, context::GEOSContext = get_global_context())
+        curvepolygon = new(createCurvePolygon(cloneGeom(obj, context), context), context)
+        finalizer(destroyGeom, curvepolygon)
+        curvepolygon
+    end
     function CurvePolygon(obj::GEOSGeom, context::GEOSContext = get_global_context())
         id = LibGEOS.geomTypeId(obj, context)
         curvepolygon = if id == GEOS_CURVEPOLYGON
             new(obj, context)
+        elseif id in [GEOS_LINEARRING,GEOS_CIRCULARSTRING,GEOS_COMPOUNDCURVE]
+            new(createCurvePolygon(obj, context), context)
         else
             open_issue_if_conversion_makes_sense(CurvePolygon, id)
         end
         finalizer(destroyGeom, curvepolygon)
         curvepolygon
     end
+    # using vector of coordinates in following form:
+    # [[exterior], [hole1], [hole2], ...] where exterior and holeN are coordinates where the first and last point are the same
+    function CurvePolygon(
+        coords::Vector{Vector{Vector{Float64}}},
+        context::GEOSContext = get_global_context(),
+    )
+        exterior = createLinearRing(coords[1], context)
+        interiors = GEOSGeom[createLinearRing(lr, context) for lr in coords[2:end]]
+        curvepolygon = new(createCurvePolygon(exterior, interiors, context), context)
+        finalizer(destroyGeom, curvepolygon)
+        curvepolygon
+    end
+    # using multiple rings to form polygon with holes - exterior ring will be polygon boundary and list of interior rings will form holes
+    CurvePolygon(
+        exterior::Union{LinearRing,CircularString,CompoundCurve},
+        holes::Vector{Union{LinearRing,CircularString,CompoundCurve}},
+        context::GEOSContext = get_context(exterior),
+    ) = CurvePolygon(
+        createCurvePolygon(
+            cloneGeom(exterior, context),
+            cloneGeom.(holes, Ref(context)),
+            context,
+        ),
+        context,
+    )
+  
 end
 
 mutable struct MultiCurve <: AbstractGeometry
