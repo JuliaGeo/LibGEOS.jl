@@ -332,6 +332,8 @@ for f in (
     :envelope,
     :minimumRotatedRectangle,
     :convexhull,
+    :concavehull,
+    :concavehull_of_polygons,
     :boundary,
     :unaryUnion,
     :pointOnSurface,

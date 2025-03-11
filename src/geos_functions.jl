@@ -677,6 +677,44 @@ function convexhull(obj::Geometry, context::GEOSContext = get_context(obj))
     geomFromGEOS(result, context)
 end
 
+"""
+    concavehull(obj::Geometry; [ratio | length_ratio], allow_holes = true)
+
+Compute the concave hull of a geometry.
+
+One of `ratio` or `length_ratio` must be provided.  
+If `ratio` is provided, this calls `GEOSConcaveHull`; 
+if `length_ratio` is provided, this calls `GEOSConcaveHullByLength`.
+
+If `allow_holes` is true, the concave hull may have holes.
+
+Returns a polygon that represents the concave hull from the chi-shape 
+defined by `ratio` or `length_ratio`.
+"""
+function concavehull(obj::Geometry; ratio::Union{Real, Nothing} = nothing, length_ratio::Union{Real, Nothing} = nothing, allow_holes::Bool = true, context::GEOSContext = get_context(obj))
+    result = if isnothing(ratio) && isnothing(length_ratio)
+        throw(ArgumentError("Either `ratio` or `length_ratio` must be provided to `LibGEOS.concavehull`, none were provided."))
+    elseif !isnothing(ratio) && !isnothing(length_ratio)
+        throw(ArgumentError("Only one of `ratio` or `length_ratio` may be provided to `LibGEOS.concavehull`; got both."))
+    elseif !isnothing(ratio) && isnothing(length_ratio)
+        GEOSConcaveHull_r(context, obj, ratio, allow_holes)
+    elseif isnothing(ratio) && !isnothing(length_ratio)
+        GEOSConcaveHullByLength_r(context, obj, ratio, allow_holes)
+    end
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSConcaveHull")
+    end
+    geomFromGEOS(result, context)
+end
+
+function concavehull_of_polygons(obj::Geometry, ratio::Real, tight::Bool, allow_holes::Bool, context::GEOSContext = get_context(obj))
+    result = GEOSConcaveHullOfPolygons_r(context, obj, ratio, tight, allow_holes)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSConcaveHullOfPolygons")
+    end
+    geomFromGEOS(result, context)
+end
+
 function difference(
     obj1::Geometry,
     obj2::Geometry,
