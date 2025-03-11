@@ -318,6 +318,7 @@ const LG = LibGEOS
             LG.delaunayTriangulationEdges,
             LG.delaunayTriangulation,
             LG.constrainedDelaunayTriangulation,
+            (x -> LG.concavehull(x; ratio = 0.5)), # fix the kwarg here
             # these have different signatures
             # LG.simplify, LG.topologyPreserveSimplify,
         )
