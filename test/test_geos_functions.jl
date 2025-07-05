@@ -18,7 +18,7 @@ using Extents
         outputdim = 3,
         roundingprecision = 2,
     )
-    @test_broken writegeom(p, writer) == "POINT (0.12 2)" # Broken in GEOS 3.13.0 https://github.com/libgeos/geos/issues/1198
+    @test writegeom(p, writer) == "POINT (0.12 2)" # Broken in GEOS 3.13.0 https://github.com/libgeos/geos/issues/1198
 
     # round to 2 decimals and don't trim trailing zeros
     writer = LibGEOS.WKTWriter(
