@@ -1,6 +1,8 @@
 module LibGEOSMakieExt
-using Makie: Makie
-using LibGEOS: LibGEOS
+
+import GeoInterface 
+import LibGEOS
+import Makie
 
 GeoInterface.@enable_makie Makie LibGEOS.AbstractGeometry
 

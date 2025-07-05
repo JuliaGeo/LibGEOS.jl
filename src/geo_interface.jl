@@ -309,8 +309,6 @@ GeoInterface.union(
     b::AbstractGeometry,
 ) = union(a, b)
 
-GeoInterfaceRecipes.@enable_geo_plots AbstractGeometry
-
 # -----
 # LibGeos operations for any GeoInterface.jl compatible geometries
 # -----

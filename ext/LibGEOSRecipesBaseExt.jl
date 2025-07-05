@@ -1,6 +1,8 @@
 module LibGEOSRecipesBaseExt
-using RecipesBase: RecipesBase
-using LibGEOS: LibGEOS
+
+import GeoInterface 
+import LibGEOS
+import RecipesBase
 
 GeoInterface.@enable_plots RecipesBase LibGEOS.AbstractGeometry
 
