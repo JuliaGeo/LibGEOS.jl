@@ -2,7 +2,6 @@ module LibGEOS
 
 using GEOS_jll
 using GeoInterface
-using GeoInterfaceRecipes
 using Extents
 using CEnum
 
