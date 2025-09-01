@@ -383,7 +383,7 @@ mutable struct GeometryCollection <: AbstractMultiGeometry
     ) = GeometryCollection(
         createCollection(
             GEOS_GEOMETRYCOLLECTION,
-            GEOSGeom[cloneGeom(geom, context) for geom in collection],
+            vec(GEOSGeom[cloneGeom(geom, context) for geom in collection]), # just in case `collection` has custom axes
             context,
         ),
         context,
