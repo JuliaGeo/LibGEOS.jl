@@ -67,10 +67,7 @@ const LG = LibGEOS
     @test GeoInterface.testgeometry(mpt)
     @test GeoInterface.is3d(mpt) == false
     Plots.plot(mpt)
-    # Makie no longer plots GeometryBasics.MultiPoint
-    @test_broken Makie.plot(mpt)
-
-
+    Makie.plot(mpt)
 
     @inferred GeoInterface.ncoord(mpt)
     @inferred GeoInterface.ngeom(mpt)

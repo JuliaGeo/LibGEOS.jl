@@ -378,7 +378,7 @@ mutable struct GeometryCollection <: AbstractMultiGeometry
         context,
     )
     GeometryCollection(
-        collection::Vector{<:AbstractGeometry},
+        collection::AbstractVector{<:AbstractGeometry},
         context::GEOSContext = get_global_context(),
     ) = GeometryCollection(
         createCollection(
