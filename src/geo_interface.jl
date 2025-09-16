@@ -383,5 +383,5 @@ end
 # coordtype implementations - guarded against old GeoInterface versions
 if :coordtype in names(GeoInterface; all = true)
     # LibGEOS always uses Float64 for coordinates
-    GeoInterface.coordtype(::GeoInterface.AbstractGeometryTrait, ::AbstractGeometry) = Float64
+    GeoInterface.coordtype(::GeoInterface.AbstractGeometryTrait, ::T) where {T <: AbstractGeometry} = Float64
 end
