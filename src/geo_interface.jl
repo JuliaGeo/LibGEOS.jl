@@ -379,3 +379,9 @@ for f in (
     @eval $f(geom1::AbstractGeometry, geom2::AbstractGeometry, args...; kw...) =
         throw(MethodError($f, (geom1, geom2, args...)))
 end
+
+# coordtype implementations - guarded against old GeoInterface versions
+if :coordtype in names(GeoInterface; all = true)
+    # LibGEOS always uses Float64 for coordinates
+    GeoInterface.coordtype(::GeoInterface.AbstractGeometryTrait, ::AbstractGeometry) = Float64
+end
