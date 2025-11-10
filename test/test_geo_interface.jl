@@ -69,8 +69,6 @@ const LG = LibGEOS
     Plots.plot(mpt)
     Makie.plot(mpt)
 
-
-
     @inferred GeoInterface.ncoord(mpt)
     @inferred GeoInterface.ngeom(mpt)
     @inferred GeoInterface.getgeom(mpt)
