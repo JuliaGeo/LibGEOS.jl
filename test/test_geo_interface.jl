@@ -299,8 +299,8 @@ const LG = LibGEOS
     @test GeoInterface.geomtrait(geomcollection) == GeometryCollectionTrait()
     @test GeoInterface.is3d(geomcollection) == false
     @test GeoInterface.testgeometry(geomcollection)
-
     @testset "Conversion" begin
+        _concavehull(x) = LG.concavehull(x; ratio = 0.3)
         one_arg_functions = (
             LG.area,
             LG.geomLength,
@@ -316,7 +316,7 @@ const LG = LibGEOS
             LG.delaunayTriangulationEdges,
             LG.delaunayTriangulation,
             LG.constrainedDelaunayTriangulation,
-            Base.Fix2(LG.concavehull, 0.3),
+            _concavehull,
             # these have different signatures
             # LG.simplify, LG.topologyPreserveSimplify,
         )
@@ -399,8 +399,13 @@ const LG = LibGEOS
         coords2 = [[[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]]
         for f in two_arg_functions
             @testset let current_function = f
-                @test f(LibGEOS.MultiLineString(coords), LibGEOS.MultiLineString(coords2)) ==
-                      f(GeoInterface.MultiLineString(coords), LibGEOS.MultiLineString(coords2))
+                @test f(
+                    LibGEOS.MultiLineString(coords),
+                    LibGEOS.MultiLineString(coords2),
+                ) == f(
+                    GeoInterface.MultiLineString(coords),
+                    LibGEOS.MultiLineString(coords2),
+                )
             end
         end
 
@@ -434,7 +439,8 @@ const LG = LibGEOS
         @test GeoInterface.coordinates(geom) == coords
         for f in one_arg_functions
             @testset let current_function = f
-                @test f(LibGEOS.MultiPolygon(coords)) == f(GeoInterface.MultiPolygon(coords))
+                @test f(LibGEOS.MultiPolygon(coords)) ==
+                      f(GeoInterface.MultiPolygon(coords))
             end
         end
         coords2 = [[[[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]]]
