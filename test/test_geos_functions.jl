@@ -1,6 +1,7 @@
 using Test
 using LibGEOS
 import GeoInterface
+import GeoInterface as GI
 using Extents
 
 @testset "WKTWriter" begin
@@ -960,7 +961,21 @@ end
     @test LibGEOS.reverse(readgeom("LINESTRING(0 0, 1 1)")) ==
           readgeom("LINESTRING(1 1, 0 0)")
 
+    # NOTE: maximum inscribed circle is not an exact algorithm,
+    # and may be susceptible to both floating point error
+    # and changes to internal hashing order of the quadtree.
+    # So we need to test for what we really care about here:
+    # that the center is in the right place, and that the radius is correct.
+    # For example, between GEOS v3.13 and v3.14, the test broke
+    # because it had been checking that the returned linestring was precisely equal to a reference,
+    # but the side switched from the left to the right.  Still a completely correct
+    # and valid result - but not the same as the reference and it settled in a different cell.
+    # The algorithm LibGEOS and jts use here is the same one that Mapbox uses
+    # as well as Polylabel.jl in Julia (soon to be integrated into GeometryOps).
     geo = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))")
     mic = LibGEOS.maximumInscribedCircle(geo, 1e-4)
-    @test mic == readgeom("LINESTRING (0.5 0.5, 0 0.5)")
+    @test GI.coordinates(GI.getpoint(mic, 1)) ≈ [0.5, 0.5] atol = 1e-5
+    x1, y1 = GI.coordinates(GI.getpoint(mic, 1))
+    x2, y2 = GI.coordinates(GI.getpoint(mic, 2))
+    @test hypot(x1 - x2, y1 - y2) ≈ 0.5 atol = 1e-5
 end
