@@ -1,6 +1,7 @@
 using Test, Makie, Plots, GeoInterface, LibGEOS, Extents
 const GI = GeoInterface
 const LG = LibGEOS
+import LibGEOS: Point
 
 @testset "Geo interface" begin
     pt = LibGEOS.Point(1.0, 2.0)
