@@ -28,9 +28,17 @@ const GEOSBufParams_t = Cvoid
 
 const GEOSBufferParams = GEOSBufParams_t
 
+const GEOSCoverageCleanParams_t = Cvoid
+
+const GEOSCoverageCleanParams = GEOSCoverageCleanParams_t
+
 const GEOSMakeValidParams_t = Cvoid
 
 const GEOSMakeValidParams = GEOSMakeValidParams_t
+
+const GEOSClusterInfo_t = Cvoid
+
+const GEOSClusterInfo = GEOSClusterInfo_t
 
 const GEOSGeom = Ptr{GEOSGeometry}
 
@@ -62,6 +70,13 @@ end
     GEOS_WKB_ISO = 2
 end
 
+@cenum GEOSOverlapMerge::UInt32 begin
+    GEOS_MERGE_LONGEST_BORDER = 0
+    GEOS_MERGE_MAX_AREA = 1
+    GEOS_MERGE_MIN_AREA = 2
+    GEOS_MERGE_MIN_INDEX = 3
+end
+
 # typedef void ( * GEOSQueryCallback ) ( void * item , void * userdata )
 const GEOSQueryCallback = Ptr{Cvoid}
 
@@ -71,8 +86,14 @@ const GEOSDistanceCallback = Ptr{Cvoid}
 # typedef int ( * GEOSTransformXYCallback ) ( double * x , double * y , void * userdata )
 const GEOSTransformXYCallback = Ptr{Cvoid}
 
+# typedef int ( * GEOSTransformXYZCallback ) ( double * x , double * y , double * z , void * userdata )
+const GEOSTransformXYZCallback = Ptr{Cvoid}
+
 # typedef void ( GEOSInterruptCallback ) ( void )
 const GEOSInterruptCallback = Cvoid
+
+# typedef int ( GEOSContextInterruptCallback ) ( void * )
+const GEOSContextInterruptCallback = Cvoid
 
 function GEOS_interruptRegisterCallback(cb)
     @ccall libgeos.GEOS_interruptRegisterCallback(
@@ -80,8 +101,20 @@ function GEOS_interruptRegisterCallback(cb)
     )::Ptr{GEOSInterruptCallback}
 end
 
+function GEOSContext_setInterruptCallback_r(extHandle, cb, userData)
+    @ccall libgeos.GEOSContext_setInterruptCallback_r(
+        extHandle::GEOSContextHandle_t,
+        cb::Ptr{GEOSContextInterruptCallback},
+        userData::Ptr{Cvoid},
+    )::Ptr{GEOSContextInterruptCallback}
+end
+
 function GEOS_interruptRequest()
     @ccall libgeos.GEOS_interruptRequest()::Cvoid
+end
+
+function GEOS_interruptThread()
+    @ccall libgeos.GEOS_interruptThread()::Cvoid
 end
 
 function GEOS_interruptCancel()
@@ -131,6 +164,15 @@ function GEOSCoordSeq_create_r(handle, size, dims)
         handle::GEOSContextHandle_t,
         size::Cuint,
         dims::Cuint,
+    )::Ptr{GEOSCoordSequence}
+end
+
+function GEOSCoordSeq_createWithDimensions_r(handle, size, hasZ, hasM)
+    @ccall libgeos.GEOSCoordSeq_createWithDimensions_r(
+        handle::GEOSContextHandle_t,
+        size::Cuint,
+        hasZ::Cint,
+        hasM::Cint,
     )::Ptr{GEOSCoordSequence}
 end
 
@@ -190,6 +232,20 @@ function GEOSCoordSeq_destroy_r(handle, s)
     )::Cvoid
 end
 
+function GEOSCoordSeq_hasZ_r(handle, s)
+    @ccall libgeos.GEOSCoordSeq_hasZ_r(
+        handle::GEOSContextHandle_t,
+        s::Ptr{GEOSCoordSequence},
+    )::Cchar
+end
+
+function GEOSCoordSeq_hasM_r(handle, s)
+    @ccall libgeos.GEOSCoordSeq_hasM_r(
+        handle::GEOSContextHandle_t,
+        s::Ptr{GEOSCoordSequence},
+    )::Cchar
+end
+
 function GEOSCoordSeq_setX_r(handle, s, idx, val)
     @ccall libgeos.GEOSCoordSeq_setX_r(
         handle::GEOSContextHandle_t,
@@ -210,6 +266,15 @@ end
 
 function GEOSCoordSeq_setZ_r(handle, s, idx, val)
     @ccall libgeos.GEOSCoordSeq_setZ_r(
+        handle::GEOSContextHandle_t,
+        s::Ptr{GEOSCoordSequence},
+        idx::Cuint,
+        val::Cdouble,
+    )::Cint
+end
+
+function GEOSCoordSeq_setM_r(handle, s, idx, val)
+    @ccall libgeos.GEOSCoordSeq_setM_r(
         handle::GEOSContextHandle_t,
         s::Ptr{GEOSCoordSequence},
         idx::Cuint,
@@ -268,6 +333,15 @@ end
 
 function GEOSCoordSeq_getZ_r(handle, s, idx, val)
     @ccall libgeos.GEOSCoordSeq_getZ_r(
+        handle::GEOSContextHandle_t,
+        s::Ptr{GEOSCoordSequence},
+        idx::Cuint,
+        val::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSCoordSeq_getM_r(handle, s, idx, val)
+    @ccall libgeos.GEOSCoordSeq_getM_r(
         handle::GEOSContextHandle_t,
         s::Ptr{GEOSCoordSequence},
         idx::Cuint,
@@ -655,6 +729,62 @@ function GEOSCoverageSimplifyVW_r(extHandle, input, tolerance, preserveBoundary)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSCoverageCleanParams_create_r(extHandle)
+    @ccall libgeos.GEOSCoverageCleanParams_create_r(
+        extHandle::GEOSContextHandle_t,
+    )::Ptr{GEOSCoverageCleanParams}
+end
+
+function GEOSCoverageCleanParams_destroy_r(extHandle, params)
+    @ccall libgeos.GEOSCoverageCleanParams_destroy_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSCoverageCleanParams},
+    )::Cvoid
+end
+
+function GEOSCoverageCleanParams_setSnappingDistance_r(extHandle, params, snappingDistance)
+    @ccall libgeos.GEOSCoverageCleanParams_setSnappingDistance_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSCoverageCleanParams},
+        snappingDistance::Cdouble,
+    )::Cint
+end
+
+function GEOSCoverageCleanParams_setGapMaximumWidth_r(extHandle, params, gapMaximumWidth)
+    @ccall libgeos.GEOSCoverageCleanParams_setGapMaximumWidth_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSCoverageCleanParams},
+        gapMaximumWidth::Cdouble,
+    )::Cint
+end
+
+function GEOSCoverageCleanParams_setOverlapMergeStrategy_r(
+    extHandle,
+    params,
+    overlapMergeStrategy,
+)
+    @ccall libgeos.GEOSCoverageCleanParams_setOverlapMergeStrategy_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSCoverageCleanParams},
+        overlapMergeStrategy::Cint,
+    )::Cint
+end
+
+function GEOSCoverageCleanWithParams_r(extHandle, input, params)
+    @ccall libgeos.GEOSCoverageCleanWithParams_r(
+        extHandle::GEOSContextHandle_t,
+        input::Ptr{GEOSGeometry},
+        params::Ptr{GEOSCoverageCleanParams},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSCoverageClean_r(extHandle, input)
+    @ccall libgeos.GEOSCoverageClean_r(
+        extHandle::GEOSContextHandle_t,
+        input::Ptr{GEOSGeometry},
+    )::Ptr{GEOSGeometry}
+end
+
 function GEOSEnvelope_r(handle, g)
     @ccall libgeos.GEOSEnvelope_r(
         handle::GEOSContextHandle_t,
@@ -898,6 +1028,20 @@ function GEOSClipByRect_r(handle, g, xmin, ymin, xmax, ymax)
         xmax::Cdouble,
         ymax::Cdouble,
     )::Ptr{GEOSGeometry}
+end
+
+function GEOSGridIntersectionFractions_r(handle, g, xmin, ymin, xmax, ymax, nx, ny, buf)
+    @ccall libgeos.GEOSGridIntersectionFractions_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        xmin::Cdouble,
+        ymin::Cdouble,
+        xmax::Cdouble,
+        ymax::Cdouble,
+        nx::Cuint,
+        ny::Cuint,
+        buf::Ptr{Cfloat},
+    )::Cint
 end
 
 function GEOSPolygonize_r(handle, geoms, ngeoms)
@@ -1502,6 +1646,15 @@ function GEOSisValidReason_r(handle, g)
     )
 end
 
+function GEOSisSimpleDetail_r(handle, g, findAllLocations, location)
+    @ccall libgeos.GEOSisSimpleDetail_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        findAllLocations::Cint,
+        location::Ptr{Ptr{GEOSGeometry}},
+    )::Cchar
+end
+
 function GEOSisValidDetail_r(handle, g, flags, reason, location)
     @ccall libgeos.GEOSisValidDetail_r(
         handle::GEOSContextHandle_t,
@@ -1931,6 +2084,91 @@ function GEOSGeom_transformXY_r(handle, g, callback, userdata)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSGeom_transformXYZ_r(handle, g, callback, userdata)
+    @ccall libgeos.GEOSGeom_transformXYZ_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        callback::GEOSTransformXYZCallback,
+        userdata::Ptr{Cvoid},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSClusterDBSCAN_r(handle, g, eps, minPoints)
+    @ccall libgeos.GEOSClusterDBSCAN_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        eps::Cdouble,
+        minPoints::Cuint,
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterGeometryDistance_r(handle, g, d)
+    @ccall libgeos.GEOSClusterGeometryDistance_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        d::Cdouble,
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterGeometryIntersects_r(handle, g)
+    @ccall libgeos.GEOSClusterGeometryIntersects_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterEnvelopeDistance_r(handle, g, d)
+    @ccall libgeos.GEOSClusterEnvelopeDistance_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        d::Cdouble,
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterEnvelopeIntersects_r(handle, g)
+    @ccall libgeos.GEOSClusterEnvelopeIntersects_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterInfo_getNumClusters_r(arg1, clusters)
+    @ccall libgeos.GEOSClusterInfo_getNumClusters_r(
+        arg1::GEOSContextHandle_t,
+        clusters::Ptr{GEOSClusterInfo},
+    )::Csize_t
+end
+
+function GEOSClusterInfo_getClusterSize_r(arg1, clusters, i)
+    @ccall libgeos.GEOSClusterInfo_getClusterSize_r(
+        arg1::GEOSContextHandle_t,
+        clusters::Ptr{GEOSClusterInfo},
+        i::Csize_t,
+    )::Csize_t
+end
+
+function GEOSClusterInfo_getClustersForInputs_r(arg1, clusters)
+    @ccall libgeos.GEOSClusterInfo_getClustersForInputs_r(
+        arg1::GEOSContextHandle_t,
+        clusters::Ptr{GEOSClusterInfo},
+    )::Ptr{Csize_t}
+end
+
+function GEOSClusterInfo_getInputsForClusterN_r(arg1, clusters, i)
+    @ccall libgeos.GEOSClusterInfo_getInputsForClusterN_r(
+        arg1::GEOSContextHandle_t,
+        clusters::Ptr{GEOSClusterInfo},
+        i::Csize_t,
+    )::Ptr{Csize_t}
+end
+
+function GEOSClusterInfo_destroy_r(arg1, info)
+    @ccall libgeos.GEOSClusterInfo_destroy_r(
+        arg1::GEOSContextHandle_t,
+        info::Ptr{GEOSClusterInfo},
+    )::Cvoid
+end
+
 function GEOSOrientationIndex_r(handle, Ax, Ay, Bx, By, Px, Py)
     @ccall libgeos.GEOSOrientationIndex_r(
         handle::GEOSContextHandle_t,
@@ -2235,6 +2473,21 @@ function GEOSGeoJSONWriter_writeGeometry_r(handle, writer, g, indent)
     )
 end
 
+function GEOSGeoJSONWriter_setOutputDimension_r(handle, writer, dim)
+    @ccall libgeos.GEOSGeoJSONWriter_setOutputDimension_r(
+        handle::GEOSContextHandle_t,
+        writer::Ptr{GEOSGeoJSONWriter},
+        dim::Cint,
+    )::Cvoid
+end
+
+function GEOSGeoJSONWriter_getOutputDimension_r(handle, writer)
+    @ccall libgeos.GEOSGeoJSONWriter_getOutputDimension_r(
+        handle::GEOSContextHandle_t,
+        writer::Ptr{GEOSGeoJSONWriter},
+    )::Cint
+end
+
 function GEOSFree_r(handle, buffer)
     @ccall libgeos.GEOSFree_r(handle::GEOSContextHandle_t, buffer::Ptr{Cvoid})::Cvoid
 end
@@ -2260,6 +2513,14 @@ end
 
 function GEOSCoordSeq_create(size, dims)
     @ccall libgeos.GEOSCoordSeq_create(size::Cuint, dims::Cuint)::Ptr{GEOSCoordSequence}
+end
+
+function GEOSCoordSeq_createWithDimensions(size, hasZ, hasM)
+    @ccall libgeos.GEOSCoordSeq_createWithDimensions(
+        size::Cuint,
+        hasZ::Cint,
+        hasM::Cint,
+    )::Ptr{GEOSCoordSequence}
 end
 
 function GEOSCoordSeq_copyFromBuffer(buf, size, hasZ, hasM)
@@ -2308,6 +2569,14 @@ function GEOSCoordSeq_destroy(s)
     @ccall libgeos.GEOSCoordSeq_destroy(s::Ptr{GEOSCoordSequence})::Cvoid
 end
 
+function GEOSCoordSeq_hasZ(s)
+    @ccall libgeos.GEOSCoordSeq_hasZ(s::Ptr{GEOSCoordSequence})::Cchar
+end
+
+function GEOSCoordSeq_hasM(s)
+    @ccall libgeos.GEOSCoordSeq_hasM(s::Ptr{GEOSCoordSequence})::Cchar
+end
+
 function GEOSCoordSeq_setX(s, idx, val)
     @ccall libgeos.GEOSCoordSeq_setX(
         s::Ptr{GEOSCoordSequence},
@@ -2326,6 +2595,14 @@ end
 
 function GEOSCoordSeq_setZ(s, idx, val)
     @ccall libgeos.GEOSCoordSeq_setZ(
+        s::Ptr{GEOSCoordSequence},
+        idx::Cuint,
+        val::Cdouble,
+    )::Cint
+end
+
+function GEOSCoordSeq_setM(s, idx, val)
+    @ccall libgeos.GEOSCoordSeq_setM(
         s::Ptr{GEOSCoordSequence},
         idx::Cuint,
         val::Cdouble,
@@ -2378,6 +2655,14 @@ end
 
 function GEOSCoordSeq_getZ(s, idx, val)
     @ccall libgeos.GEOSCoordSeq_getZ(
+        s::Ptr{GEOSCoordSequence},
+        idx::Cuint,
+        val::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSCoordSeq_getM(s, idx, val)
+    @ccall libgeos.GEOSCoordSeq_getM(
         s::Ptr{GEOSCoordSequence},
         idx::Cuint,
         val::Ptr{Cdouble},
@@ -2469,7 +2754,7 @@ function GEOSGeom_createCircularString(s)
     )::Ptr{GEOSGeometry}
 end
 
-# no prototype is found for this function at geos_c.h:2519:31, please use with caution
+# no prototype is found for this function at geos_c.h:2810:31, please use with caution
 function GEOSGeom_createEmptyCircularString()
     @ccall libgeos.GEOSGeom_createEmptyCircularString()::Ptr{GEOSGeometry}
 end
@@ -2481,7 +2766,7 @@ function GEOSGeom_createCompoundCurve(curves, ncurves)
     )::Ptr{GEOSGeometry}
 end
 
-# no prototype is found for this function at geos_c.h:2538:31, please use with caution
+# no prototype is found for this function at geos_c.h:2829:31, please use with caution
 function GEOSGeom_createEmptyCompoundCurve()
     @ccall libgeos.GEOSGeom_createEmptyCompoundCurve()::Ptr{GEOSGeometry}
 end
@@ -2494,7 +2779,7 @@ function GEOSGeom_createCurvePolygon(shell, holes, nholes)
     )::Ptr{GEOSGeometry}
 end
 
-# no prototype is found for this function at geos_c.h:2564:31, please use with caution
+# no prototype is found for this function at geos_c.h:2855:31, please use with caution
 function GEOSGeom_createEmptyCurvePolygon()
     @ccall libgeos.GEOSGeom_createEmptyCurvePolygon()::Ptr{GEOSGeometry}
 end
@@ -2687,6 +2972,14 @@ end
 
 function GEOSisSimple(g)
     @ccall libgeos.GEOSisSimple(g::Ptr{GEOSGeometry})::Cchar
+end
+
+function GEOSisSimpleDetail(g, findAllLocations, locations)
+    @ccall libgeos.GEOSisSimpleDetail(
+        g::Ptr{GEOSGeometry},
+        findAllLocations::Cint,
+        locations::Ptr{Ptr{GEOSGeometry}},
+    )::Cchar
 end
 
 function GEOSisValid(g)
@@ -2938,11 +3231,82 @@ function GEOSClipByRect(g, xmin, ymin, xmax, ymax)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSGridIntersectionFractions(g, xmin, ymin, xmax, ymax, nx, ny, buf)
+    @ccall libgeos.GEOSGridIntersectionFractions(
+        g::Ptr{GEOSGeometry},
+        xmin::Cdouble,
+        ymin::Cdouble,
+        xmax::Cdouble,
+        ymax::Cdouble,
+        nx::Cuint,
+        ny::Cuint,
+        buf::Ptr{Cfloat},
+    )::Cint
+end
+
 function GEOSSharedPaths(g1, g2)
     @ccall libgeos.GEOSSharedPaths(
         g1::Ptr{GEOSGeometry},
         g2::Ptr{GEOSGeometry},
     )::Ptr{GEOSGeometry}
+end
+
+function GEOSClusterDBSCAN(g, eps, minPoints)
+    @ccall libgeos.GEOSClusterDBSCAN(
+        g::Ptr{GEOSGeometry},
+        eps::Cdouble,
+        minPoints::Cuint,
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterGeometryDistance(g, d)
+    @ccall libgeos.GEOSClusterGeometryDistance(
+        g::Ptr{GEOSGeometry},
+        d::Cdouble,
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterGeometryIntersects(g)
+    @ccall libgeos.GEOSClusterGeometryIntersects(g::Ptr{GEOSGeometry})::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterEnvelopeDistance(g, d)
+    @ccall libgeos.GEOSClusterEnvelopeDistance(
+        g::Ptr{GEOSGeometry},
+        d::Cdouble,
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterEnvelopeIntersects(g)
+    @ccall libgeos.GEOSClusterEnvelopeIntersects(g::Ptr{GEOSGeometry})::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterInfo_getNumClusters(clusters)
+    @ccall libgeos.GEOSClusterInfo_getNumClusters(clusters::Ptr{GEOSClusterInfo})::Csize_t
+end
+
+function GEOSClusterInfo_getClusterSize(clusters, i)
+    @ccall libgeos.GEOSClusterInfo_getClusterSize(
+        clusters::Ptr{GEOSClusterInfo},
+        i::Csize_t,
+    )::Csize_t
+end
+
+function GEOSClusterInfo_getClustersForInputs(clusters)
+    @ccall libgeos.GEOSClusterInfo_getClustersForInputs(
+        clusters::Ptr{GEOSClusterInfo},
+    )::Ptr{Csize_t}
+end
+
+function GEOSClusterInfo_getInputsForClusterN(clusters, i)
+    @ccall libgeos.GEOSClusterInfo_getInputsForClusterN(
+        clusters::Ptr{GEOSClusterInfo},
+        i::Csize_t,
+    )::Ptr{Csize_t}
+end
+
+function GEOSClusterInfo_destroy(clusters)
+    @ccall libgeos.GEOSClusterInfo_destroy(clusters::Ptr{GEOSClusterInfo})::Cvoid
 end
 
 function GEOSBuffer(g, width, quadsegs)
@@ -3043,6 +3407,49 @@ function GEOSCoverageSimplifyVW(input, tolerance, preserveBoundary)
         tolerance::Cdouble,
         preserveBoundary::Cint,
     )::Ptr{GEOSGeometry}
+end
+
+# no prototype is found for this function at geos_c.h:4443:1, please use with caution
+function GEOSCoverageCleanParams_create()
+    @ccall libgeos.GEOSCoverageCleanParams_create()::Ptr{GEOSCoverageCleanParams}
+end
+
+function GEOSCoverageCleanParams_destroy(params)
+    @ccall libgeos.GEOSCoverageCleanParams_destroy(
+        params::Ptr{GEOSCoverageCleanParams},
+    )::Cvoid
+end
+
+function GEOSCoverageCleanParams_setSnappingDistance(params, snappingDistance)
+    @ccall libgeos.GEOSCoverageCleanParams_setSnappingDistance(
+        params::Ptr{GEOSCoverageCleanParams},
+        snappingDistance::Cdouble,
+    )::Cint
+end
+
+function GEOSCoverageCleanParams_setGapMaximumWidth(params, gapMaximumWidth)
+    @ccall libgeos.GEOSCoverageCleanParams_setGapMaximumWidth(
+        params::Ptr{GEOSCoverageCleanParams},
+        gapMaximumWidth::Cdouble,
+    )::Cint
+end
+
+function GEOSCoverageCleanParams_setOverlapMergeStrategy(params, overlapMergeStrategy)
+    @ccall libgeos.GEOSCoverageCleanParams_setOverlapMergeStrategy(
+        params::Ptr{GEOSCoverageCleanParams},
+        overlapMergeStrategy::Cint,
+    )::Cint
+end
+
+function GEOSCoverageCleanWithParams(input, params)
+    @ccall libgeos.GEOSCoverageCleanWithParams(
+        input::Ptr{GEOSGeometry},
+        params::Ptr{GEOSCoverageCleanParams},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSCoverageClean(input)
+    @ccall libgeos.GEOSCoverageClean(input::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
 end
 
 function GEOSEnvelope(g)
@@ -3261,6 +3668,14 @@ function GEOSGeom_transformXY(g, callback, userdata)
     @ccall libgeos.GEOSGeom_transformXY(
         g::Ptr{GEOSGeometry},
         callback::GEOSTransformXYCallback,
+        userdata::Ptr{Cvoid},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSGeom_transformXYZ(g, callback, userdata)
+    @ccall libgeos.GEOSGeom_transformXYZ(
+        g::Ptr{GEOSGeometry},
+        callback::GEOSTransformXYZCallback,
         userdata::Ptr{Cvoid},
     )::Ptr{GEOSGeometry}
 end
@@ -3785,6 +4200,19 @@ function GEOSGeoJSONWriter_writeGeometry(writer, g, indent)
     )
 end
 
+function GEOSGeoJSONWriter_setOutputDimension(writer, dim)
+    @ccall libgeos.GEOSGeoJSONWriter_setOutputDimension(
+        writer::Ptr{GEOSGeoJSONWriter},
+        dim::Cint,
+    )::Cvoid
+end
+
+function GEOSGeoJSONWriter_getOutputDimension(writer)
+    @ccall libgeos.GEOSGeoJSONWriter_getOutputDimension(
+        writer::Ptr{GEOSGeoJSONWriter},
+    )::Cint
+end
+
 function GEOSSingleSidedBuffer(g, width, quadsegs, joinStyle, mitreLimit, leftSide)
     @ccall libgeos.GEOSSingleSidedBuffer(
         g::Ptr{GEOSGeometry},
@@ -3950,21 +4378,21 @@ end
 
 const GEOS_VERSION_MAJOR = 3
 
-const GEOS_VERSION_MINOR = 13
+const GEOS_VERSION_MINOR = 14
 
-const GEOS_VERSION_PATCH = 0
+const GEOS_VERSION_PATCH = 1
 
-const GEOS_VERSION = "3.13.0"
+const GEOS_VERSION = "3.14.1"
 
 const GEOS_JTS_PORT = "1.18.0"
 
 const GEOS_CAPI_VERSION_MAJOR = 1
 
-const GEOS_CAPI_VERSION_MINOR = 19
+const GEOS_CAPI_VERSION_MINOR = 20
 
-const GEOS_CAPI_VERSION_PATCH = 0
+const GEOS_CAPI_VERSION_PATCH = 5
 
-const GEOS_CAPI_VERSION = "3.13.0-CAPI-1.19.0"
+const GEOS_CAPI_VERSION = "3.14.1-CAPI-1.20.5"
 
 const GEOS_CAPI_FIRST_INTERFACE = GEOS_CAPI_VERSION_MAJOR
 
