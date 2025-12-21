@@ -1,6 +1,6 @@
 module LibGEOSRecipesBaseExt
 
-import GeoInterface 
+import GeoInterface
 import LibGEOS
 import RecipesBase
 

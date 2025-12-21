@@ -283,7 +283,7 @@ function getX(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     xcoords = Vector{Float64}(undef, ncoords)
     start = pointer(xcoords)
     floatsize = sizeof(Float64)
-    for i = 0:ncoords-1
+    for i = 0:(ncoords-1)
         GEOSCoordSeq_getX_r(context, ptr, i, start + i * floatsize)
     end
     xcoords
@@ -308,7 +308,7 @@ function getY(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     ycoords = Vector{Float64}(undef, ncoords)
     start = pointer(ycoords)
     floatsize = sizeof(Float64)
-    for i = 0:ncoords-1
+    for i = 0:(ncoords-1)
         GEOSCoordSeq_getY_r(context, ptr, i, start + i * floatsize)
     end
     ycoords
@@ -333,7 +333,7 @@ function getZ(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     zcoords = Array{Float64}(undef, ncoords)
     start = pointer(zcoords)
     floatsize = sizeof(Float64)
-    for i = 0:ncoords-1
+    for i = 0:(ncoords-1)
         GEOSCoordSeq_getZ_r(context, ptr, i, start + i * floatsize)
     end
     zcoords
