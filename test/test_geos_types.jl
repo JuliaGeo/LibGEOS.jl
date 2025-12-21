@@ -1,3 +1,4 @@
+import TaskLocalValues
 
 @testset "open_issue_if_conversion_makes_sense" begin
     polygon = readgeom("POLYGON EMPTY")
@@ -390,10 +391,10 @@ end
 @testset "Multi threading" begin
     function f91(n)
         # adapted from https://github.com/JuliaGeo/LibGEOS.jl/issues/91#issuecomment-1267732709
-        contexts = [LibGEOS.GEOSContext() for i = 1:Threads.nthreads()]
+        contexts = TaskLocalValues.TaskLocalValue{LibGEOS.GEOSContext}(() -> LibGEOS.GEOSContext())
         p = [[[-1.0, -1], [+1, -1], [+1, +1], [-1, +1], [-1, -1]]]
-        Threads.@threads :static for i = 1:n
-            ctx = contexts[Threads.threadid()]
+        Threads.@threads for i = 1:n
+            ctx = contexts[]
             g1 = LibGEOS.Polygon(p, ctx)
             g2 = LibGEOS.Polygon(p, ctx)
             for j = 1:n
@@ -407,10 +408,10 @@ end
     @testset "clone" begin
         function f(n)
             # adapted from https://github.com/JuliaGeo/LibGEOS.jl/issues/91#issuecomment-1267732709
-            contexts = [LibGEOS.GEOSContext() for i = 1:Threads.nthreads()]
+            contexts = TaskLocalValues.TaskLocalValue{LibGEOS.GEOSContext}(() -> LibGEOS.GEOSContext())
             p = LibGEOS.Polygon([[[-1.0, -1], [+1, -1], [+1, +1], [-1, +1], [-1, -1]]])
-            Threads.@threads :static for i = 1:n
-                ctx = contexts[Threads.threadid()]
+            Threads.@threads for i = 1:n
+                ctx = contexts[]
                 g1 = LibGEOS.clone(p, ctx)
                 g2 = LibGEOS.clone(p, ctx)
                 for j = 1:n
