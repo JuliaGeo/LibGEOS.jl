@@ -191,7 +191,7 @@ function GI.convert(
     geometries = map(GI.getgeom(geom)) do g
         t = GI.trait(g)
         lg = geointerface_geomtype(t)
-        # We call the full invocation for LibGEOS directly, 
+        # We call the full invocation for LibGEOS directly,
         # so the context can be passed through, since
         # `GI.convert(Mod, x)` does not allow kwargs.
         GI.convert(lg, t, g; context)
@@ -380,8 +380,5 @@ for f in (
         throw(MethodError($f, (geom1, geom2, args...)))
 end
 
-# coordtype implementations - guarded against old GeoInterface versions
-if :coordtype in names(GeoInterface; all = true)
-    # LibGEOS always uses Float64 for coordinates
-    GeoInterface.coordtype(::GeoInterface.AbstractGeometryTrait, ::T) where {T <: AbstractGeometry} = Float64
-end
+# LibGEOS always uses Float64 for coordinates
+GeoInterface.coordtype(::GeoInterface.AbstractGeometryTrait, ::AbstractGeometry) = Float64
