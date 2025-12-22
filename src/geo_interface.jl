@@ -382,3 +382,4 @@ end
 
 # LibGEOS always uses Float64 for coordinates
 GeoInterface.coordtype(::GeoInterface.AbstractGeometryTrait, ::AbstractGeometry) = Float64
+GeoInterface.coordtype(::GeoInterface.PointTrait, ::AbstractGeometry) = Float64
