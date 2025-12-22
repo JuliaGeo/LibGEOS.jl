@@ -1,6 +1,6 @@
 module LibGEOSMakieExt
 
-import GeoInterface 
+import GeoInterface
 import LibGEOS
 import Makie
 
