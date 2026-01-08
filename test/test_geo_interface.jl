@@ -1,4 +1,5 @@
-using Test, Makie, Plots, GeoInterface, LibGEOS, Extents
+using Test, GeoInterface, LibGEOS, Extents
+import Makie, Plots
 const GI = GeoInterface
 const LG = LibGEOS
 import LibGEOS: Point

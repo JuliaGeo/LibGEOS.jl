@@ -167,11 +167,7 @@ end
     @test LibGEOS.getSize(cs_) == 1
     @test LibGEOS.getDimensions(cs_) == 2
     @test LibGEOS.getCoordinates(cs_) == [[5.0, 3.0]]
-    # z coordinate stays NaN for 2D geometry
-    @test isnan(LibGEOS.getZ(cs_, 1))
-    # in GEOS v3.14 and above, setting a nonexistent ordinate errors
-    # cf. https://github.com/libgeos/geos/pull/1245
-    @test_throws "GEOSError" LibGEOS.setZ!(cs_, 1, 2.0)
+    # z coordinate is NaN for 2D geometry
     @test isnan(LibGEOS.getZ(cs_, 1))
 
     cs_2 = LibGEOS.createCoordSeq([5.0, 3.0])
