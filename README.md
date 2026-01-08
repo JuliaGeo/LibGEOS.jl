@@ -1,7 +1,7 @@
 LibGEOS.jl
 ==========
 [![CI](https://github.com/JuliaGeo/LibGEOS.jl/workflows/CI/badge.svg)](https://github.com/JuliaGeo/LibGEOS.jl/actions?query=workflow%3ACI)
-[![codecov](https://codecov.io/gh/JuliaGeo/LibGEOS.jl/branch/master/graph/badge.svg?token=wnS3J00ZPH)](https://codecov.io/gh/JuliaGeo/LibGEOS.jl)
+[![codecov](https://codecov.io/gh/JuliaGeo/LibGEOS.jl/branch/main/graph/badge.svg?token=wnS3J00ZPH)](https://codecov.io/gh/JuliaGeo/LibGEOS.jl)
 
 LibGEOS is a package for manipulation and analysis of planar geometric objects, based on the
 libraries [GEOS](https://libgeos.org/) (the engine of PostGIS) and JTS (from which GEOS is
