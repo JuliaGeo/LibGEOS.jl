@@ -2,6 +2,7 @@ using Test, GeoInterface, LibGEOS, Extents
 import Makie, Plots
 const GI = GeoInterface
 const LG = LibGEOS
+import LibGEOS: Point
 
 @testset "Geo interface" begin
     pt = LibGEOS.Point(1.0, 2.0)
@@ -300,8 +301,8 @@ const LG = LibGEOS
     @test GeoInterface.geomtrait(geomcollection) == GeometryCollectionTrait()
     @test GeoInterface.is3d(geomcollection) == false
     @test GeoInterface.testgeometry(geomcollection)
-
     @testset "Conversion" begin
+        _concavehull(x) = LG.concavehull(x; ratio = 0.3)
         one_arg_functions = (
             LG.area,
             LG.geomLength,
@@ -317,6 +318,7 @@ const LG = LibGEOS
             LG.delaunayTriangulationEdges,
             LG.delaunayTriangulation,
             LG.constrainedDelaunayTriangulation,
+            _concavehull,
             # these have different signatures
             # LG.simplify, LG.topologyPreserveSimplify,
         )
@@ -357,12 +359,16 @@ const LG = LibGEOS
         @test geom isa MultiPoint
         @test GeoInterface.coordinates(geom) == coords
         for f in one_arg_functions
-            @test f(LibGEOS.MultiPoint(coords)) == f(GeoInterface.MultiPoint(coords))
+            @testset let current_function = f
+                @test f(LibGEOS.MultiPoint(coords)) == f(GeoInterface.MultiPoint(coords))
+            end
         end
         coords2 = [[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]
         for f in two_arg_functions
-            @test f(LibGEOS.LineString(coords), LibGEOS.LineString(coords)) ==
-                  f(GeoInterface.LineString(coords), GeoInterface.LineString(coords))
+            @testset let current_function = f
+                @test f(LibGEOS.LineString(coords), LibGEOS.LineString(coords)) ==
+                      f(GeoInterface.LineString(coords), GeoInterface.LineString(coords))
+            end
         end
 
         coords = [[0.0, 0], [0.0, 10], [10.0, 10], [10.0, 0], [0.0, 0]]
@@ -370,12 +376,16 @@ const LG = LibGEOS
         @test geom isa LineString
         @test GeoInterface.coordinates(geom) == coords
         for f in one_arg_functions
-            @test f(LibGEOS.LineString(coords)) == f(GeoInterface.LineString(coords))
+            @testset let current_function = f
+                @test f(LibGEOS.LineString(coords)) == f(GeoInterface.LineString(coords))
+            end
         end
         coords2 = [[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]
         for f in two_arg_functions
-            @test f(LibGEOS.LineString(coords), LibGEOS.LineString(coords)) ==
-                  f(GeoInterface.LineString(coords), GeoInterface.LineString(coords))
+            @testset let current_function = f
+                @test f(LibGEOS.LineString(coords), LibGEOS.LineString(coords)) ==
+                      f(GeoInterface.LineString(coords), GeoInterface.LineString(coords))
+            end
         end
 
         coords = [[[0.0, 0], [0.0, 10], [10.0, 10], [10.0, 0], [0.0, 0]]]
@@ -383,13 +393,22 @@ const LG = LibGEOS
         @test geom isa MultiLineString
         @test GeoInterface.coordinates(geom) == coords
         for f in one_arg_functions
-            @test f(LibGEOS.MultiLineString(coords)) ==
-                  f(GeoInterface.MultiLineString(coords))
+            @testset let current_function = f
+                @test f(LibGEOS.MultiLineString(coords)) ==
+                      f(GeoInterface.MultiLineString(coords))
+            end
         end
         coords2 = [[[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]]
         for f in two_arg_functions
-            @test f(LibGEOS.MultiLineString(coords), LibGEOS.MultiLineString(coords2)) ==
-                  f(GeoInterface.MultiLineString(coords), LibGEOS.MultiLineString(coords2))
+            @testset let current_function = f
+                @test f(
+                    LibGEOS.MultiLineString(coords),
+                    LibGEOS.MultiLineString(coords2),
+                ) == f(
+                    GeoInterface.MultiLineString(coords),
+                    LibGEOS.MultiLineString(coords2),
+                )
+            end
         end
 
         coords = [[[0.0, 0], [0.0, 10], [10.0, 10], [10.0, 0], [0.0, 0]]]
@@ -400,12 +419,16 @@ const LG = LibGEOS
         @test GeoInterface.nhole(geom) == 0
         @test GeoInterface.coordinates(geom) == coords
         for f in one_arg_functions
-            @test f(LibGEOS.Polygon(coords)) == f(GeoInterface.Polygon(coords))
+            @testset let current_function = f
+                @test f(LibGEOS.Polygon(coords)) == f(GeoInterface.Polygon(coords))
+            end
         end
         coords2 = [[[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]]
         for f in two_arg_functions
-            @test f(LibGEOS.Polygon(coords), LibGEOS.Polygon(coords2)) ==
-                  f(GeoInterface.Polygon(coords), LibGEOS.Polygon(coords2))
+            @testset let current_function = f
+                @test f(LibGEOS.Polygon(coords), LibGEOS.Polygon(coords2)) ==
+                      f(GeoInterface.Polygon(coords), LibGEOS.Polygon(coords2))
+            end
         end
 
         pgeom = LibGEOS.prepareGeom(geom)
@@ -417,12 +440,17 @@ const LG = LibGEOS
         @test geom isa MultiPolygon
         @test GeoInterface.coordinates(geom) == coords
         for f in one_arg_functions
-            @test f(LibGEOS.MultiPolygon(coords)) == f(GeoInterface.MultiPolygon(coords))
+            @testset let current_function = f
+                @test f(LibGEOS.MultiPolygon(coords)) ==
+                      f(GeoInterface.MultiPolygon(coords))
+            end
         end
         coords2 = [[[[0.0, 10], [0.5, 10], [20.0, 20], [10.0, 10], [0.0, 10]]]]
         for f in two_arg_functions
-            @test f(LibGEOS.MultiPolygon(coords), LibGEOS.MultiPolygon(coords2)) ==
-                  f(GeoInterface.MultiPolygon(coords), LibGEOS.MultiPolygon(coords2))
+            @testset let current_function = f
+                @test f(LibGEOS.MultiPolygon(coords), LibGEOS.MultiPolygon(coords2)) ==
+                      f(GeoInterface.MultiPolygon(coords), LibGEOS.MultiPolygon(coords2))
+            end
         end
     end
 
