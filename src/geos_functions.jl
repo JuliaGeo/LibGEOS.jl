@@ -677,6 +677,53 @@ function convexhull(obj::Geometry, context::GEOSContext = get_context(obj))
     geomFromGEOS(result, context)
 end
 
+"""
+    concavehull(geom, ratio; bylength = false, allow_holes = true)
+
+Compute the concave hull of a geometry, according to the chi-shape generated from 
+`geom` with the given `ratio`.
+
+If `bylength` is true, the chi-shape is generated from the length of the geometry, 
+calling `GEOSConcaveHullByLength`; otherwise it is generated from the area, calling 
+`GEOSConcaveHull`.
+
+If `allow_holes` is true, the concave hull may have holes.  If false, then holes are disallowed.
+
+See also [`convexhull`](@ref), [`concavehull_of_polygons`](@ref).
+"""
+function concavehull(obj::Geometry; ratio::Union{Real, Nothing} = nothing, length_ratio::Union{Real, Nothing} = nothing, allow_holes::Bool = true, context::GEOSContext = get_context(obj))
+    result = if isnothing(ratio) && isnothing(length_ratio)
+        throw(ArgumentError("Either `ratio` or `length_ratio` must be provided to `LibGEOS.concavehull`, none were provided."))
+    elseif !isnothing(ratio) && !isnothing(length_ratio)
+        throw(ArgumentError("Only one of `ratio` or `length_ratio` may be provided to `LibGEOS.concavehull`; got both."))
+    elseif !isnothing(ratio) && isnothing(length_ratio)
+        GEOSConcaveHull_r(context, obj, ratio, allow_holes)
+    elseif isnothing(ratio) && !isnothing(length_ratio)
+        GEOSConcaveHullByLength_r(context, obj, ratio, allow_holes)
+    end
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSConcaveHull")
+    end
+    geomFromGEOS(result, context)
+end
+
+"""
+    concavehull_of_polygons(obj::Geometry, ratio; tight = false, allow_holes = true)
+
+Compute the concave hull of a geometry, according to the chi-shape generated from 
+`obj` with the given `ratio`.
+
+If `tight` is true, the chi-shape is generated from the tightest fit of the geometry, 
+otherwise it is generated from the area.
+"""
+function concavehull_of_polygons(obj::Geometry, ratio::Real; tight::Bool = false, allow_holes::Bool = true, context::GEOSContext = get_context(obj))
+    result = GEOSConcaveHullOfPolygons_r(context, obj, ratio, tight, allow_holes)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSConcaveHullOfPolygons")
+    end
+    geomFromGEOS(result, context)
+end
+
 function difference(
     obj1::Geometry,
     obj2::Geometry,
