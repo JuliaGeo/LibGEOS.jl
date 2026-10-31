@@ -46,6 +46,26 @@ end
     @test LibGEOS.intersects(p2, q1, ctx3)
 end
 
+@testset "Context propagation" begin
+    ctx = LibGEOS.GEOSContext()
+    geoms = [
+        GeoInterface.MultiPoint([(1.0, 2.0)]),
+        GeoInterface.MultiLineString([[(0.0, 0.0), (1.0, 1.0)]]),
+        GeoInterface.MultiPolygon([[[(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 0.0)]]]),
+        GeoInterface.GeometryCollection([GeoInterface.Point(1.0, 2.0)]),
+    ]
+    LibGEOS.allow_global_context!(false) do
+        @test LibGEOS.get_context(MultiPoint([Point(1, 2, ctx)])) === ctx
+        poly = readgeom("POLYGON ((0 0, 1 0, 1 1, 0 0))", ctx)
+        @test LibGEOS.get_context(MultiPolygon([poly])) === ctx
+        for g in geoms
+            t = GeoInterface.geomtrait(g)
+            T = LibGEOS.geointerface_geomtype(t)
+            @test LibGEOS.get_context(GeoInterface.convert(T, t, g; context = ctx)) === ctx
+        end
+    end
+end
+
 @testset "coordinates!" begin
     coordinates! = LibGEOS.coordinates!
     buf3 = zeros(3)
@@ -59,6 +79,8 @@ end
     @test coordinates!(buf2, readgeom("LINESTRING (130 240, 650 240)"), 2) ==
           buf2 ==
           [650, 240]
+    @test coordinates!(buf3, readgeom("POINT M (1 2 4)")) == [1, 2, 4]
+    @test coordinates!(zeros(4), readgeom("POINT ZM (1 2 3 4)")) == [1, 2, 3, 4]
 end
 
 @testset "hash eq" begin
@@ -110,6 +132,9 @@ end
     @test !(isapprox(geo, geo))
     @test !(isapprox(geo, geo, atol = Inf))
 
+    @test readgeom("POINT Z (1 2 3)") != readgeom("POINT M (1 2 3)")
+    @test !isapprox(readgeom("POINT Z (1 2 3)"), readgeom("POINT M (1 2 3)"))
+
     geos = [
         readgeom("POINT(0.12345 2.000 0.1)"),
         readgeom("POINT(0.12345 2.000)"),
@@ -125,6 +150,8 @@ end
             "GEOMETRYCOLLECTION (LINESTRING (1 2, 2 2), LINESTRING (2 1, 1 1), POLYGON ((0.5 1, 1 2, 1 1, 0.5 1)), POLYGON ((9 2, 9.5 1, 2 1, 2 2, 9 2)))",
         ),
         readgeom("MULTIPOINT(0 0, 5 0, 10 0)"),
+        readgeom("POINT M (1 2 4)"),
+        readgeom("LINESTRING ZM (1 2 3 4, 5 6 7 8)"),
     ]
     for g1 in geos
         for g2 in geos
@@ -147,6 +174,15 @@ end
         @test isequal(g, LibGEOS.clone(g))
         @test hash(g) == hash(LibGEOS.clone(g))
     end
+end
+
+@testset "PreparedGeometry" begin
+    pg = prepareGeom(readgeom("POINT (1 2)"))
+    @test pg == prepareGeom(readgeom("POINT (1 2)"))
+    @test pg != prepareGeom(readgeom("POINT (3 4)"))
+    @test hash(pg) == hash(prepareGeom(readgeom("POINT (1 2)")))
+    finalize(pg)
+    @test pg.ptr == C_NULL
 end
 
 @testset "performance hash eq" begin
