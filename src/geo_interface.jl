@@ -94,11 +94,8 @@ end
 
 GI.convert(::Type{Point}, ::PointTrait, geom::Point; context = nothing) = geom
 function GI.convert(::Type{Point}, ::PointTrait, geom; context = get_global_context())
-    if GI.is3d(geom)
-        return Point(GI.x(geom), GI.y(geom), GI.z(geom), context)
-    else
-        return Point(GI.x(geom), GI.y(geom), context)
-    end
+    seq = _coord_seq((geom,), 1, GI.is3d(geom), GI.ismeasured(geom), context)
+    return Point(createPoint(seq, context), context)
 end
 GI.convert(::Type{MultiPoint}, ::MultiPointTrait, geom::MultiPoint; context = nothing) =
     geom
@@ -210,24 +207,31 @@ function GI.convert(
     )
 end
 
-# Collect the coordinates and copy them to GEOS in one call
-function _geom_to_coord_seq(geom, context)
-    hasz = GI.is3d(geom)
-    ndim = hasz ? 3 : 2
-    coords = Vector{Float64}(undef, ndim * GI.npoint(geom))
+# Collect the coordinates of `points` and copy them to GEOS in one call
+function _coord_seq(points, npoint, hasz, hasm, context)
+    ndim = 2 + hasz + hasm
+    coords = Vector{Float64}(undef, ndim * npoint)
     i = 0
-    for p in GI.getpoint(geom)
+    for p in points
         coords[i+1] = GI.x(p)
         coords[i+2] = GI.y(p)
         hasz && (coords[i+3] = GI.z(p))
+        hasm && (coords[i+ndim] = GI.m(p))
         i += ndim
     end
-    seq = GEOSCoordSeq_copyFromBuffer_r(context, coords, i ÷ ndim, hasz, false)
+    seq = GEOSCoordSeq_copyFromBuffer_r(context, coords, i ÷ ndim, hasz, hasm)
     if seq == C_NULL
         error("LibGEOS: Error in GEOSCoordSeq_copyFromBuffer")
     end
     return seq
 end
+_geom_to_coord_seq(geom, context) = _coord_seq(
+    GI.getpoint(geom),
+    GI.npoint(geom),
+    GI.is3d(geom),
+    GI.ismeasured(geom),
+    context,
+)
 
 GeoInterface.distance(
     ::AbstractGeometryTrait,
