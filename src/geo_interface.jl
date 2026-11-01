@@ -108,7 +108,7 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    points = Point[GI.convert(Point, PointTrait(), p) for p in GI.getpoint(t, geom)]
+    points = Point[GI.convert(Point, PointTrait(), p; context) for p in GI.getpoint(t, geom)]
     return MultiPoint(points, context)
 end
 GI.convert(::Type{LineString}, ::LineStringTrait, geom::LineString; context = nothing) =
@@ -150,7 +150,7 @@ function GI.convert(
     linestrings = LineString[
         GI.convert(LineString, LineStringTrait(), g; context) for g in getgeom(geom)
     ]
-    return MultiLineString(linestrings)
+    return MultiLineString(linestrings, context)
 end
 GI.convert(::Type{Polygon}, ::PolygonTrait, geom::Polygon; context = nothing) = geom
 function GI.convert(::Type{Polygon}, ::PolygonTrait, geom; context = get_global_context())
@@ -158,7 +158,7 @@ function GI.convert(::Type{Polygon}, ::PolygonTrait, geom; context = get_global_
     holes = LinearRing[
         GI.convert(LinearRing, GI.LinearRingTrait(), g; context) for g in GI.gethole(geom)
     ]
-    return Polygon(exterior, holes)
+    return Polygon(exterior, holes, context)
 end
 GI.convert(
     ::Type{MultiPolygon},
@@ -174,7 +174,7 @@ function GI.convert(
 )
     polygons =
         Polygon[GI.convert(Polygon, PolygonTrait(), g; context) for g in GI.getgeom(geom)]
-    return MultiPolygon(polygons)
+    return MultiPolygon(polygons, context)
 end
 GI.convert(
     ::Type{GeometryCollection},
@@ -196,7 +196,7 @@ function GI.convert(
         # `GI.convert(Mod, x)` does not allow kwargs.
         GI.convert(lg, t, g; context)
     end
-    return GeometryCollection(geometries)
+    return GeometryCollection(geometries, context)
 end
 
 function GI.convert(

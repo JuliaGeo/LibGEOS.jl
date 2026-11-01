@@ -349,7 +349,8 @@ function getCoordinates!(out::Vector{Float64}, ptr::GEOSCoordSeq, i::Integer, co
     @assert length(out) == ndim
     start = pointer(out)
     floatsize = sizeof(Float64)
-    if ndim == 3
+    hasm = GEOSCoordSeq_hasM_r(context, ptr) == 1
+    if ndim - hasm == 3  # XYZ or XYZM
         GEOSCoordSeq_getXYZ_r(
             context,
             ptr,
@@ -360,6 +361,9 @@ function getCoordinates!(out::Vector{Float64}, ptr::GEOSCoordSeq, i::Integer, co
         )
     else
         GEOSCoordSeq_getXY_r(context, ptr, i - 1, start, start + floatsize)
+    end
+    if hasm  # M is the last ordinate
+        GEOSCoordSeq_getM_r(context, ptr, i - 1, start + (ndim - 1) * floatsize)
     end
     out
 end
@@ -616,7 +620,6 @@ end
 
 function destroyGeom(obj::PreparedGeometry, context::GEOSContext = get_context(obj))
     destroyPreparedGeom(obj, context)
-    obj.ptr = C_NULL
 end
 
 
@@ -1052,7 +1055,7 @@ function prepareGeom(obj::Geometry, context::GEOSContext = get_context(obj))
     if result == C_NULL
         error("LibGEOS: Error in GEOSPrepare")
     end
-    PreparedGeometry(result, obj)
+    finalizer(destroyGeom, PreparedGeometry(result, obj))
 end
 
 function destroyPreparedGeom(
@@ -1060,6 +1063,7 @@ function destroyPreparedGeom(
     context::GEOSContext = get_global_context(),
 )
     GEOSPreparedGeom_destroy_r(context, obj)
+    obj.ptr = C_NULL
 end
 
 Base.contains(
@@ -1691,10 +1695,12 @@ function nearestPoints(
     if points == C_NULL
         return Point[]
     else
-        return Point[
+        result = Point[
             Point(getCoordinates(points, 1, context), context),
             Point(getCoordinates(points, 2, context), context),
         ]
+        destroyCoordSeq(points, context)
+        return result
     end
 end
 
@@ -1707,10 +1713,12 @@ function nearestPoints(
     if points == C_NULL
         return Point[]
     else
-        return Point[
+        result = Point[
             Point(getCoordinates(points, 1, context), context),
             Point(getCoordinates(points, 2, context), context),
         ]
+        destroyCoordSeq(points, context)
+        return result
     end
 end
 
