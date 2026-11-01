@@ -29,13 +29,17 @@ mutable struct GEOSContext
 end
 
 "Throw the error that GEOS reported to `context` during the last call, if any."
-function geos_check(result, context::GEOSContext)
-    isempty(context.errormessage) && return result
+@inline function geos_check(result, context::GEOSContext)
+    isempty(context.errormessage) || throw_geos_error(context)
+    return result
+end
+geos_check(result, handle) = result
+
+@noinline function throw_geos_error(context::GEOSContext)
     message = context.errormessage
     context.errormessage = ""
     throw(GEOSError(message))
 end
-geos_check(result, handle) = result
 
 function Base.:(==)(c1::GEOSContext, c2::GEOSContext)
     (c1.ptr == c2.ptr)
