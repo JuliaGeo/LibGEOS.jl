@@ -17,9 +17,10 @@ mutable struct GEOSContext
     function GEOSContext()
         context = new(GEOS_init_r())
         GEOSContext_setNoticeHandler_r(context, C_NULL)
-        GEOSContext_setErrorHandler_r(
+        GEOSContext_setErrorMessageHandler_r(
             context,
-            @cfunction(geosjl_errorhandler, Ptr{Cvoid}, (Ptr{UInt8}, Ptr{Cvoid}))
+            @cfunction(geosjl_errorhandler, Cvoid, (Cstring, Ptr{Cvoid})),
+            C_NULL,
         )
         finalizer(context -> (GEOS_finish_r(context); context.ptr = C_NULL), context)
         context
