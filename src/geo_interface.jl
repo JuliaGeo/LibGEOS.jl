@@ -94,8 +94,10 @@ GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
 GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) =
     GeoInterface.ncoord(t, geom.ownedby)
 
-GeoInterface.getcoord(::AbstractPointTrait, geom::Point, i) =
-    getCoordinates(getCoordSeq(geom), 1)[i]
+function GeoInterface.getcoord(::AbstractPointTrait, geom::Point, i)
+    context = get_context(geom)
+    return getCoordinates(getCoordSeq(geom, context), 1, context)[i]
+end
 GeoInterface.getcoord(t::AbstractPointTrait, geom::PreparedGeometry, i) =
     GeoInterface.getcoord(t, geom.ownedby, i)
 
