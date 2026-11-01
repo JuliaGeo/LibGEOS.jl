@@ -100,6 +100,17 @@ function GI.convert(::Type{Point}, ::PointTrait, geom; context = get_global_cont
         return Point(GI.x(geom), GI.y(geom), context)
     end
 end
+# Convert `geom` to a LibGEOS `T` and return its pointer, which the parent geometry
+# being built takes over. Converting each part and copying it into the parent would
+# leave the parts to the garbage collector, which doesn't see GEOS memory.
+function _convert_to_ptr(T, trait, geom, context)
+    converted = GI.convert(T, trait, geom; context)
+    converted === geom && return cloneGeom(geom, context)
+    ptr = converted.ptr
+    converted.ptr = C_NULL  # so that its finalizer doesn't free the part
+    return ptr
+end
+
 GI.convert(::Type{MultiPoint}, ::MultiPointTrait, geom::MultiPoint; context = nothing) =
     geom
 function GI.convert(
@@ -108,8 +119,9 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    points = Point[GI.convert(Point, PointTrait(), p; context) for p in GI.getpoint(t, geom)]
-    return MultiPoint(points, context)
+    points =
+        GEOSGeom[_convert_to_ptr(Point, PointTrait(), p, context) for p in GI.getpoint(t, geom)]
+    return MultiPoint(createCollection(GEOS_MULTIPOINT, points, context), context)
 end
 GI.convert(::Type{LineString}, ::LineStringTrait, geom::LineString; context = nothing) =
     geom
@@ -147,18 +159,21 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    linestrings = LineString[
-        GI.convert(LineString, LineStringTrait(), g; context) for g in getgeom(geom)
+    linestrings = GEOSGeom[
+        _convert_to_ptr(LineString, LineStringTrait(), g, context) for g in getgeom(geom)
     ]
-    return MultiLineString(linestrings, context)
+    return MultiLineString(
+        createCollection(GEOS_MULTILINESTRING, linestrings, context),
+        context,
+    )
 end
 GI.convert(::Type{Polygon}, ::PolygonTrait, geom::Polygon; context = nothing) = geom
 function GI.convert(::Type{Polygon}, ::PolygonTrait, geom; context = get_global_context())
-    exterior = GI.convert(LinearRing, GI.LinearRingTrait(), GI.getexterior(geom); context)
-    holes = LinearRing[
-        GI.convert(LinearRing, GI.LinearRingTrait(), g; context) for g in GI.gethole(geom)
+    exterior = _convert_to_ptr(LinearRing, LinearRingTrait(), GI.getexterior(geom), context)
+    holes = GEOSGeom[
+        _convert_to_ptr(LinearRing, LinearRingTrait(), g, context) for g in GI.gethole(geom)
     ]
-    return Polygon(exterior, holes, context)
+    return Polygon(createPolygon(exterior, holes, context), context)
 end
 GI.convert(
     ::Type{MultiPolygon},
@@ -172,9 +187,10 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    polygons =
-        Polygon[GI.convert(Polygon, PolygonTrait(), g; context) for g in GI.getgeom(geom)]
-    return MultiPolygon(polygons, context)
+    polygons = GEOSGeom[
+        _convert_to_ptr(Polygon, PolygonTrait(), g, context) for g in GI.getgeom(geom)
+    ]
+    return MultiPolygon(createCollection(GEOS_MULTIPOLYGON, polygons, context), context)
 end
 GI.convert(
     ::Type{GeometryCollection},
@@ -188,15 +204,14 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    geometries = map(GI.getgeom(geom)) do g
-        t = GI.trait(g)
-        lg = geointerface_geomtype(t)
-        # We call the full invocation for LibGEOS directly,
-        # so the context can be passed through, since
-        # `GI.convert(Mod, x)` does not allow kwargs.
-        GI.convert(lg, t, g; context)
-    end
-    return GeometryCollection(geometries, context)
+    geometries = GEOSGeom[
+        _convert_to_ptr(geointerface_geomtype(GI.trait(g)), GI.trait(g), g, context) for
+        g in GI.getgeom(geom)
+    ]
+    return GeometryCollection(
+        createCollection(GEOS_GEOMETRYCOLLECTION, geometries, context),
+        context,
+    )
 end
 
 function GI.convert(
@@ -320,8 +335,21 @@ to_geos(trait, geom) = GI.convert(geointerface_geomtype(trait), trait, geom)
 # These methods are all the same with 1 or two geometries, some arguments, and maybe keywords.
 # We define them with `@eval` to avoid all the boilerplate code.
 
-buffer(obj, dist::Real, args...; kw...) = buffer(to_geos(obj), dist::Real, args...; kw...)
-bufferWithStyle(obj, dist::Real; kw...) = bufferWithStyle(to_geos(obj), dist; kw...)
+# Convert `geom` for one call of `f`, and free the converted geometry when it returns,
+# rather than leaving it to the garbage collector, which doesn't see GEOS memory.
+function with_geos(f, geom)
+    converted = to_geos(geom)
+    try
+        return f(converted)
+    finally
+        converted === geom || finalize(converted)
+    end
+end
+
+buffer(obj, dist::Real, args...; kw...) =
+    with_geos(g -> buffer(g, dist, args...; kw...), obj)
+bufferWithStyle(obj, dist::Real; kw...) =
+    with_geos(g -> bufferWithStyle(g, dist; kw...), obj)
 
 # 1 geom methods
 for f in (
@@ -343,7 +371,7 @@ for f in (
     :constrainedDelaunayTriangulation,
 )
     # We convert the geometry to a GEOS geometry and forward it to the geos method
-    @eval $f(geom, args...; kw...) = $f(to_geos(geom), args...; kw...)
+    @eval $f(geom, args...; kw...) = with_geos(g -> $f(g, args...; kw...), geom)
     @eval $f(geom::AbstractGeometry, args...; kw...) =
         throw(MethodError($f, (geom, args...)))
 end
@@ -375,7 +403,7 @@ for f in (
 )
     # We convert the geometries to GEOS geometries and forward them to the geos method
     @eval $f(geom1, geom2, args...; kw...) =
-        $f(to_geos(geom1), to_geos(geom2), args...; kw...)
+        with_geos(g1 -> with_geos(g2 -> $f(g1, g2, args...; kw...), geom2), geom1)
     @eval $f(geom1::AbstractGeometry, geom2::AbstractGeometry, args...; kw...) =
         throw(MethodError($f, (geom1, geom2, args...)))
 end
