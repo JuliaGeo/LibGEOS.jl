@@ -32,6 +32,15 @@ GeoInterface.ngeom(::AbstractPointTrait, geom::Point) = 0
 GeoInterface.ngeom(::AbstractPointTrait, geom::PreparedGeometry) = 0
 
 GI.is3d(::AbstractGeometryTrait, geom::AbstractGeometry) = hasZ(geom)
+# Z and M are independent: a three-coordinate geometry can be XYZ or XYM.
+GI.ismeasured(::AbstractGeometryTrait, geom::AbstractGeometry) = hasM(geom)
+function GI.coordnames(::AbstractGeometryTrait, geom::AbstractGeometry)
+    if hasZ(geom)
+        return hasM(geom) ? (:X, :Y, :Z, :M) : (:X, :Y, :Z)
+    else
+        return hasM(geom) ? (:X, :Y, :M) : (:X, :Y)
+    end
+end
 GI.getexterior(::AbstractPolygonTrait, geom::Polygon) = exteriorRing(geom)
 GI.gethole(::AbstractPolygonTrait, geom::Polygon, n) = interiorRing(geom, n)
 
@@ -47,11 +56,99 @@ GeoInterface.getgeom(::MultiLineStringTrait, geom::MultiLineString, i) =
     getGeometry(geom, i)::LineString
 GeoInterface.getgeom(::MultiPolygonTrait, geom::MultiPolygon, i) =
     getGeometry(geom, i)::Polygon
-GeoInterface.getgeom(
+# A value point owns its ordinates, so it can outlive the source geometry.
+# Runtime flags keep reads inferable even though GEOS dimensions are not in the type.
+struct CoordinatePoint
+    ordinates::NTuple{4,Float64}
+    hasz::Bool
+    hasm::Bool
+end
+GI.isgeometry(::Type{CoordinatePoint}) = true
+GI.geomtrait(::CoordinatePoint) = PointTrait()
+GI.ncoord(::PointTrait, p::CoordinatePoint) = 2 + p.hasz + p.hasm
+GI.is3d(::PointTrait, p::CoordinatePoint) = p.hasz
+GI.ismeasured(::PointTrait, p::CoordinatePoint) = p.hasm
+GI.coordnames(::PointTrait, p::CoordinatePoint) =
+    p.hasz ? (p.hasm ? (:X, :Y, :Z, :M) : (:X, :Y, :Z)) :
+    (p.hasm ? (:X, :Y, :M) : (:X, :Y))
+GI.coordtype(::PointTrait, ::CoordinatePoint) = Float64
+function GI.getcoord(::PointTrait, p::CoordinatePoint, i::Integer)
+    1 <= i <= GI.ncoord(p) || throw(BoundsError(p, i))
+    return p.ordinates[i == 3 && !p.hasz ? 4 : i]
+end
+GI.x(::PointTrait, p::CoordinatePoint) = p.ordinates[1]
+GI.y(::PointTrait, p::CoordinatePoint) = p.ordinates[2]
+GI.z(::PointTrait, p::CoordinatePoint) = p.ordinates[3]
+GI.m(::PointTrait, p::CoordinatePoint) = p.ordinates[4]
+GI.coordinates(::PointTrait, p::CoordinatePoint) =
+    [GI.getcoord(p, i) for i in 1:GI.ncoord(p)]
+getGeomX(p::CoordinatePoint, ::GEOSContext = get_global_context()) = GI.x(p)
+getGeomY(p::CoordinatePoint, ::GEOSContext = get_global_context()) = GI.y(p)
+getGeomZ(p::CoordinatePoint, ::GEOSContext = get_global_context()) = GI.z(p)
+
+function Point(p::CoordinatePoint, context::GEOSContext = get_global_context())
+    return Point(createPoint(_geom_to_coord_seq(p, context), context), context)
+end
+GI.convert(::Type{Point}, ::PointTrait, p::CoordinatePoint; context = get_global_context()) =
+    Point(p, context)
+
+# Inline the C wrappers so temporary refs stay on the stack.
+@inline function _read_xy(seq, i, context)
+    x, y = Ref{Float64}(), Ref{Float64}()
+    (@inline GEOSCoordSeq_getXY_r(context, seq, i - 1, x, y)) == 1 ||
+        error("LibGEOS: Error reading XY coordinates")
+    return (x[], y[], NaN)
+end
+# Inline the C wrappers so temporary refs stay on the stack.
+@inline function _read_xyz(seq, i, context)
+    x, y, z = Ref{Float64}(), Ref{Float64}(), Ref{Float64}()
+    (@inline GEOSCoordSeq_getXYZ_r(context, seq, i - 1, x, y, z)) == 1 ||
+        error("LibGEOS: Error reading XYZ coordinates")
+    return (x[], y[], z[])
+end
+@inline function _coordinate_point(geom, seq, i, hasz, hasm)
+    context = get_context(geom)
+    # The sequence is borrowed from geom, which must survive every coordinate read.
+    GC.@preserve geom begin
+        x, y, z = hasz ? _read_xyz(seq, i, context) : _read_xy(seq, i, context)
+        m = if hasm
+            value = Ref{Float64}()
+            (@inline GEOSCoordSeq_getM_r(context, seq, i - 1, value)) == 1 ||
+                error("LibGEOS: Error reading point measure")
+            value[]
+        else
+            NaN
+        end
+    end
+    return CoordinatePoint((x, y, z, m), hasz, hasm)
+end
+function GI.getgeom(
     ::Union{LineStringTrait,LinearRingTrait},
     geom::Union{LineString,LinearRing},
-    i,
-) = getPoint(geom, i)
+    i::Integer,
+)
+    context = get_context(geom)
+    GC.@preserve geom begin
+        seq = getCoordSeq(geom, context)
+        1 <= i <= getSize(seq, context) || throw(BoundsError(geom, i))
+        hasm = GEOSCoordSeq_hasM_r(context, seq) == 1
+        hasz = getDimensions(seq, context) - hasm == 3
+        return _coordinate_point(geom, seq, i, hasz, hasm)
+    end
+end
+function GI.getgeom(
+    ::Union{LineStringTrait,LinearRingTrait},
+    geom::Union{LineString,LinearRing},
+)
+    context = get_context(geom)
+    GC.@preserve geom begin
+        seq = getCoordSeq(geom, context)
+        n = Int(getSize(seq, context))
+        hasm = GEOSCoordSeq_hasM_r(context, seq) == 1
+        hasz = getDimensions(seq, context) - hasm == 3
+        return (_coordinate_point(geom, seq, i, hasz, hasm) for i in 1:n)
+    end
+end
 GeoInterface.getgeom(t::AbstractPointTrait, geom::PreparedGeometry) = nothing
 function GeoInterface.getgeom(::PolygonTrait, geom::Polygon, i::Int)
     if i == 1
@@ -94,11 +191,7 @@ end
 
 GI.convert(::Type{Point}, ::PointTrait, geom::Point; context = nothing) = geom
 function GI.convert(::Type{Point}, ::PointTrait, geom; context = get_global_context())
-    if GI.is3d(geom)
-        return Point(GI.x(geom), GI.y(geom), GI.z(geom), context)
-    else
-        return Point(GI.x(geom), GI.y(geom), context)
-    end
+    return Point(createPoint(_geom_to_coord_seq(geom, context), context), context)
 end
 GI.convert(::Type{MultiPoint}, ::MultiPointTrait, geom::MultiPoint; context = nothing) =
     geom
@@ -108,7 +201,11 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    points = Point[GI.convert(Point, PointTrait(), p; context) for p in GI.getpoint(t, geom)]
+    hasz, hasm = GI.is3d(geom), GI.ismeasured(geom)
+    points = Point[
+        GI.convert(Point, PointTrait(), GI.Point{hasz,hasm}(p); context)
+        for p in GI.getpoint(t, geom)
+    ]
     return MultiPoint(points, context)
 end
 GI.convert(::Type{LineString}, ::LineStringTrait, geom::LineString; context = nothing) =
@@ -147,16 +244,21 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
+    hasz, hasm = GI.is3d(geom), GI.ismeasured(geom)
     linestrings = LineString[
-        GI.convert(LineString, LineStringTrait(), g; context) for g in getgeom(geom)
+        GI.convert(LineString, LineStringTrait(), GI.LineString{hasz,hasm}(g); context)
+        for g in getgeom(geom)
     ]
     return MultiLineString(linestrings, context)
 end
 GI.convert(::Type{Polygon}, ::PolygonTrait, geom::Polygon; context = nothing) = geom
 function GI.convert(::Type{Polygon}, ::PolygonTrait, geom; context = get_global_context())
-    exterior = GI.convert(LinearRing, GI.LinearRingTrait(), GI.getexterior(geom); context)
+    hasz, hasm = GI.is3d(geom), GI.ismeasured(geom)
+    exterior = GI.convert(LinearRing, GI.LinearRingTrait(),
+        GI.LinearRing{hasz,hasm}(GI.getexterior(geom)); context)
     holes = LinearRing[
-        GI.convert(LinearRing, GI.LinearRingTrait(), g; context) for g in GI.gethole(geom)
+        GI.convert(LinearRing, GI.LinearRingTrait(), GI.LinearRing{hasz,hasm}(g); context)
+        for g in GI.gethole(geom)
     ]
     return Polygon(exterior, holes, context)
 end
@@ -172,8 +274,11 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    polygons =
-        Polygon[GI.convert(Polygon, PolygonTrait(), g; context) for g in GI.getgeom(geom)]
+    hasz, hasm = GI.is3d(geom), GI.ismeasured(geom)
+    polygons = Polygon[
+        GI.convert(Polygon, PolygonTrait(), GI.Polygon{hasz,hasm}(g); context)
+        for g in GI.getgeom(geom)
+    ]
     return MultiPolygon(polygons, context)
 end
 GI.convert(
@@ -211,16 +316,24 @@ function GI.convert(
 end
 
 function _geom_to_coord_seq(geom, context)
-    npoint = GI.npoint(geom)
-    ndim = GI.is3d(geom) ? 3 : 2
-    seq = createCoordSeq(npoint, context; ndim)
-    for (i, p) in enumerate(GI.getpoint(geom))
-        if ndim == 2
-            setCoordSeq!(seq, i, (GI.x(p), GI.y(p)), context)
-        else
-            setCoordSeq!(seq, i, (GI.x(p), GI.y(p), GI.z(p)), context)
+    hasz, hasm = GI.is3d(geom), GI.ismeasured(geom)
+    ispoint = GI.geomtrait(geom) isa AbstractPointTrait
+    points = ispoint ? (geom,) : GI.getpoint(geom)
+    ndim = 2 + hasz + hasm
+    coords = Float64[]
+    sizehint!(coords, (ispoint ? 1 : GI.npoint(geom)) * ndim)
+    for p in points
+        push!(coords, GI.x(p), GI.y(p))
+        hasz && push!(coords, GI.z(p))
+        # Curve wrappers can yield raw XYM tuples/vectors without point-level flags.
+        # The parent layout identifies which ordinate is M in that case.
+        if hasm
+            measure = p isa Union{Tuple,AbstractVector} ? GI.getcoord(p, ndim) : GI.m(p)
+            push!(coords, measure)
         end
     end
+    seq = GEOSCoordSeq_copyFromBuffer_r(context, coords, length(coords) ÷ ndim, hasz, hasm)
+    seq == C_NULL && error("LibGEOS: Error creating coordinate sequence")
     return seq
 end
 
@@ -383,3 +496,12 @@ end
 # LibGEOS always uses Float64 for coordinates
 GeoInterface.coordtype(::GeoInterface.AbstractGeometryTrait, ::AbstractGeometry) = Float64
 GeoInterface.coordtype(::GeoInterface.PointTrait, ::AbstractGeometry) = Float64
+
+# Reconstruct lines/rings/multipoints directly from the value points returned above.
+for T in (:LineString, :LinearRing, :MultiPoint)
+    @eval function $T(points::AbstractVector{CoordinatePoint},
+                     context::GEOSContext = get_global_context())
+        geom = GI.$T(points)
+        return GI.convert($T, GI.geomtrait(geom), geom; context)
+    end
+end

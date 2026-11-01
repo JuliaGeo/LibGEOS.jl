@@ -133,7 +133,8 @@ mutable struct LineString <: AbstractGeometry
         line
     end
     function LineString(coords::Vector{Point}, context::GEOSContext = get_global_context())
-        line = new(createLineString(coords, context), context)
+        seq = _geom_to_coord_seq(GI.LineString(coords), context)
+        line = new(createLineString(seq, context), context)
         finalizer(destroyGeom, line)
         line
     end
@@ -637,5 +638,21 @@ function geomFromGEOS(
         return GeometryCollection(ptr, context)
     else
         throw(ErrorException("Geometric type with code $id not implemented."))
+    end
+end
+
+# Three-tuples default to XYZ; hasm=true selects XYM. Four-tuples are XYZM.
+function Point(coords::NTuple{N,Real}, context::GEOSContext = get_global_context();
+               hasm::Bool = N == 4, hasz::Bool = N - hasm == 3) where {N}
+    N == 2 + hasz + hasm || throw(ArgumentError("coordinate count does not match Z/M flags"))
+    return GI.convert(Point, PointTrait(), GI.Point{hasz,hasm}(coords); context)
+end
+for T in (:LineString, :LinearRing, :MultiPoint)
+    @eval function $T(coords::AbstractVector{<:NTuple{N,Real}},
+                     context::GEOSContext = get_global_context();
+                     hasm::Bool = N == 4, hasz::Bool = N - hasm == 3) where {N}
+        N == 2 + hasz + hasm || throw(ArgumentError("coordinate count does not match Z/M flags"))
+        geom = GI.$T{hasz,hasm}(coords)
+        return GI.convert($T, GI.geomtrait(geom), geom; context)
     end
 end

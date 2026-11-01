@@ -79,8 +79,8 @@ function createCoordSeq(
     context::GEOSContext = get_global_context();
     ndim::Integer = 2,
 )
-    @assert ndim >= 2
-    result = GEOSCoordSeq_create_r(context, size, ndim)
+    @assert 2 <= ndim <= 4
+    result = GEOSCoordSeq_createWithDimensions_r(context, size, ndim >= 3, ndim == 4)
     if result == C_NULL
         error("LibGEOS: Error in GEOSCoordSeq_create")
     end
@@ -194,9 +194,15 @@ function setCoordSeq!(
             "LibGEOS: i=$i is out of bounds for CoordSeq with size=$(getSize(ptr, context))",
         )
     end
+    hasm = GEOSCoordSeq_hasM_r(context, ptr) == 1
+    @assert ndim == getDimensions(ptr, context)
     setX!(ptr, i, Float64(coords[1]), context)
     setY!(ptr, i, Float64(coords[2]), context)
-    ndim >= 3 && setZ!(ptr, i, Float64(coords[3]), context)
+    ndim - hasm == 3 && setZ!(ptr, i, Float64(coords[3]), context)
+    if hasm
+        GEOSCoordSeq_setM_r(context, ptr, i - 1, Float64(coords[end])) == 1 ||
+            error("LibGEOS: Error in GEOSCoordSeq_setM")
+    end
     ptr
 end
 
@@ -1194,6 +1200,14 @@ function hasZ(obj::Geometry, context::GEOSContext = get_context(obj))
 end
 hasZ(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
     hasZ(obj.ownedby, context)
+
+function hasM(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSHasM_r(context, obj)
+    result == 0x02 && error("LibGEOS: Error in GEOSHasM")
+    return result != 0x00
+end
+hasM(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
+    hasM(obj.ownedby, context)
 
 # Call only on LINESTRING (return 2 on exception, 1 on true, 0 on false)
 function isClosed(obj::LineString, context::GEOSContext = get_context(obj))
