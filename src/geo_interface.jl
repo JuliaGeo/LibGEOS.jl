@@ -108,7 +108,7 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    points = Point[GI.convert(Point, PointTrait(), p) for p in GI.getpoint(t, geom)]
+    points = Point[GI.convert(Point, PointTrait(), p; context) for p in GI.getpoint(t, geom)]
     return MultiPoint(points, context)
 end
 GI.convert(::Type{LineString}, ::LineStringTrait, geom::LineString; context = nothing) =
@@ -150,7 +150,7 @@ function GI.convert(
     linestrings = LineString[
         GI.convert(LineString, LineStringTrait(), g; context) for g in getgeom(geom)
     ]
-    return MultiLineString(linestrings)
+    return MultiLineString(linestrings, context)
 end
 GI.convert(::Type{Polygon}, ::PolygonTrait, geom::Polygon; context = nothing) = geom
 function GI.convert(::Type{Polygon}, ::PolygonTrait, geom; context = get_global_context())
@@ -158,7 +158,7 @@ function GI.convert(::Type{Polygon}, ::PolygonTrait, geom; context = get_global_
     holes = LinearRing[
         GI.convert(LinearRing, GI.LinearRingTrait(), g; context) for g in GI.gethole(geom)
     ]
-    return Polygon(exterior, holes)
+    return Polygon(exterior, holes, context)
 end
 GI.convert(
     ::Type{MultiPolygon},
@@ -174,7 +174,7 @@ function GI.convert(
 )
     polygons =
         Polygon[GI.convert(Polygon, PolygonTrait(), g; context) for g in GI.getgeom(geom)]
-    return MultiPolygon(polygons)
+    return MultiPolygon(polygons, context)
 end
 GI.convert(
     ::Type{GeometryCollection},
@@ -196,7 +196,7 @@ function GI.convert(
         # `GI.convert(Mod, x)` does not allow kwargs.
         GI.convert(lg, t, g; context)
     end
-    return GeometryCollection(geometries)
+    return GeometryCollection(geometries, context)
 end
 
 function GI.convert(
@@ -330,8 +330,6 @@ for f in (
     :envelope,
     :minimumRotatedRectangle,
     :convexhull,
-    :concavehull,
-    :concavehull_of_polygons,
     :boundary,
     :unaryUnion,
     :pointOnSurface,
@@ -346,6 +344,17 @@ for f in (
 )
     # We convert the geometry to a GEOS geometry and forward it to the geos method
     @eval $f(geom, args...; kw...) = $f(to_geos(geom), args...; kw...)
+    @eval $f(geom::AbstractGeometry, args...; kw...) =
+        throw(MethodError($f, (geom, args...)))
+end
+
+# Concave hulls accept a context keyword, including for input conversion.
+for f in (:concavehull, :concavehull_of_polygons)
+    @eval function $f(geom, args...; context::GEOSContext = get_global_context(), kw...)
+        trait = GI.geomtrait(geom)
+        obj = GI.convert(geointerface_geomtype(trait), trait, geom; context)
+        return $f(obj, args...; context, kw...)
+    end
     @eval $f(geom::AbstractGeometry, args...; kw...) =
         throw(MethodError($f, (geom, args...)))
 end
