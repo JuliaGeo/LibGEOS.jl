@@ -330,8 +330,6 @@ for f in (
     :envelope,
     :minimumRotatedRectangle,
     :convexhull,
-    :concavehull,
-    :concavehull_of_polygons,
     :boundary,
     :unaryUnion,
     :pointOnSurface,
@@ -346,6 +344,17 @@ for f in (
 )
     # We convert the geometry to a GEOS geometry and forward it to the geos method
     @eval $f(geom, args...; kw...) = $f(to_geos(geom), args...; kw...)
+    @eval $f(geom::AbstractGeometry, args...; kw...) =
+        throw(MethodError($f, (geom, args...)))
+end
+
+# Concave hulls accept a context keyword, including for input conversion.
+for f in (:concavehull, :concavehull_of_polygons)
+    @eval function $f(geom, args...; context::GEOSContext = get_global_context(), kw...)
+        trait = GI.geomtrait(geom)
+        obj = GI.convert(geointerface_geomtype(trait), trait, geom; context)
+        return $f(obj, args...; context, kw...)
+    end
     @eval $f(geom::AbstractGeometry, args...; kw...) =
         throw(MethodError($f, (geom, args...)))
 end

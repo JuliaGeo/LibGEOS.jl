@@ -58,6 +58,9 @@ end
         @test LibGEOS.get_context(MultiPoint([Point(1, 2, ctx)])) === ctx
         poly = readgeom("POLYGON ((0 0, 1 0, 1 1, 0 0))", ctx)
         @test LibGEOS.get_context(MultiPolygon([poly])) === ctx
+        @test LibGEOS.get_context(LibGEOS.concavehull(geoms[1]; ratio = 0.3, context = ctx)) === ctx
+        @test LibGEOS.get_context(LibGEOS.concavehull(geoms[1]; length_ratio = 1.0, context = ctx)) === ctx
+        @test LibGEOS.get_context(LibGEOS.concavehull_of_polygons(geoms[3], 0.3; context = ctx)) === ctx
         for g in geoms
             t = GeoInterface.geomtrait(g)
             T = LibGEOS.geointerface_geomtype(t)
