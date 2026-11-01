@@ -375,7 +375,11 @@ const LG = LibGEOS
         geom = GeoInterface.convert(Polygon, GeoInterface.Polygon([coords3d]))
         @test GeoInterface.coordinates(geom) == [coords3d]
         # measured coordinates
-        xym = [(X = 0.0, Y = 0.0, M = 4.0), (X = 0.0, Y = 10.0, M = 5.0), (X = 0.0, Y = 0.0, M = 4.0)]
+        xym = [
+            (X = 0.0, Y = 0.0, M = 4.0),
+            (X = 0.0, Y = 10.0, M = 5.0),
+            (X = 0.0, Y = 0.0, M = 4.0),
+        ]
         geom = GeoInterface.convert(LineString, GeoInterface.LineString(xym))
         @test GeoInterface.coordinates(geom) == [[0, 0, 4], [0, 10, 5], [0, 0, 4]]
         @test !LibGEOS.hasZ(geom)
@@ -385,6 +389,12 @@ const LG = LibGEOS
         geom = GeoInterface.convert(Point, GeoInterface.Point(X = 1.0, Y = 2.0, M = 4.0))
         @test GeoInterface.coordinates(geom) == [1, 2, 4]
         @test !LibGEOS.hasZ(geom)
+        # M is dropped if the points of a measured geometry don't have it, as in ArchGDAL
+        xy = [(0.0, 0.0), (0.0, 10.0), (10.0, 10.0), (0.0, 0.0)]
+        geom = GeoInterface.convert(LineString, GeoInterface.LineString{false,true}(xy))
+        @test GeoInterface.coordinates(geom) == [[0, 0], [0, 10], [10, 10], [0, 0]]
+        geom = GeoInterface.convert(Polygon, GeoInterface.Polygon{false,true}([xy]))
+        @test GeoInterface.coordinates(geom) == [[[0, 0], [0, 10], [10, 10], [0, 0]]]
         for f in one_arg_functions
             @test f(LibGEOS.LineString(coords)) == f(GeoInterface.LineString(coords))
         end

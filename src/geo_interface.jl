@@ -225,13 +225,13 @@ function _coord_seq(points, npoint, hasz, hasm, context)
     end
     return seq
 end
-_geom_to_coord_seq(geom, context) = _coord_seq(
-    GI.getpoint(geom),
-    GI.npoint(geom),
-    GI.is3d(geom),
-    GI.ismeasured(geom),
-    context,
-)
+function _geom_to_coord_seq(geom, context)
+    npoint = GI.npoint(geom)
+    # Keep M only if the points have it.
+    # ArchGDAL lines are measured, but their points aren't.
+    hasm = GI.ismeasured(geom) && npoint > 0 && GI.ismeasured(GI.getpoint(geom, 1))
+    return _coord_seq(GI.getpoint(geom), npoint, GI.is3d(geom), hasm, context)
+end
 
 GeoInterface.distance(
     ::AbstractGeometryTrait,
