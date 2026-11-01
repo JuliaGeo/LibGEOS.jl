@@ -100,14 +100,21 @@ function GI.convert(::Type{Point}, ::PointTrait, geom; context = get_global_cont
         return Point(GI.x(geom), GI.y(geom), context)
     end
 end
-# Convert `geom` to a LibGEOS `T` and return its pointer, which the parent geometry
-# being built takes over. Converting each part and copying it into the parent would
-# leave the parts to the garbage collector, which doesn't see GEOS memory.
-function _convert_to_ptr(T, trait, geom, context)
+# Parent geometries are built from their converted parts with `_convert_part` and
+# `_take_ptr`. Copying the parts into the parent instead would leave them to the
+# garbage collector, which doesn't see GEOS memory. All parts are converted before
+# any pointer is taken, so if a part fails to convert, the others are still freed.
+
+# Convert `geom` to a new LibGEOS `T`, cloning it if it already is one.
+function _convert_part(T, trait, geom, context)
     converted = GI.convert(T, trait, geom; context)
-    converted === geom && return cloneGeom(geom, context)
-    ptr = converted.ptr
-    converted.ptr = C_NULL  # so that its finalizer doesn't free the part
+    return converted === geom ? T(cloneGeom(geom, context), context) : converted
+end
+
+# Take the pointer of a converted part, which the parent geometry takes over.
+function _take_ptr(part)
+    ptr = part.ptr
+    part.ptr = C_NULL  # so that its finalizer doesn't free the part
     return ptr
 end
 
@@ -119,9 +126,9 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    points =
-        GEOSGeom[_convert_to_ptr(Point, PointTrait(), p, context) for p in GI.getpoint(t, geom)]
-    return MultiPoint(createCollection(GEOS_MULTIPOINT, points, context), context)
+    points = [_convert_part(Point, PointTrait(), p, context) for p in GI.getpoint(t, geom)]
+    ptrs = GEOSGeom[_take_ptr(p) for p in points]
+    return MultiPoint(createCollection(GEOS_MULTIPOINT, ptrs, context), context)
 end
 GI.convert(::Type{LineString}, ::LineStringTrait, geom::LineString; context = nothing) =
     geom
@@ -159,21 +166,18 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    linestrings = GEOSGeom[
-        _convert_to_ptr(LineString, LineStringTrait(), g, context) for g in getgeom(geom)
-    ]
-    return MultiLineString(
-        createCollection(GEOS_MULTILINESTRING, linestrings, context),
-        context,
-    )
+    linestrings =
+        [_convert_part(LineString, LineStringTrait(), g, context) for g in getgeom(geom)]
+    ptrs = GEOSGeom[_take_ptr(g) for g in linestrings]
+    return MultiLineString(createCollection(GEOS_MULTILINESTRING, ptrs, context), context)
 end
 GI.convert(::Type{Polygon}, ::PolygonTrait, geom::Polygon; context = nothing) = geom
 function GI.convert(::Type{Polygon}, ::PolygonTrait, geom; context = get_global_context())
-    exterior = _convert_to_ptr(LinearRing, LinearRingTrait(), GI.getexterior(geom), context)
-    holes = GEOSGeom[
-        _convert_to_ptr(LinearRing, LinearRingTrait(), g, context) for g in GI.gethole(geom)
-    ]
-    return Polygon(createPolygon(exterior, holes, context), context)
+    exterior = _convert_part(LinearRing, LinearRingTrait(), GI.getexterior(geom), context)
+    holes =
+        [_convert_part(LinearRing, LinearRingTrait(), g, context) for g in GI.gethole(geom)]
+    ptrs = GEOSGeom[_take_ptr(g) for g in holes]
+    return Polygon(createPolygon(_take_ptr(exterior), ptrs, context), context)
 end
 GI.convert(
     ::Type{MultiPolygon},
@@ -187,10 +191,10 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    polygons = GEOSGeom[
-        _convert_to_ptr(Polygon, PolygonTrait(), g, context) for g in GI.getgeom(geom)
-    ]
-    return MultiPolygon(createCollection(GEOS_MULTIPOLYGON, polygons, context), context)
+    polygons =
+        [_convert_part(Polygon, PolygonTrait(), g, context) for g in GI.getgeom(geom)]
+    ptrs = GEOSGeom[_take_ptr(g) for g in polygons]
+    return MultiPolygon(createCollection(GEOS_MULTIPOLYGON, ptrs, context), context)
 end
 GI.convert(
     ::Type{GeometryCollection},
@@ -204,12 +208,13 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    geometries = GEOSGeom[
-        _convert_to_ptr(geointerface_geomtype(GI.trait(g)), GI.trait(g), g, context) for
+    geometries = [
+        _convert_part(geointerface_geomtype(GI.trait(g)), GI.trait(g), g, context) for
         g in GI.getgeom(geom)
     ]
+    ptrs = GEOSGeom[_take_ptr(g) for g in geometries]
     return GeometryCollection(
-        createCollection(GEOS_GEOMETRYCOLLECTION, geometries, context),
+        createCollection(GEOS_GEOMETRYCOLLECTION, ptrs, context),
         context,
     )
 end

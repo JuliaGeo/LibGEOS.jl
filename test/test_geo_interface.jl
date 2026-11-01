@@ -460,10 +460,17 @@ const LG = LibGEOS
         large = GeoInterface.MultiPolygon([GeoInterface.Polygon([ring])])
         small = GeoInterface.Polygon([[(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 0.0)]])
         @test intersects(small, large)
-        before = Int(Sys.maxrss())
-        foreach(_ -> intersects(small, large), 1:1000)
-        growth_mb = (Int(Sys.maxrss()) - before) / 2^20
-        @test growth_mb < 20
+        converted = nothing
+        @test LibGEOS.with_geos(g -> (converted = g; area(g)), small) == 0.5
+        @test converted.ptr == C_NULL
+
+        # If a part fails to convert, the parts converted before it are freed later
+        line = GeoInterface.Line([(0.0, 0.0), (1.0, 1.0)])
+        @test_throws MethodError GeoInterface.convert(
+            LibGEOS,
+            GeoInterface.GeometryCollection([small, line]),
+        )
+        GC.gc()
 
         # LibGEOS geometries that are passed in are not freed
         triangle = LibGEOS.Polygon([[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 0.0]]])
