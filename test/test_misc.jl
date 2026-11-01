@@ -16,6 +16,12 @@ import GeoInterface
     Point(1, 2, 3, LibGEOS.GEOSContext())
     LibGEOS.allow_global_context!(false) do
         @test_throws ErrorException Point(1, 2, 3)
+        context = LibGEOS.GEOSContext()
+        point = Point(1, 2, 3, context)
+        @test GeoInterface.coordinates(point) == [1, 2, 3]
+        @test GeoInterface.getcoord(point, 2) == 2
+        @test GeoInterface.coordinates(LineString([[1.0, 2.0], [3.0, 4.0]], context)) ==
+              [[1, 2], [3, 4]]
     end
     Point(1, 2, 3)
 end
