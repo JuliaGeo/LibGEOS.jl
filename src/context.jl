@@ -13,19 +13,29 @@ involve objects that live in the context passed to the operation.
 """
 mutable struct GEOSContext
     ptr::Ptr{Cvoid}  # GEOSContextHandle_t
+    errormessage::String  # set by geosjl_errorhandler, thrown by geos_check
 
     function GEOSContext()
-        context = new(GEOS_init_r())
+        context = new(GEOS_init_r(), "")
         GEOSContext_setNoticeHandler_r(context, C_NULL)
         GEOSContext_setErrorMessageHandler_r(
             context,
             @cfunction(geosjl_errorhandler, Cvoid, (Cstring, Ptr{Cvoid})),
-            C_NULL,
+            pointer_from_objref(context),
         )
         finalizer(context -> (GEOS_finish_r(context); context.ptr = C_NULL), context)
         context
     end
 end
+
+"Throw the error that GEOS reported to `context` during the last call, if any."
+function geos_check(result, context::GEOSContext)
+    isempty(context.errormessage) && return result
+    message = context.errormessage
+    context.errormessage = ""
+    throw(GEOSError(message))
+end
+geos_check(result, handle) = result
 
 function Base.:(==)(c1::GEOSContext, c2::GEOSContext)
     (c1.ptr == c2.ptr)

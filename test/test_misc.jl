@@ -242,3 +242,21 @@ end
     @test length(s) < 30
     @test occursin("Polygon(...)", s)
 end
+
+@testset "GEOS errors don't leak memory" begin
+    # Throwing a Julia exception from inside GEOS leaked its C++ exception,
+    # about 250 bytes per error.
+    reader = LibGEOS.WKTReader(LibGEOS.get_global_context())
+    readerror() =
+        try
+            readgeom("POINT (1 2", reader)
+        catch e
+            e
+        end
+    @test readerror() isa LibGEOS.GEOSError
+    foreach(_ -> readerror(), 1:100_000)
+    before = Int(Sys.maxrss())
+    foreach(_ -> readerror(), 1:200_000)
+    growth_mb = (Int(Sys.maxrss()) - before) / 2^20
+    @test growth_mb < 20
+end
