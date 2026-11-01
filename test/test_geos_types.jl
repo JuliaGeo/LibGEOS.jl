@@ -452,11 +452,9 @@ end
     @test MultiPolygon(LibGEOS.cloneGeom(polygon)) == MultiPolygon([polygon])
 
     # The part becomes part of the multi geometry, instead of being copied and leaked
-    ring = [[10cos(t), 10sin(t)] for t in range(0, 2pi, 10_000)]
-    ring[end] = ring[1]
-    large = LibGEOS.Polygon([ring])
-    before = Int(Sys.maxrss())
-    foreach(_ -> finalize(MultiPolygon(LibGEOS.cloneGeom(large))), 1:500)
-    growth_mb = (Int(Sys.maxrss()) - before) / 2^20
-    @test growth_mb < 20
+    for (T, geom) in ((MultiPoint, point), (MultiLineString, line), (MultiPolygon, polygon))
+        part = LibGEOS.cloneGeom(geom)
+        multi = T(part)
+        @test LibGEOS.GEOSGetGeometryN_r(LibGEOS.get_context(multi), multi, 0) == part
+    end
 end
