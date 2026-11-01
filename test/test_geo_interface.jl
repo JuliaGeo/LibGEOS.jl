@@ -93,6 +93,13 @@ const LG = LibGEOS
     @inferred GeoInterface.ngeom(ls)
     @inferred GeoInterface.getgeom(ls)
     @inferred GeoInterface.coordinates(ls)
+    @test GeoInterface.coordinates(readgeom("LINESTRING Z (1 2 3, 5 6 7)")) ==
+          [[1, 2, 3], [5, 6, 7]]
+    @test GeoInterface.coordinates(readgeom("LINESTRING M (1 2 4, 5 6 8)")) ==
+          [[1, 2, 4], [5, 6, 8]]
+    @test GeoInterface.coordinates(readgeom("LINESTRING ZM (1 2 3 4, 5 6 7 8)")) ==
+          [[1, 2, 3, 4], [5, 6, 7, 8]]
+    @test GeoInterface.coordinates(readgeom("LINESTRING EMPTY")) == Vector{Float64}[]
 
     ls = LibGEOS.readgeom("LINESTRING EMPTY")
     @test GeoInterface.coordinates(ls) == []
