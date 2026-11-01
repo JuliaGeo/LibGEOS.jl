@@ -458,4 +458,33 @@ const LG = LibGEOS
 
     end
 
+    @testset "Geometries converted for an operation are freed" begin
+        # https://github.com/JuliaGeo/LibGEOS.jl/issues/206
+        # The garbage collector doesn't see GEOS memory, so converted geometries
+        # that waited for it made memory grow in a loop.
+        ring = [(10cos(t), 10sin(t)) for t in range(0, 2pi, 10_000)]
+        ring[end] = ring[1]
+        large = GeoInterface.MultiPolygon([GeoInterface.Polygon([ring])])
+        small = GeoInterface.Polygon([[(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 0.0)]])
+        @test intersects(small, large)
+        converted = nothing
+        @test LibGEOS.with_geos(g -> (converted = g; area(g)), small) == 0.5
+        @test converted.ptr == C_NULL
+
+        # If a part fails to convert, the parts converted before it are freed later
+        line = GeoInterface.Line([(0.0, 0.0), (1.0, 1.0)])
+        @test_throws MethodError GeoInterface.convert(
+            LibGEOS,
+            GeoInterface.GeometryCollection([small, line]),
+        )
+        GC.gc()
+
+        # LibGEOS geometries that are passed in are not freed
+        triangle = LibGEOS.Polygon([[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 0.0]]])
+        @test intersects(triangle, large)
+        @test GeoInterface.convert(LibGEOS, GeoInterface.MultiPolygon([triangle])) isa
+              MultiPolygon
+        @test area(triangle) == 0.5
+    end
+
 end
