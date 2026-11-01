@@ -112,11 +112,8 @@ end
 
 GI.convert(::Type{Point}, ::PointTrait, geom::Point; context = nothing) = geom
 function GI.convert(::Type{Point}, ::PointTrait, geom; context = get_global_context())
-    if GI.is3d(geom)
-        return Point(GI.x(geom), GI.y(geom), GI.z(geom), context)
-    else
-        return Point(GI.x(geom), GI.y(geom), context)
-    end
+    seq = _coord_seq((geom,), 1, GI.is3d(geom), GI.ismeasured(geom), context)
+    return Point(createPoint(seq, context), context)
 end
 GI.convert(::Type{MultiPoint}, ::MultiPointTrait, geom::MultiPoint; context = nothing) =
     geom
@@ -228,18 +225,30 @@ function GI.convert(
     )
 end
 
-function _geom_to_coord_seq(geom, context)
-    npoint = GI.npoint(geom)
-    ndim = GI.is3d(geom) ? 3 : 2
-    seq = createCoordSeq(npoint, context; ndim)
-    for (i, p) in enumerate(GI.getpoint(geom))
-        if ndim == 2
-            setCoordSeq!(seq, i, (GI.x(p), GI.y(p)), context)
-        else
-            setCoordSeq!(seq, i, (GI.x(p), GI.y(p), GI.z(p)), context)
-        end
+# Collect the coordinates of `points` and copy them to GEOS in one call
+function _coord_seq(points, npoint, hasz, hasm, context)
+    ndim = 2 + hasz + hasm
+    coords = Vector{Float64}(undef, ndim * npoint)
+    i = 0
+    for p in points
+        coords[i+1] = GI.x(p)
+        coords[i+2] = GI.y(p)
+        hasz && (coords[i+3] = GI.z(p))
+        hasm && (coords[i+ndim] = GI.m(p))
+        i += ndim
+    end
+    seq = GEOSCoordSeq_copyFromBuffer_r(context, coords, i ÷ ndim, hasz, hasm)
+    if seq == C_NULL
+        error("LibGEOS: Error in GEOSCoordSeq_copyFromBuffer")
     end
     return seq
+end
+function _geom_to_coord_seq(geom, context)
+    npoint = GI.npoint(geom)
+    # Keep M only if the points have it.
+    # ArchGDAL lines are measured, but their points aren't.
+    hasm = GI.ismeasured(geom) && npoint > 0 && GI.ismeasured(GI.getpoint(geom, 1))
+    return _coord_seq(GI.getpoint(geom), npoint, GI.is3d(geom), hasm, context)
 end
 
 GeoInterface.distance(
