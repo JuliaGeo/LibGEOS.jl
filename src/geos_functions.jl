@@ -1195,6 +1195,14 @@ end
 hasZ(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
     hasZ(obj.ownedby, context)
 
+function hasM(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSHasM_r(context, obj)
+    result == 0x02 && error("LibGEOS: Error in GEOSHasM")
+    return result != 0x00
+end
+hasM(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
+    hasM(obj.ownedby, context)
+
 # Call only on LINESTRING (return 2 on exception, 1 on true, 0 on false)
 function isClosed(obj::LineString, context::GEOSContext = get_context(obj))
     result = GEOSisClosed_r(context, obj)

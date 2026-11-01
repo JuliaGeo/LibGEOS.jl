@@ -68,6 +68,14 @@ Shapefile.write("myfile.shp", libgeos_geometry)
 GeoInterface methods
 -----------------------
 
+GeoInterface point access (`getpoint` and `getgeom`) on lines and rings returns
+lightweight value points that retain XY, XYZ, XYM or XYZM coordinates. For the
+0.10 release this changes the return type from `LibGEOS.Point`; use GeoInterface
+accessors or `getGeomX/Y/Z`, and call `LibGEOS.Point(p)` when a GEOS-backed point
+is required. `LibGEOS.getPoint(line, i)` continues to return a GEOS-backed point.
+`Point` accepts coordinate tuples, and `LineString`, `LinearRing` and `MultiPoint`
+also accept vectors of XY or XYZ tuples.
+
 GeoInterace.jl OGC standards methods work on LibGEOS objects:
 
 - `GeoInterface.distance`

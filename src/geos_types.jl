@@ -645,3 +645,12 @@ function geomFromGEOS(
         throw(ErrorException("Geometric type with code $id not implemented."))
     end
 end
+
+# Tuples use the same XY/XYZ convention as coordinate vectors.
+Point(coords::NTuple{N,Real}, context::GEOSContext = get_global_context()) where {N} =
+    Point(collect(Float64, coords), context)
+for T in (:LineString, :LinearRing, :MultiPoint)
+    @eval $T(coords::AbstractVector{<:NTuple{N,Real}},
+             context::GEOSContext = get_global_context()) where {N} =
+        $T([collect(Float64, p) for p in coords], context)
+end

@@ -81,7 +81,7 @@ const LG = LibGEOS
     @test GeoInterface.geomtrait(ls) == LineStringTrait()
     p = GeoInterface.ngeom(ls) == 4
     p = GeoInterface.getgeom(ls, 3)
-    @test p isa LibGEOS.Point
+    @test isbitstype(typeof(p))
     @test GeoInterface.coordinates(p) == [9, 2]
     @test GeoInterface.testgeometry(ls)
     @test GeoInterface.is3d(ls) == false
@@ -93,6 +93,37 @@ const LG = LibGEOS
     @inferred GeoInterface.ngeom(ls)
     @inferred GeoInterface.getgeom(ls)
     @inferred GeoInterface.coordinates(ls)
+
+    for (dims, vertex, names) in (("", "1 2", (:X, :Y)),
+                                  ("Z", "1 2 3", (:X, :Y, :Z)),
+                                  ("M", "1 2 4", (:X, :Y, :M)),
+                                  ("ZM", "1 2 3 4", (:X, :Y, :Z, :M)))
+        for kind in ("LINESTRING", "LINEARRING")
+            n = kind == "LINESTRING" ? 2 : 4
+            expected = parse.(Float64, split(vertex))
+            vertices = n == 2 ? [expected, expected .+ 10] :
+                       [expected, expected .+ 10, expected .+ 20, expected]
+            line = readgeom("$kind $dims ($(join(join.(vertices, " "), ",")))", LG.GEOSContext())
+            if dims == "Z" && kind == "LINESTRING"
+                Plots.plot(line)
+                Makie.plot(line)
+            end
+            point = @inferred GI.getpoint(line, 1)
+            @test GI.coordinates(point) == expected == GI.coordinates(line)[1]
+            @test (GI.coordnames(point), GI.is3d(point), GI.ismeasured(point)) ==
+                  (names, :Z in names, :M in names)
+            @test GI.coordinates.(collect(GI.getpoint(line))) == vertices == GI.coordinates(line)
+            @test GI.coordinates(Point(point)) == expected
+            @test LG.getGeomX(point) == 1 && GI.testgeometry(point)
+            @test_throws BoundsError GI.getpoint(line, 0)
+            @test_throws BoundsError GI.getpoint(line, n + 1)
+            @test_throws BoundsError GI.getcoord(point, length(names) + 1)
+        end
+    end
+    @test GI.coordinates(LineString([(1, 2), (3, 4)])) == [[1, 2], [3, 4]]
+    @test GI.coordinates(LinearRing([(1, 2), (3, 4), (5, 6), (1, 2)]))[1] == [1, 2]
+    @test GI.coordinates(MultiPoint([(1, 2, 3), (4, 5, 6)]))[1] == [1, 2, 3]
+    @test GI.coordinates(Point((1, 2, 3))) == [1, 2, 3]
 
     ls = LibGEOS.readgeom("LINESTRING EMPTY")
     @test GeoInterface.coordinates(ls) == []
@@ -120,7 +151,7 @@ const LG = LibGEOS
     @test GeoInterface.geomtrait(lr) == LinearRingTrait()
     @test GeoInterface.ngeom(lr) == 5
     p = GeoInterface.getgeom(lr, 3)
-    @test p isa LibGEOS.Point
+    @test isbitstype(typeof(p))
     @test GeoInterface.coordinates(p) == [9, 2]
     @test GeoInterface.is3d(lr) == false
     @test GeoInterface.testgeometry(lr)
