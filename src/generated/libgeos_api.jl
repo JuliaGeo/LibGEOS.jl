@@ -113,11 +113,17 @@ function GEOS_interruptRegisterCallback(cb)
 end
 
 function GEOSContext_setInterruptCallback_r(extHandle, cb, userData)
-    @ccall libgeos.GEOSContext_setInterruptCallback_r(
-        extHandle::GEOSContextHandle_t,
-        cb::Ptr{GEOSContextInterruptCallback},
-        userData::Ptr{Cvoid},
-    )::Ptr{GEOSContextInterruptCallback}
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSContext_setInterruptCallback_r(
+                extHandle::GEOSContextHandle_t,
+                cb::Ptr{GEOSContextInterruptCallback},
+                userData::Ptr{Cvoid},
+            )::Ptr{GEOSContextInterruptCallback}
+        ),
+        extHandle,
+    )
 end
 
 function GEOS_interruptRequest()
@@ -129,11 +135,17 @@ function GEOS_interruptCancel()
 end
 
 function GEOSContext_setProgressCallback_r(extHandle, cb, userData)
-    @ccall libgeos.GEOSContext_setProgressCallback_r(
-        extHandle::GEOSContextHandle_t,
-        cb::Ptr{GEOSProgressCallback},
-        userData::Ptr{Cvoid},
-    )::Ptr{GEOSProgressCallback}
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSContext_setProgressCallback_r(
+                extHandle::GEOSContextHandle_t,
+                cb::Ptr{GEOSProgressCallback},
+                userData::Ptr{Cvoid},
+            )::Ptr{GEOSProgressCallback}
+        ),
+        extHandle,
+    )
 end
 
 function GEOS_init_r()
@@ -141,337 +153,566 @@ function GEOS_init_r()
 end
 
 function GEOS_finish_r(handle)
-    @ccall libgeos.GEOS_finish_r(handle::GEOSContextHandle_t)::Cvoid
+    clear_geos_error(handle)
+    geos_check(@ccall(libgeos.GEOS_finish_r(handle::GEOSContextHandle_t)::Cvoid), handle)
 end
 
 function GEOSContext_setNoticeHandler_r(extHandle, nf)
-    @ccall libgeos.GEOSContext_setNoticeHandler_r(
-        extHandle::GEOSContextHandle_t,
-        nf::GEOSMessageHandler,
-    )::GEOSMessageHandler
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSContext_setNoticeHandler_r(
+                extHandle::GEOSContextHandle_t,
+                nf::GEOSMessageHandler,
+            )::GEOSMessageHandler
+        ),
+        extHandle,
+    )
 end
 
 function GEOSContext_setErrorHandler_r(extHandle, ef)
-    @ccall libgeos.GEOSContext_setErrorHandler_r(
-        extHandle::GEOSContextHandle_t,
-        ef::GEOSMessageHandler,
-    )::GEOSMessageHandler
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSContext_setErrorHandler_r(
+                extHandle::GEOSContextHandle_t,
+                ef::GEOSMessageHandler,
+            )::GEOSMessageHandler
+        ),
+        extHandle,
+    )
 end
 
 function GEOSContext_setNoticeMessageHandler_r(extHandle, nf, userData)
-    @ccall libgeos.GEOSContext_setNoticeMessageHandler_r(
-        extHandle::GEOSContextHandle_t,
-        nf::GEOSMessageHandler_r,
-        userData::Ptr{Cvoid},
-    )::GEOSMessageHandler_r
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSContext_setNoticeMessageHandler_r(
+                extHandle::GEOSContextHandle_t,
+                nf::GEOSMessageHandler_r,
+                userData::Ptr{Cvoid},
+            )::GEOSMessageHandler_r
+        ),
+        extHandle,
+    )
 end
 
 function GEOSContext_setErrorMessageHandler_r(extHandle, ef, userData)
-    @ccall libgeos.GEOSContext_setErrorMessageHandler_r(
-        extHandle::GEOSContextHandle_t,
-        ef::GEOSMessageHandler_r,
-        userData::Ptr{Cvoid},
-    )::GEOSMessageHandler_r
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSContext_setErrorMessageHandler_r(
+                extHandle::GEOSContextHandle_t,
+                ef::GEOSMessageHandler_r,
+                userData::Ptr{Cvoid},
+            )::GEOSMessageHandler_r
+        ),
+        extHandle,
+    )
 end
 
 function GEOSContext_setCurveToLineParams_r(extHandle, params)
-    @ccall libgeos.GEOSContext_setCurveToLineParams_r(
-        extHandle::GEOSContextHandle_t,
-        params::Ptr{GEOSCurveToLineParams},
-    )::Cvoid
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSContext_setCurveToLineParams_r(
+                extHandle::GEOSContextHandle_t,
+                params::Ptr{GEOSCurveToLineParams},
+            )::Cvoid
+        ),
+        extHandle,
+    )
 end
 
 function GEOSContext_setLineToCurveParams_r(extHandle, params)
-    @ccall libgeos.GEOSContext_setLineToCurveParams_r(
-        extHandle::GEOSContextHandle_t,
-        params::Ptr{GEOSLineToCurveParams},
-    )::Cvoid
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSContext_setLineToCurveParams_r(
+                extHandle::GEOSContextHandle_t,
+                params::Ptr{GEOSLineToCurveParams},
+            )::Cvoid
+        ),
+        extHandle,
+    )
 end
 
 function GEOSCoordSeq_create_r(handle, size, dims)
-    @ccall libgeos.GEOSCoordSeq_create_r(
-        handle::GEOSContextHandle_t,
-        size::Cuint,
-        dims::Cuint,
-    )::Ptr{GEOSCoordSequence}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_create_r(
+                handle::GEOSContextHandle_t,
+                size::Cuint,
+                dims::Cuint,
+            )::Ptr{GEOSCoordSequence}
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_createWithDimensions_r(handle, size, hasZ, hasM)
-    @ccall libgeos.GEOSCoordSeq_createWithDimensions_r(
-        handle::GEOSContextHandle_t,
-        size::Cuint,
-        hasZ::Cint,
-        hasM::Cint,
-    )::Ptr{GEOSCoordSequence}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_createWithDimensions_r(
+                handle::GEOSContextHandle_t,
+                size::Cuint,
+                hasZ::Cint,
+                hasM::Cint,
+            )::Ptr{GEOSCoordSequence}
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_copyFromBuffer_r(handle, buf, size, hasZ, hasM)
-    @ccall libgeos.GEOSCoordSeq_copyFromBuffer_r(
-        handle::GEOSContextHandle_t,
-        buf::Ptr{Cdouble},
-        size::Cuint,
-        hasZ::Cint,
-        hasM::Cint,
-    )::Ptr{GEOSCoordSequence}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_copyFromBuffer_r(
+                handle::GEOSContextHandle_t,
+                buf::Ptr{Cdouble},
+                size::Cuint,
+                hasZ::Cint,
+                hasM::Cint,
+            )::Ptr{GEOSCoordSequence}
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_copyFromArrays_r(handle, x, y, z, m, size)
-    @ccall libgeos.GEOSCoordSeq_copyFromArrays_r(
-        handle::GEOSContextHandle_t,
-        x::Ptr{Cdouble},
-        y::Ptr{Cdouble},
-        z::Ptr{Cdouble},
-        m::Ptr{Cdouble},
-        size::Cuint,
-    )::Ptr{GEOSCoordSequence}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_copyFromArrays_r(
+                handle::GEOSContextHandle_t,
+                x::Ptr{Cdouble},
+                y::Ptr{Cdouble},
+                z::Ptr{Cdouble},
+                m::Ptr{Cdouble},
+                size::Cuint,
+            )::Ptr{GEOSCoordSequence}
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_copyToBuffer_r(handle, s, buf, hasZ, hasM)
-    @ccall libgeos.GEOSCoordSeq_copyToBuffer_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        buf::Ptr{Cdouble},
-        hasZ::Cint,
-        hasM::Cint,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_copyToBuffer_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                buf::Ptr{Cdouble},
+                hasZ::Cint,
+                hasM::Cint,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_copyToArrays_r(handle, s, x, y, z, m)
-    @ccall libgeos.GEOSCoordSeq_copyToArrays_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        x::Ptr{Cdouble},
-        y::Ptr{Cdouble},
-        z::Ptr{Cdouble},
-        m::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_copyToArrays_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                x::Ptr{Cdouble},
+                y::Ptr{Cdouble},
+                z::Ptr{Cdouble},
+                m::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_clone_r(handle, s)
-    @ccall libgeos.GEOSCoordSeq_clone_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-    )::Ptr{GEOSCoordSequence}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_clone_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+            )::Ptr{GEOSCoordSequence}
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_destroy_r(handle, s)
-    @ccall libgeos.GEOSCoordSeq_destroy_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_destroy_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_hasZ_r(handle, s)
-    @ccall libgeos.GEOSCoordSeq_hasZ_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_hasZ_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_hasM_r(handle, s)
-    @ccall libgeos.GEOSCoordSeq_hasM_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_hasM_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_setX_r(handle, s, idx, val)
-    @ccall libgeos.GEOSCoordSeq_setX_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        val::Cdouble,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_setX_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                val::Cdouble,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_setY_r(handle, s, idx, val)
-    @ccall libgeos.GEOSCoordSeq_setY_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        val::Cdouble,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_setY_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                val::Cdouble,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_setZ_r(handle, s, idx, val)
-    @ccall libgeos.GEOSCoordSeq_setZ_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        val::Cdouble,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_setZ_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                val::Cdouble,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_setM_r(handle, s, idx, val)
-    @ccall libgeos.GEOSCoordSeq_setM_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        val::Cdouble,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_setM_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                val::Cdouble,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_setXY_r(handle, s, idx, x, y)
-    @ccall libgeos.GEOSCoordSeq_setXY_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        x::Cdouble,
-        y::Cdouble,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_setXY_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                x::Cdouble,
+                y::Cdouble,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_setXYZ_r(handle, s, idx, x, y, z)
-    @ccall libgeos.GEOSCoordSeq_setXYZ_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        x::Cdouble,
-        y::Cdouble,
-        z::Cdouble,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_setXYZ_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                x::Cdouble,
+                y::Cdouble,
+                z::Cdouble,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_setOrdinate_r(handle, s, idx, dim, val)
-    @ccall libgeos.GEOSCoordSeq_setOrdinate_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        dim::Cuint,
-        val::Cdouble,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_setOrdinate_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                dim::Cuint,
+                val::Cdouble,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_getX_r(handle, s, idx, val)
-    @ccall libgeos.GEOSCoordSeq_getX_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        val::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_getX_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                val::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_getY_r(handle, s, idx, val)
-    @ccall libgeos.GEOSCoordSeq_getY_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        val::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_getY_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                val::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_getZ_r(handle, s, idx, val)
-    @ccall libgeos.GEOSCoordSeq_getZ_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        val::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_getZ_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                val::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_getM_r(handle, s, idx, val)
-    @ccall libgeos.GEOSCoordSeq_getM_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        val::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_getM_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                val::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_getXY_r(handle, s, idx, x, y)
-    @ccall libgeos.GEOSCoordSeq_getXY_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        x::Ptr{Cdouble},
-        y::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_getXY_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                x::Ptr{Cdouble},
+                y::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_getXYZ_r(handle, s, idx, x, y, z)
-    @ccall libgeos.GEOSCoordSeq_getXYZ_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        x::Ptr{Cdouble},
-        y::Ptr{Cdouble},
-        z::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_getXYZ_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                x::Ptr{Cdouble},
+                y::Ptr{Cdouble},
+                z::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_getOrdinate_r(handle, s, idx, dim, val)
-    @ccall libgeos.GEOSCoordSeq_getOrdinate_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        idx::Cuint,
-        dim::Cuint,
-        val::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_getOrdinate_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                idx::Cuint,
+                dim::Cuint,
+                val::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_getSize_r(handle, s, size)
-    @ccall libgeos.GEOSCoordSeq_getSize_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        size::Ptr{Cuint},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_getSize_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                size::Ptr{Cuint},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_getDimensions_r(handle, s, dims)
-    @ccall libgeos.GEOSCoordSeq_getDimensions_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        dims::Ptr{Cuint},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_getDimensions_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                dims::Ptr{Cuint},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSCoordSeq_isCCW_r(handle, s, is_ccw)
-    @ccall libgeos.GEOSCoordSeq_isCCW_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-        is_ccw::Cstring,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoordSeq_isCCW_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+                is_ccw::Cstring,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSProject_r(handle, line, point)
-    @ccall libgeos.GEOSProject_r(
-        handle::GEOSContextHandle_t,
-        line::Ptr{GEOSGeometry},
-        point::Ptr{GEOSGeometry},
-    )::Cdouble
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSProject_r(
+                handle::GEOSContextHandle_t,
+                line::Ptr{GEOSGeometry},
+                point::Ptr{GEOSGeometry},
+            )::Cdouble
+        ),
+        handle,
+    )
 end
 
 function GEOSInterpolate_r(handle, line, d)
-    @ccall libgeos.GEOSInterpolate_r(
-        handle::GEOSContextHandle_t,
-        line::Ptr{GEOSGeometry},
-        d::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSInterpolate_r(
+                handle::GEOSContextHandle_t,
+                line::Ptr{GEOSGeometry},
+                d::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSProjectNormalized_r(handle, g, p)
-    @ccall libgeos.GEOSProjectNormalized_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        p::Ptr{GEOSGeometry},
-    )::Cdouble
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSProjectNormalized_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                p::Ptr{GEOSGeometry},
+            )::Cdouble
+        ),
+        handle,
+    )
 end
 
 function GEOSInterpolateNormalized_r(handle, g, d)
-    @ccall libgeos.GEOSInterpolateNormalized_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        d::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSInterpolateNormalized_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                d::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSBuffer_r(handle, g, width, quadsegs)
-    @ccall libgeos.GEOSBuffer_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        width::Cdouble,
-        quadsegs::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSBuffer_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                width::Cdouble,
+                quadsegs::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 @cenum GEOSBufCapStyles::UInt32 begin
@@ -487,65 +728,113 @@ end
 end
 
 function GEOSBufferParams_create_r(handle)
-    @ccall libgeos.GEOSBufferParams_create_r(
-        handle::GEOSContextHandle_t,
-    )::Ptr{GEOSBufferParams}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSBufferParams_create_r(
+                handle::GEOSContextHandle_t,
+            )::Ptr{GEOSBufferParams}
+        ),
+        handle,
+    )
 end
 
 function GEOSBufferParams_destroy_r(handle, parms)
-    @ccall libgeos.GEOSBufferParams_destroy_r(
-        handle::GEOSContextHandle_t,
-        parms::Ptr{GEOSBufferParams},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSBufferParams_destroy_r(
+                handle::GEOSContextHandle_t,
+                parms::Ptr{GEOSBufferParams},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSBufferParams_setEndCapStyle_r(handle, p, style)
-    @ccall libgeos.GEOSBufferParams_setEndCapStyle_r(
-        handle::GEOSContextHandle_t,
-        p::Ptr{GEOSBufferParams},
-        style::Cint,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSBufferParams_setEndCapStyle_r(
+                handle::GEOSContextHandle_t,
+                p::Ptr{GEOSBufferParams},
+                style::Cint,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSBufferParams_setJoinStyle_r(handle, p, joinStyle)
-    @ccall libgeos.GEOSBufferParams_setJoinStyle_r(
-        handle::GEOSContextHandle_t,
-        p::Ptr{GEOSBufferParams},
-        joinStyle::Cint,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSBufferParams_setJoinStyle_r(
+                handle::GEOSContextHandle_t,
+                p::Ptr{GEOSBufferParams},
+                joinStyle::Cint,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSBufferParams_setMitreLimit_r(handle, p, mitreLimit)
-    @ccall libgeos.GEOSBufferParams_setMitreLimit_r(
-        handle::GEOSContextHandle_t,
-        p::Ptr{GEOSBufferParams},
-        mitreLimit::Cdouble,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSBufferParams_setMitreLimit_r(
+                handle::GEOSContextHandle_t,
+                p::Ptr{GEOSBufferParams},
+                mitreLimit::Cdouble,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSBufferParams_setQuadrantSegments_r(handle, p, quadSegs)
-    @ccall libgeos.GEOSBufferParams_setQuadrantSegments_r(
-        handle::GEOSContextHandle_t,
-        p::Ptr{GEOSBufferParams},
-        quadSegs::Cint,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSBufferParams_setQuadrantSegments_r(
+                handle::GEOSContextHandle_t,
+                p::Ptr{GEOSBufferParams},
+                quadSegs::Cint,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSBufferParams_setSingleSided_r(handle, p, singleSided)
-    @ccall libgeos.GEOSBufferParams_setSingleSided_r(
-        handle::GEOSContextHandle_t,
-        p::Ptr{GEOSBufferParams},
-        singleSided::Cint,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSBufferParams_setSingleSided_r(
+                handle::GEOSContextHandle_t,
+                p::Ptr{GEOSBufferParams},
+                singleSided::Cint,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSBufferWithParams_r(handle, g, p, width)
-    @ccall libgeos.GEOSBufferWithParams_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        p::Ptr{GEOSBufferParams},
-        width::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSBufferWithParams_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                p::Ptr{GEOSBufferParams},
+                width::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSBufferWithStyle_r(
@@ -557,242 +846,428 @@ function GEOSBufferWithStyle_r(
     joinStyle,
     mitreLimit,
 )
-    @ccall libgeos.GEOSBufferWithStyle_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        width::Cdouble,
-        quadsegs::Cint,
-        endCapStyle::Cint,
-        joinStyle::Cint,
-        mitreLimit::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSBufferWithStyle_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                width::Cdouble,
+                quadsegs::Cint,
+                endCapStyle::Cint,
+                joinStyle::Cint,
+                mitreLimit::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSDensify_r(handle, g, tolerance)
-    @ccall libgeos.GEOSDensify_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSDensify_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                tolerance::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSOffsetCurve_r(handle, g, width, quadsegs, joinStyle, mitreLimit)
-    @ccall libgeos.GEOSOffsetCurve_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        width::Cdouble,
-        quadsegs::Cint,
-        joinStyle::Cint,
-        mitreLimit::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSOffsetCurve_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                width::Cdouble,
+                quadsegs::Cint,
+                joinStyle::Cint,
+                mitreLimit::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createPoint_r(handle, s)
-    @ccall libgeos.GEOSGeom_createPoint_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createPoint_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createPointFromXY_r(handle, x, y)
-    @ccall libgeos.GEOSGeom_createPointFromXY_r(
-        handle::GEOSContextHandle_t,
-        x::Cdouble,
-        y::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createPointFromXY_r(
+                handle::GEOSContextHandle_t,
+                x::Cdouble,
+                y::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createEmptyPoint_r(handle)
-    @ccall libgeos.GEOSGeom_createEmptyPoint_r(
-        handle::GEOSContextHandle_t,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createEmptyPoint_r(
+                handle::GEOSContextHandle_t,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createLinearRing_r(handle, s)
-    @ccall libgeos.GEOSGeom_createLinearRing_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createLinearRing_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createLineString_r(handle, s)
-    @ccall libgeos.GEOSGeom_createLineString_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createLineString_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createEmptyLineString_r(handle)
-    @ccall libgeos.GEOSGeom_createEmptyLineString_r(
-        handle::GEOSContextHandle_t,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createEmptyLineString_r(
+                handle::GEOSContextHandle_t,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createEmptyPolygon_r(handle)
-    @ccall libgeos.GEOSGeom_createEmptyPolygon_r(
-        handle::GEOSContextHandle_t,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createEmptyPolygon_r(
+                handle::GEOSContextHandle_t,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createPolygon_r(handle, shell, holes, nholes)
-    @ccall libgeos.GEOSGeom_createPolygon_r(
-        handle::GEOSContextHandle_t,
-        shell::Ptr{GEOSGeometry},
-        holes::Ptr{Ptr{GEOSGeometry}},
-        nholes::Cuint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createPolygon_r(
+                handle::GEOSContextHandle_t,
+                shell::Ptr{GEOSGeometry},
+                holes::Ptr{Ptr{GEOSGeometry}},
+                nholes::Cuint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createCollection_r(handle, type, geoms, ngeoms)
-    @ccall libgeos.GEOSGeom_createCollection_r(
-        handle::GEOSContextHandle_t,
-        type::Cint,
-        geoms::Ptr{Ptr{GEOSGeometry}},
-        ngeoms::Cuint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createCollection_r(
+                handle::GEOSContextHandle_t,
+                type::Cint,
+                geoms::Ptr{Ptr{GEOSGeometry}},
+                ngeoms::Cuint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_releaseCollection_r(handle, collection, ngeoms)
-    @ccall libgeos.GEOSGeom_releaseCollection_r(
-        handle::GEOSContextHandle_t,
-        collection::Ptr{GEOSGeometry},
-        ngeoms::Ptr{Cuint},
-    )::Ptr{Ptr{GEOSGeometry}}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_releaseCollection_r(
+                handle::GEOSContextHandle_t,
+                collection::Ptr{GEOSGeometry},
+                ngeoms::Ptr{Cuint},
+            )::Ptr{Ptr{GEOSGeometry}}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createEmptyCollection_r(handle, type)
-    @ccall libgeos.GEOSGeom_createEmptyCollection_r(
-        handle::GEOSContextHandle_t,
-        type::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createEmptyCollection_r(
+                handle::GEOSContextHandle_t,
+                type::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createRectangle_r(handle, xmin, ymin, xmax, ymax)
-    @ccall libgeos.GEOSGeom_createRectangle_r(
-        handle::GEOSContextHandle_t,
-        xmin::Cdouble,
-        ymin::Cdouble,
-        xmax::Cdouble,
-        ymax::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createRectangle_r(
+                handle::GEOSContextHandle_t,
+                xmin::Cdouble,
+                ymin::Cdouble,
+                xmax::Cdouble,
+                ymax::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_clone_r(handle, g)
-    @ccall libgeos.GEOSGeom_clone_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_clone_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createCircularString_r(handle, s)
-    @ccall libgeos.GEOSGeom_createCircularString_r(
-        handle::GEOSContextHandle_t,
-        s::Ptr{GEOSCoordSequence},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createCircularString_r(
+                handle::GEOSContextHandle_t,
+                s::Ptr{GEOSCoordSequence},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createEmptyCircularString_r(handle)
-    @ccall libgeos.GEOSGeom_createEmptyCircularString_r(
-        handle::GEOSContextHandle_t,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createEmptyCircularString_r(
+                handle::GEOSContextHandle_t,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createCompoundCurve_r(handle, curves, ncurves)
-    @ccall libgeos.GEOSGeom_createCompoundCurve_r(
-        handle::GEOSContextHandle_t,
-        curves::Ptr{Ptr{GEOSGeometry}},
-        ncurves::Cuint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createCompoundCurve_r(
+                handle::GEOSContextHandle_t,
+                curves::Ptr{Ptr{GEOSGeometry}},
+                ncurves::Cuint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createEmptyCompoundCurve_r(handle)
-    @ccall libgeos.GEOSGeom_createEmptyCompoundCurve_r(
-        handle::GEOSContextHandle_t,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createEmptyCompoundCurve_r(
+                handle::GEOSContextHandle_t,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createCurvePolygon_r(handle, shell, holes, nholes)
-    @ccall libgeos.GEOSGeom_createCurvePolygon_r(
-        handle::GEOSContextHandle_t,
-        shell::Ptr{GEOSGeometry},
-        holes::Ptr{Ptr{GEOSGeometry}},
-        nholes::Cuint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createCurvePolygon_r(
+                handle::GEOSContextHandle_t,
+                shell::Ptr{GEOSGeometry},
+                holes::Ptr{Ptr{GEOSGeometry}},
+                nholes::Cuint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_createEmptyCurvePolygon_r(handle)
-    @ccall libgeos.GEOSGeom_createEmptyCurvePolygon_r(
-        handle::GEOSContextHandle_t,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_createEmptyCurvePolygon_r(
+                handle::GEOSContextHandle_t,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_destroy_r(handle, g)
-    @ccall libgeos.GEOSGeom_destroy_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_destroy_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSCoverageUnion_r(handle, g)
-    @ccall libgeos.GEOSCoverageUnion_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoverageUnion_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSCoverageIsValid_r(extHandle, input, gapWidth, output)
-    @ccall libgeos.GEOSCoverageIsValid_r(
-        extHandle::GEOSContextHandle_t,
-        input::Ptr{GEOSGeometry},
-        gapWidth::Cdouble,
-        output::Ptr{Ptr{GEOSGeometry}},
-    )::Cint
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoverageIsValid_r(
+                extHandle::GEOSContextHandle_t,
+                input::Ptr{GEOSGeometry},
+                gapWidth::Cdouble,
+                output::Ptr{Ptr{GEOSGeometry}},
+            )::Cint
+        ),
+        extHandle,
+    )
 end
 
 function GEOSCoverageSimplifyVW_r(extHandle, input, tolerance, preserveBoundary)
-    @ccall libgeos.GEOSCoverageSimplifyVW_r(
-        extHandle::GEOSContextHandle_t,
-        input::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-        preserveBoundary::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoverageSimplifyVW_r(
+                extHandle::GEOSContextHandle_t,
+                input::Ptr{GEOSGeometry},
+                tolerance::Cdouble,
+                preserveBoundary::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        extHandle,
+    )
 end
 
 function GEOSCoverageEdges_r(handle, input, edgetype)
-    @ccall libgeos.GEOSCoverageEdges_r(
-        handle::GEOSContextHandle_t,
-        input::Ptr{GEOSGeometry},
-        edgetype::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoverageEdges_r(
+                handle::GEOSContextHandle_t,
+                input::Ptr{GEOSGeometry},
+                edgetype::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSCoverageCleanParams_create_r(extHandle)
-    @ccall libgeos.GEOSCoverageCleanParams_create_r(
-        extHandle::GEOSContextHandle_t,
-    )::Ptr{GEOSCoverageCleanParams}
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoverageCleanParams_create_r(
+                extHandle::GEOSContextHandle_t,
+            )::Ptr{GEOSCoverageCleanParams}
+        ),
+        extHandle,
+    )
 end
 
 function GEOSCoverageCleanParams_destroy_r(extHandle, params)
-    @ccall libgeos.GEOSCoverageCleanParams_destroy_r(
-        extHandle::GEOSContextHandle_t,
-        params::Ptr{GEOSCoverageCleanParams},
-    )::Cvoid
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoverageCleanParams_destroy_r(
+                extHandle::GEOSContextHandle_t,
+                params::Ptr{GEOSCoverageCleanParams},
+            )::Cvoid
+        ),
+        extHandle,
+    )
 end
 
 function GEOSCoverageCleanParams_setSnappingDistance_r(extHandle, params, snappingDistance)
-    @ccall libgeos.GEOSCoverageCleanParams_setSnappingDistance_r(
-        extHandle::GEOSContextHandle_t,
-        params::Ptr{GEOSCoverageCleanParams},
-        snappingDistance::Cdouble,
-    )::Cint
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoverageCleanParams_setSnappingDistance_r(
+                extHandle::GEOSContextHandle_t,
+                params::Ptr{GEOSCoverageCleanParams},
+                snappingDistance::Cdouble,
+            )::Cint
+        ),
+        extHandle,
+    )
 end
 
 function GEOSCoverageCleanParams_setGapMaximumWidth_r(extHandle, params, gapMaximumWidth)
-    @ccall libgeos.GEOSCoverageCleanParams_setGapMaximumWidth_r(
-        extHandle::GEOSContextHandle_t,
-        params::Ptr{GEOSCoverageCleanParams},
-        gapMaximumWidth::Cdouble,
-    )::Cint
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoverageCleanParams_setGapMaximumWidth_r(
+                extHandle::GEOSContextHandle_t,
+                params::Ptr{GEOSCoverageCleanParams},
+                gapMaximumWidth::Cdouble,
+            )::Cint
+        ),
+        extHandle,
+    )
 end
 
 function GEOSCoverageCleanParams_setOverlapMergeStrategy_r(
@@ -800,84 +1275,144 @@ function GEOSCoverageCleanParams_setOverlapMergeStrategy_r(
     params,
     overlapMergeStrategy,
 )
-    @ccall libgeos.GEOSCoverageCleanParams_setOverlapMergeStrategy_r(
-        extHandle::GEOSContextHandle_t,
-        params::Ptr{GEOSCoverageCleanParams},
-        overlapMergeStrategy::Cint,
-    )::Cint
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoverageCleanParams_setOverlapMergeStrategy_r(
+                extHandle::GEOSContextHandle_t,
+                params::Ptr{GEOSCoverageCleanParams},
+                overlapMergeStrategy::Cint,
+            )::Cint
+        ),
+        extHandle,
+    )
 end
 
 function GEOSCoverageCleanWithParams_r(extHandle, input, params)
-    @ccall libgeos.GEOSCoverageCleanWithParams_r(
-        extHandle::GEOSContextHandle_t,
-        input::Ptr{GEOSGeometry},
-        params::Ptr{GEOSCoverageCleanParams},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoverageCleanWithParams_r(
+                extHandle::GEOSContextHandle_t,
+                input::Ptr{GEOSGeometry},
+                params::Ptr{GEOSCoverageCleanParams},
+            )::Ptr{GEOSGeometry}
+        ),
+        extHandle,
+    )
 end
 
 function GEOSCoverageClean_r(extHandle, input)
-    @ccall libgeos.GEOSCoverageClean_r(
-        extHandle::GEOSContextHandle_t,
-        input::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoverageClean_r(
+                extHandle::GEOSContextHandle_t,
+                input::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        extHandle,
+    )
 end
 
 function GEOSEnvelope_r(handle, g)
-    @ccall libgeos.GEOSEnvelope_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSEnvelope_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSIntersection_r(handle, g1, g2)
-    @ccall libgeos.GEOSIntersection_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSIntersection_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSIntersectionPrec_r(handle, g1, g2, gridSize)
-    @ccall libgeos.GEOSIntersectionPrec_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        gridSize::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSIntersectionPrec_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                gridSize::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSConvexHull_r(handle, g)
-    @ccall libgeos.GEOSConvexHull_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSConvexHull_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSConcaveHull_r(handle, g, ratio, allowHoles)
-    @ccall libgeos.GEOSConcaveHull_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        ratio::Cdouble,
-        allowHoles::Cuint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSConcaveHull_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                ratio::Cdouble,
+                allowHoles::Cuint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSConcaveHullByLength_r(handle, g, ratio, allowHoles)
-    @ccall libgeos.GEOSConcaveHullByLength_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        ratio::Cdouble,
-        allowHoles::Cuint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSConcaveHullByLength_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                ratio::Cdouble,
+                allowHoles::Cuint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSPolygonHullSimplify_r(handle, g, isOuter, vertexNumFraction)
-    @ccall libgeos.GEOSPolygonHullSimplify_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        isOuter::Cuint,
-        vertexNumFraction::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPolygonHullSimplify_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                isOuter::Cuint,
+                vertexNumFraction::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 @cenum GEOSPolygonHullParameterModes::UInt32 begin
@@ -886,361 +1421,619 @@ end
 end
 
 function GEOSPolygonHullSimplifyMode_r(handle, g, isOuter, parameterMode, parameter)
-    @ccall libgeos.GEOSPolygonHullSimplifyMode_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        isOuter::Cuint,
-        parameterMode::Cuint,
-        parameter::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPolygonHullSimplifyMode_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                isOuter::Cuint,
+                parameterMode::Cuint,
+                parameter::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSConcaveHullOfPolygons_r(handle, g, lengthRatio, isTight, isHolesAllowed)
-    @ccall libgeos.GEOSConcaveHullOfPolygons_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        lengthRatio::Cdouble,
-        isTight::Cuint,
-        isHolesAllowed::Cuint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSConcaveHullOfPolygons_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                lengthRatio::Cdouble,
+                isTight::Cuint,
+                isHolesAllowed::Cuint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSMinimumRotatedRectangle_r(handle, g)
-    @ccall libgeos.GEOSMinimumRotatedRectangle_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMinimumRotatedRectangle_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSMaximumInscribedCircle_r(handle, g, tolerance)
-    @ccall libgeos.GEOSMaximumInscribedCircle_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMaximumInscribedCircle_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                tolerance::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSLargestEmptyCircle_r(handle, g, boundary, tolerance)
-    @ccall libgeos.GEOSLargestEmptyCircle_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        boundary::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSLargestEmptyCircle_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                boundary::Ptr{GEOSGeometry},
+                tolerance::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSMinimumWidth_r(handle, g)
-    @ccall libgeos.GEOSMinimumWidth_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMinimumWidth_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSMinimumClearanceLine_r(handle, g)
-    @ccall libgeos.GEOSMinimumClearanceLine_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMinimumClearanceLine_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSMinimumClearance_r(handle, g, distance)
-    @ccall libgeos.GEOSMinimumClearance_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        distance::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMinimumClearance_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                distance::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSDifference_r(handle, g1, g2)
-    @ccall libgeos.GEOSDifference_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSDifference_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSDifferencePrec_r(handle, g1, g2, gridSize)
-    @ccall libgeos.GEOSDifferencePrec_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        gridSize::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSDifferencePrec_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                gridSize::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSSymDifference_r(handle, g1, g2)
-    @ccall libgeos.GEOSSymDifference_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSymDifference_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSSymDifferencePrec_r(handle, g1, g2, gridSize)
-    @ccall libgeos.GEOSSymDifferencePrec_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        gridSize::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSymDifferencePrec_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                gridSize::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSBoundary_r(handle, g)
-    @ccall libgeos.GEOSBoundary_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSBoundary_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSUnion_r(handle, g1, g2)
-    @ccall libgeos.GEOSUnion_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSUnion_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSUnionPrec_r(handle, g1, g2, gridSize)
-    @ccall libgeos.GEOSUnionPrec_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        gridSize::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSUnionPrec_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                gridSize::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSUnaryUnion_r(handle, g)
-    @ccall libgeos.GEOSUnaryUnion_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSUnaryUnion_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSUnaryUnionPrec_r(handle, g, gridSize)
-    @ccall libgeos.GEOSUnaryUnionPrec_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        gridSize::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSUnaryUnionPrec_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                gridSize::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSDisjointSubsetUnion_r(handle, g)
-    @ccall libgeos.GEOSDisjointSubsetUnion_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSDisjointSubsetUnion_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSPointOnSurface_r(handle, g)
-    @ccall libgeos.GEOSPointOnSurface_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPointOnSurface_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGetCentroid_r(handle, g)
-    @ccall libgeos.GEOSGetCentroid_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGetCentroid_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSMinimumBoundingCircle_r(handle, g, radius, center)
-    @ccall libgeos.GEOSMinimumBoundingCircle_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        radius::Ptr{Cdouble},
-        center::Ptr{Ptr{GEOSGeometry}},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMinimumBoundingCircle_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                radius::Ptr{Cdouble},
+                center::Ptr{Ptr{GEOSGeometry}},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSNode_r(handle, g)
-    @ccall libgeos.GEOSNode_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSNode_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSSplit_r(handle, g, edge)
-    @ccall libgeos.GEOSSplit_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        edge::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSplit_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                edge::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSClipByRect_r(handle, g, xmin, ymin, xmax, ymax)
-    @ccall libgeos.GEOSClipByRect_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        xmin::Cdouble,
-        ymin::Cdouble,
-        xmax::Cdouble,
-        ymax::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSClipByRect_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                xmin::Cdouble,
+                ymin::Cdouble,
+                xmax::Cdouble,
+                ymax::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSSubdivideByGrid_r(handle, g, xmin, ymin, xmax, ymax, nx, ny, includeExterior)
-    @ccall libgeos.GEOSSubdivideByGrid_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        xmin::Cdouble,
-        ymin::Cdouble,
-        xmax::Cdouble,
-        ymax::Cdouble,
-        nx::Cuint,
-        ny::Cuint,
-        includeExterior::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSubdivideByGrid_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                xmin::Cdouble,
+                ymin::Cdouble,
+                xmax::Cdouble,
+                ymax::Cdouble,
+                nx::Cuint,
+                ny::Cuint,
+                includeExterior::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGridIntersectionFractions_r(handle, g, xmin, ymin, xmax, ymax, nx, ny, buf)
-    @ccall libgeos.GEOSGridIntersectionFractions_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        xmin::Cdouble,
-        ymin::Cdouble,
-        xmax::Cdouble,
-        ymax::Cdouble,
-        nx::Cuint,
-        ny::Cuint,
-        buf::Ptr{Cfloat},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGridIntersectionFractions_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                xmin::Cdouble,
+                ymin::Cdouble,
+                xmax::Cdouble,
+                ymax::Cdouble,
+                nx::Cuint,
+                ny::Cuint,
+                buf::Ptr{Cfloat},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSPolygonize_r(handle, geoms, ngeoms)
-    @ccall libgeos.GEOSPolygonize_r(
-        handle::GEOSContextHandle_t,
-        geoms::Ptr{Ptr{GEOSGeometry}},
-        ngeoms::Cuint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPolygonize_r(
+                handle::GEOSContextHandle_t,
+                geoms::Ptr{Ptr{GEOSGeometry}},
+                ngeoms::Cuint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSPolygonize_valid_r(handle, geoms, ngems)
-    @ccall libgeos.GEOSPolygonize_valid_r(
-        handle::GEOSContextHandle_t,
-        geoms::Ptr{Ptr{GEOSGeometry}},
-        ngems::Cuint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPolygonize_valid_r(
+                handle::GEOSContextHandle_t,
+                geoms::Ptr{Ptr{GEOSGeometry}},
+                ngems::Cuint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSPolygonizer_getCutEdges_r(handle, geoms, ngeoms)
-    @ccall libgeos.GEOSPolygonizer_getCutEdges_r(
-        handle::GEOSContextHandle_t,
-        geoms::Ptr{Ptr{GEOSGeometry}},
-        ngeoms::Cuint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPolygonizer_getCutEdges_r(
+                handle::GEOSContextHandle_t,
+                geoms::Ptr{Ptr{GEOSGeometry}},
+                ngeoms::Cuint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSPolygonize_full_r(handle, input, cuts, dangles, invalidRings)
-    @ccall libgeos.GEOSPolygonize_full_r(
-        handle::GEOSContextHandle_t,
-        input::Ptr{GEOSGeometry},
-        cuts::Ptr{Ptr{GEOSGeometry}},
-        dangles::Ptr{Ptr{GEOSGeometry}},
-        invalidRings::Ptr{Ptr{GEOSGeometry}},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPolygonize_full_r(
+                handle::GEOSContextHandle_t,
+                input::Ptr{GEOSGeometry},
+                cuts::Ptr{Ptr{GEOSGeometry}},
+                dangles::Ptr{Ptr{GEOSGeometry}},
+                invalidRings::Ptr{Ptr{GEOSGeometry}},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSBuildArea_r(handle, g)
-    @ccall libgeos.GEOSBuildArea_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSBuildArea_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSLineMerge_r(handle, g)
-    @ccall libgeos.GEOSLineMerge_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSLineMerge_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSMinimumSpanningTree_r(handle, geoms, ngeoms)
-    @ccall libgeos.GEOSMinimumSpanningTree_r(
-        handle::GEOSContextHandle_t,
-        geoms::Ptr{Ptr{GEOSGeometry}},
-        ngeoms::Cuint,
-    )::Ptr{Csize_t}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMinimumSpanningTree_r(
+                handle::GEOSContextHandle_t,
+                geoms::Ptr{Ptr{GEOSGeometry}},
+                ngeoms::Cuint,
+            )::Ptr{Csize_t}
+        ),
+        handle,
+    )
 end
 
 function GEOSLineMergeDirected_r(handle, g)
-    @ccall libgeos.GEOSLineMergeDirected_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSLineMergeDirected_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSLineSubstring_r(handle, g, start_fraction, end_fdraction)
-    @ccall libgeos.GEOSLineSubstring_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        start_fraction::Cdouble,
-        end_fdraction::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSLineSubstring_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                start_fraction::Cdouble,
+                end_fdraction::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSReverse_r(handle, g)
-    @ccall libgeos.GEOSReverse_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSReverse_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSSimplify_r(handle, g, tolerance)
-    @ccall libgeos.GEOSSimplify_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSimplify_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                tolerance::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSTopologyPreserveSimplify_r(handle, g, tolerance)
-    @ccall libgeos.GEOSTopologyPreserveSimplify_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSTopologyPreserveSimplify_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                tolerance::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_extractUniquePoints_r(handle, g)
-    @ccall libgeos.GEOSGeom_extractUniquePoints_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_extractUniquePoints_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSSharedPaths_r(handle, g1, g2)
-    @ccall libgeos.GEOSSharedPaths_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSharedPaths_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSSnap_r(handle, g1, g2, tolerance)
-    @ccall libgeos.GEOSSnap_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSnap_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                tolerance::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSDelaunayTriangulation_r(handle, g, tolerance, onlyEdges)
-    @ccall libgeos.GEOSDelaunayTriangulation_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-        onlyEdges::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSDelaunayTriangulation_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                tolerance::Cdouble,
+                onlyEdges::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSConstrainedDelaunayTriangulation_r(handle, g)
-    @ccall libgeos.GEOSConstrainedDelaunayTriangulation_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSConstrainedDelaunayTriangulation_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 @cenum GEOSVoronoiFlags::UInt32 begin
@@ -1249,13 +2042,19 @@ end
 end
 
 function GEOSVoronoiDiagram_r(extHandle, g, env, tolerance, flags)
-    @ccall libgeos.GEOSVoronoiDiagram_r(
-        extHandle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        env::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-        flags::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSVoronoiDiagram_r(
+                extHandle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                env::Ptr{GEOSGeometry},
+                tolerance::Cdouble,
+                flags::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        extHandle,
+    )
 end
 
 function GEOSSegmentIntersection_r(
@@ -1271,317 +2070,537 @@ function GEOSSegmentIntersection_r(
     cx,
     cy,
 )
-    @ccall libgeos.GEOSSegmentIntersection_r(
-        extHandle::GEOSContextHandle_t,
-        ax0::Cdouble,
-        ay0::Cdouble,
-        ax1::Cdouble,
-        ay1::Cdouble,
-        bx0::Cdouble,
-        by0::Cdouble,
-        bx1::Cdouble,
-        by1::Cdouble,
-        cx::Ptr{Cdouble},
-        cy::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSegmentIntersection_r(
+                extHandle::GEOSContextHandle_t,
+                ax0::Cdouble,
+                ay0::Cdouble,
+                ax1::Cdouble,
+                ay1::Cdouble,
+                bx0::Cdouble,
+                by0::Cdouble,
+                bx1::Cdouble,
+                by1::Cdouble,
+                cx::Ptr{Cdouble},
+                cy::Ptr{Cdouble},
+            )::Cint
+        ),
+        extHandle,
+    )
 end
 
 function GEOSDisjoint_r(handle, g1, g2)
-    @ccall libgeos.GEOSDisjoint_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSDisjoint_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSTouches_r(handle, g1, g2)
-    @ccall libgeos.GEOSTouches_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSTouches_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSIntersects_r(handle, g1, g2)
-    @ccall libgeos.GEOSIntersects_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSIntersects_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSCrosses_r(handle, g1, g2)
-    @ccall libgeos.GEOSCrosses_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCrosses_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSWithin_r(handle, g1, g2)
-    @ccall libgeos.GEOSWithin_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWithin_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSContains_r(handle, g1, g2)
-    @ccall libgeos.GEOSContains_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSContains_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSOverlaps_r(handle, g1, g2)
-    @ccall libgeos.GEOSOverlaps_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSOverlaps_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSEquals_r(handle, g1, g2)
-    @ccall libgeos.GEOSEquals_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSEquals_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSEqualsExact_r(handle, g1, g2, tolerance)
-    @ccall libgeos.GEOSEqualsExact_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSEqualsExact_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                tolerance::Cdouble,
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSEqualsIdentical_r(handle, g1, g2)
-    @ccall libgeos.GEOSEqualsIdentical_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSEqualsIdentical_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSCovers_r(handle, g1, g2)
-    @ccall libgeos.GEOSCovers_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCovers_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSCoveredBy_r(handle, g1, g2)
-    @ccall libgeos.GEOSCoveredBy_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCoveredBy_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSPrepare_r(handle, g)
-    @ccall libgeos.GEOSPrepare_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSPreparedGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPrepare_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSPreparedGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSPreparedGeom_destroy_r(handle, g)
-    @ccall libgeos.GEOSPreparedGeom_destroy_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSPreparedGeometry},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedGeom_destroy_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSPreparedGeometry},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSPreparedContains_r(handle, pg1, g2)
-    @ccall libgeos.GEOSPreparedContains_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
-end
-
-function GEOSPreparedContainsXY_r(handle, pg1, x, y)
-    @ccall libgeos.GEOSPreparedContainsXY_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        x::Cdouble,
-        y::Cdouble,
-    )::Cchar
-end
-
-function GEOSPreparedContainsProperly_r(handle, pg1, g2)
-    @ccall libgeos.GEOSPreparedContainsProperly_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
-end
-
-function GEOSPreparedCoveredBy_r(handle, pg1, g2)
-    @ccall libgeos.GEOSPreparedCoveredBy_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
-end
-
-function GEOSPreparedCovers_r(handle, pg1, g2)
-    @ccall libgeos.GEOSPreparedCovers_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
-end
-
-function GEOSPreparedCrosses_r(handle, pg1, g2)
-    @ccall libgeos.GEOSPreparedCrosses_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
-end
-
-function GEOSPreparedDisjoint_r(handle, pg1, g2)
-    @ccall libgeos.GEOSPreparedDisjoint_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
-end
-
-function GEOSPreparedIntersects_r(handle, pg1, g2)
-    @ccall libgeos.GEOSPreparedIntersects_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
-end
-
-function GEOSPreparedIntersectsXY_r(handle, pg1, x, y)
-    @ccall libgeos.GEOSPreparedIntersectsXY_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        x::Cdouble,
-        y::Cdouble,
-    )::Cchar
-end
-
-function GEOSPreparedOverlaps_r(handle, pg1, g2)
-    @ccall libgeos.GEOSPreparedOverlaps_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
-end
-
-function GEOSPreparedTouches_r(handle, pg1, g2)
-    @ccall libgeos.GEOSPreparedTouches_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
-end
-
-function GEOSPreparedWithin_r(handle, pg1, g2)
-    @ccall libgeos.GEOSPreparedWithin_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Cchar
-end
-
-function GEOSPreparedRelate_r(handle, pg1, g2)
-    string_copy_free(
+    clear_geos_error(handle)
+    geos_check(
         @ccall(
-            libgeos.GEOSPreparedRelate_r(
+            libgeos.GEOSPreparedContains_r(
                 handle::GEOSContextHandle_t,
                 pg1::Ptr{GEOSPreparedGeometry},
                 g2::Ptr{GEOSGeometry},
-            )::Cstring
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedContainsXY_r(handle, pg1, x, y)
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedContainsXY_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                x::Cdouble,
+                y::Cdouble,
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedContainsProperly_r(handle, pg1, g2)
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedContainsProperly_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedCoveredBy_r(handle, pg1, g2)
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedCoveredBy_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedCovers_r(handle, pg1, g2)
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedCovers_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedCrosses_r(handle, pg1, g2)
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedCrosses_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedDisjoint_r(handle, pg1, g2)
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedDisjoint_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedIntersects_r(handle, pg1, g2)
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedIntersects_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedIntersectsXY_r(handle, pg1, x, y)
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedIntersectsXY_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                x::Cdouble,
+                y::Cdouble,
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedOverlaps_r(handle, pg1, g2)
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedOverlaps_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedTouches_r(handle, pg1, g2)
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedTouches_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedWithin_r(handle, pg1, g2)
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedWithin_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSPreparedRelate_r(handle, pg1, g2)
+    clear_geos_error(handle)
+    string_copy_free(
+        geos_check(
+            @ccall(
+                libgeos.GEOSPreparedRelate_r(
+                    handle::GEOSContextHandle_t,
+                    pg1::Ptr{GEOSPreparedGeometry},
+                    g2::Ptr{GEOSGeometry},
+                )::Cstring
+            ),
+            handle,
         ),
         handle,
     )
 end
 
 function GEOSPreparedRelatePattern_r(handle, pg1, g2, im)
-    @ccall libgeos.GEOSPreparedRelatePattern_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-        im::Cstring,
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedRelatePattern_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+                im::Cstring,
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSPreparedNearestPoints_r(handle, pg1, g2)
-    @ccall libgeos.GEOSPreparedNearestPoints_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Ptr{GEOSCoordSequence}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedNearestPoints_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Ptr{GEOSCoordSequence}
+        ),
+        handle,
+    )
 end
 
 function GEOSPreparedDistance_r(handle, pg1, g2, dist)
-    @ccall libgeos.GEOSPreparedDistance_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedDistance_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+                dist::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSPreparedDistanceWithin_r(handle, pg1, g2, dist)
-    @ccall libgeos.GEOSPreparedDistanceWithin_r(
-        handle::GEOSContextHandle_t,
-        pg1::Ptr{GEOSPreparedGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Cdouble,
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSPreparedDistanceWithin_r(
+                handle::GEOSContextHandle_t,
+                pg1::Ptr{GEOSPreparedGeometry},
+                g2::Ptr{GEOSGeometry},
+                dist::Cdouble,
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSSTRtree_create_r(handle, nodeCapacity)
-    @ccall libgeos.GEOSSTRtree_create_r(
-        handle::GEOSContextHandle_t,
-        nodeCapacity::Csize_t,
-    )::Ptr{GEOSSTRtree}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSTRtree_create_r(
+                handle::GEOSContextHandle_t,
+                nodeCapacity::Csize_t,
+            )::Ptr{GEOSSTRtree}
+        ),
+        handle,
+    )
 end
 
 function GEOSSTRtree_build_r(handle, tree)
-    @ccall libgeos.GEOSSTRtree_build_r(
-        handle::GEOSContextHandle_t,
-        tree::Ptr{GEOSSTRtree},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSTRtree_build_r(
+                handle::GEOSContextHandle_t,
+                tree::Ptr{GEOSSTRtree},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSSTRtree_insert_r(handle, tree, g, item)
-    @ccall libgeos.GEOSSTRtree_insert_r(
-        handle::GEOSContextHandle_t,
-        tree::Ptr{GEOSSTRtree},
-        g::Ptr{GEOSGeometry},
-        item::Ptr{Cvoid},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSTRtree_insert_r(
+                handle::GEOSContextHandle_t,
+                tree::Ptr{GEOSSTRtree},
+                g::Ptr{GEOSGeometry},
+                item::Ptr{Cvoid},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSSTRtree_query_r(handle, tree, g, callback, userdata)
-    @ccall libgeos.GEOSSTRtree_query_r(
-        handle::GEOSContextHandle_t,
-        tree::Ptr{GEOSSTRtree},
-        g::Ptr{GEOSGeometry},
-        callback::GEOSQueryCallback,
-        userdata::Ptr{Cvoid},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSTRtree_query_r(
+                handle::GEOSContextHandle_t,
+                tree::Ptr{GEOSSTRtree},
+                g::Ptr{GEOSGeometry},
+                callback::GEOSQueryCallback,
+                userdata::Ptr{Cvoid},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSSTRtree_nearest_r(handle, tree, geom)
-    @ccall libgeos.GEOSSTRtree_nearest_r(
-        handle::GEOSContextHandle_t,
-        tree::Ptr{GEOSSTRtree},
-        geom::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSTRtree_nearest_r(
+                handle::GEOSContextHandle_t,
+                tree::Ptr{GEOSSTRtree},
+                geom::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSSTRtree_nearest_generic_r(
@@ -1592,63 +2611,129 @@ function GEOSSTRtree_nearest_generic_r(
     distancefn,
     userdata,
 )
-    @ccall libgeos.GEOSSTRtree_nearest_generic_r(
-        handle::GEOSContextHandle_t,
-        tree::Ptr{GEOSSTRtree},
-        item::Ptr{Cvoid},
-        itemEnvelope::Ptr{GEOSGeometry},
-        distancefn::GEOSDistanceCallback,
-        userdata::Ptr{Cvoid},
-    )::Ptr{Cvoid}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSTRtree_nearest_generic_r(
+                handle::GEOSContextHandle_t,
+                tree::Ptr{GEOSSTRtree},
+                item::Ptr{Cvoid},
+                itemEnvelope::Ptr{GEOSGeometry},
+                distancefn::GEOSDistanceCallback,
+                userdata::Ptr{Cvoid},
+            )::Ptr{Cvoid}
+        ),
+        handle,
+    )
 end
 
 function GEOSSTRtree_iterate_r(handle, tree, callback, userdata)
-    @ccall libgeos.GEOSSTRtree_iterate_r(
-        handle::GEOSContextHandle_t,
-        tree::Ptr{GEOSSTRtree},
-        callback::GEOSQueryCallback,
-        userdata::Ptr{Cvoid},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSTRtree_iterate_r(
+                handle::GEOSContextHandle_t,
+                tree::Ptr{GEOSSTRtree},
+                callback::GEOSQueryCallback,
+                userdata::Ptr{Cvoid},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSSTRtree_remove_r(handle, tree, g, item)
-    @ccall libgeos.GEOSSTRtree_remove_r(
-        handle::GEOSContextHandle_t,
-        tree::Ptr{GEOSSTRtree},
-        g::Ptr{GEOSGeometry},
-        item::Ptr{Cvoid},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSTRtree_remove_r(
+                handle::GEOSContextHandle_t,
+                tree::Ptr{GEOSSTRtree},
+                g::Ptr{GEOSGeometry},
+                item::Ptr{Cvoid},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSSTRtree_destroy_r(handle, tree)
-    @ccall libgeos.GEOSSTRtree_destroy_r(
-        handle::GEOSContextHandle_t,
-        tree::Ptr{GEOSSTRtree},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSTRtree_destroy_r(
+                handle::GEOSContextHandle_t,
+                tree::Ptr{GEOSSTRtree},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSisEmpty_r(handle, g)
-    @ccall libgeos.GEOSisEmpty_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSisEmpty_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSisSimple_r(handle, g)
-    @ccall libgeos.GEOSisSimple_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSisSimple_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSisRing_r(handle, g)
-    @ccall libgeos.GEOSisRing_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSisRing_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSHasZ_r(handle, g)
-    @ccall libgeos.GEOSHasZ_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSHasZ_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSHasM_r(handle, g)
-    @ccall libgeos.GEOSHasM_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSHasM_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSisClosed_r(handle, g)
-    @ccall libgeos.GEOSisClosed_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSisClosed_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 @cenum GEOSRelateBoundaryNodeRules::UInt32 begin
@@ -1660,44 +2745,64 @@ end
 end
 
 function GEOSRelatePattern_r(handle, g1, g2, imPattern)
-    @ccall libgeos.GEOSRelatePattern_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        imPattern::Cstring,
-    )::Cchar
-end
-
-function GEOSRelate_r(handle, g1, g2)
-    string_copy_free(
+    clear_geos_error(handle)
+    geos_check(
         @ccall(
-            libgeos.GEOSRelate_r(
+            libgeos.GEOSRelatePattern_r(
                 handle::GEOSContextHandle_t,
                 g1::Ptr{GEOSGeometry},
                 g2::Ptr{GEOSGeometry},
-            )::Cstring
+                imPattern::Cstring,
+            )::Cchar
+        ),
+        handle,
+    )
+end
+
+function GEOSRelate_r(handle, g1, g2)
+    clear_geos_error(handle)
+    string_copy_free(
+        geos_check(
+            @ccall(
+                libgeos.GEOSRelate_r(
+                    handle::GEOSContextHandle_t,
+                    g1::Ptr{GEOSGeometry},
+                    g2::Ptr{GEOSGeometry},
+                )::Cstring
+            ),
+            handle,
         ),
         handle,
     )
 end
 
 function GEOSRelatePatternMatch_r(handle, intMatrix, imPattern)
-    @ccall libgeos.GEOSRelatePatternMatch_r(
-        handle::GEOSContextHandle_t,
-        intMatrix::Cstring,
-        imPattern::Cstring,
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSRelatePatternMatch_r(
+                handle::GEOSContextHandle_t,
+                intMatrix::Cstring,
+                imPattern::Cstring,
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSRelateBoundaryNodeRule_r(handle, g1, g2, bnr)
+    clear_geos_error(handle)
     string_copy_free(
-        @ccall(
-            libgeos.GEOSRelateBoundaryNodeRule_r(
-                handle::GEOSContextHandle_t,
-                g1::Ptr{GEOSGeometry},
-                g2::Ptr{GEOSGeometry},
-                bnr::Cint,
-            )::Cstring
+        geos_check(
+            @ccall(
+                libgeos.GEOSRelateBoundaryNodeRule_r(
+                    handle::GEOSContextHandle_t,
+                    g1::Ptr{GEOSGeometry},
+                    g2::Ptr{GEOSGeometry},
+                    bnr::Cint,
+                )::Cstring
+            ),
+            handle,
         ),
         handle,
     )
@@ -1708,38 +2813,60 @@ end
 end
 
 function GEOSisValid_r(handle, g)
-    @ccall libgeos.GEOSisValid_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSisValid_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSisValidReason_r(handle, g)
+    clear_geos_error(handle)
     string_copy_free(
-        @ccall(
-            libgeos.GEOSisValidReason_r(
-                handle::GEOSContextHandle_t,
-                g::Ptr{GEOSGeometry},
-            )::Cstring
+        geos_check(
+            @ccall(
+                libgeos.GEOSisValidReason_r(
+                    handle::GEOSContextHandle_t,
+                    g::Ptr{GEOSGeometry},
+                )::Cstring
+            ),
+            handle,
         ),
         handle,
     )
 end
 
 function GEOSisSimpleDetail_r(handle, g, findAllLocations, location)
-    @ccall libgeos.GEOSisSimpleDetail_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        findAllLocations::Cint,
-        location::Ptr{Ptr{GEOSGeometry}},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSisSimpleDetail_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                findAllLocations::Cint,
+                location::Ptr{Ptr{GEOSGeometry}},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSisValidDetail_r(handle, g, flags, reason, location)
-    @ccall libgeos.GEOSisValidDetail_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        flags::Cint,
-        reason::Ptr{Cstring},
-        location::Ptr{Ptr{GEOSGeometry}},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSisValidDetail_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                flags::Cint,
+                reason::Ptr{Cstring},
+                location::Ptr{Ptr{GEOSGeometry}},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 @cenum GEOSMakeValidMethods::UInt32 begin
@@ -1748,140 +2875,258 @@ end
 end
 
 function GEOSMakeValidParams_create_r(extHandle)
-    @ccall libgeos.GEOSMakeValidParams_create_r(
-        extHandle::GEOSContextHandle_t,
-    )::Ptr{GEOSMakeValidParams}
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMakeValidParams_create_r(
+                extHandle::GEOSContextHandle_t,
+            )::Ptr{GEOSMakeValidParams}
+        ),
+        extHandle,
+    )
 end
 
 function GEOSMakeValidParams_destroy_r(handle, parms)
-    @ccall libgeos.GEOSMakeValidParams_destroy_r(
-        handle::GEOSContextHandle_t,
-        parms::Ptr{GEOSMakeValidParams},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMakeValidParams_destroy_r(
+                handle::GEOSContextHandle_t,
+                parms::Ptr{GEOSMakeValidParams},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSMakeValidParams_setKeepCollapsed_r(handle, p, style)
-    @ccall libgeos.GEOSMakeValidParams_setKeepCollapsed_r(
-        handle::GEOSContextHandle_t,
-        p::Ptr{GEOSMakeValidParams},
-        style::Cint,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMakeValidParams_setKeepCollapsed_r(
+                handle::GEOSContextHandle_t,
+                p::Ptr{GEOSMakeValidParams},
+                style::Cint,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSMakeValidParams_setMethod_r(handle, p, method)
-    @ccall libgeos.GEOSMakeValidParams_setMethod_r(
-        handle::GEOSContextHandle_t,
-        p::Ptr{GEOSMakeValidParams},
-        method::GEOSMakeValidMethods,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMakeValidParams_setMethod_r(
+                handle::GEOSContextHandle_t,
+                p::Ptr{GEOSMakeValidParams},
+                method::GEOSMakeValidMethods,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSMakeValid_r(handle, g)
-    @ccall libgeos.GEOSMakeValid_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMakeValid_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSMakeValidWithParams_r(handle, g, makeValidParams)
-    @ccall libgeos.GEOSMakeValidWithParams_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        makeValidParams::Ptr{GEOSMakeValidParams},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSMakeValidWithParams_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                makeValidParams::Ptr{GEOSMakeValidParams},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSRemoveRepeatedPoints_r(handle, g, tolerance)
-    @ccall libgeos.GEOSRemoveRepeatedPoints_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        tolerance::Cdouble,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSRemoveRepeatedPoints_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                tolerance::Cdouble,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomType_r(handle, g)
+    clear_geos_error(handle)
     string_copy_free(
-        @ccall(
-            libgeos.GEOSGeomType_r(
-                handle::GEOSContextHandle_t,
-                g::Ptr{GEOSGeometry},
-            )::Cstring
+        geos_check(
+            @ccall(
+                libgeos.GEOSGeomType_r(
+                    handle::GEOSContextHandle_t,
+                    g::Ptr{GEOSGeometry},
+                )::Cstring
+            ),
+            handle,
         ),
         handle,
     )
 end
 
 function GEOSGeomTypeId_r(handle, g)
-    @ccall libgeos.GEOSGeomTypeId_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomTypeId_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGetSRID_r(handle, g)
-    @ccall libgeos.GEOSGetSRID_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGetSRID_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSSetSRID_r(handle, g, SRID)
-    @ccall libgeos.GEOSSetSRID_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        SRID::Cint,
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSetSRID_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                SRID::Cint,
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_getUserData_r(handle, g)
-    @ccall libgeos.GEOSGeom_getUserData_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{Cvoid}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_getUserData_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{Cvoid}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_setUserData_r(handle, g, userData)
-    @ccall libgeos.GEOSGeom_setUserData_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        userData::Ptr{Cvoid},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_setUserData_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                userData::Ptr{Cvoid},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSGetNumGeometries_r(handle, g)
-    @ccall libgeos.GEOSGetNumGeometries_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGetNumGeometries_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGetGeometryN_r(handle, g, n)
-    @ccall libgeos.GEOSGetGeometryN_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        n::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGetGeometryN_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                n::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGetNumCurves_r(handle, g)
-    @ccall libgeos.GEOSGetNumCurves_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGetNumCurves_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGetCurveN_r(handle, g, n)
-    @ccall libgeos.GEOSGetCurveN_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        n::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGetCurveN_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                n::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSNormalize_r(handle, g)
-    @ccall libgeos.GEOSNormalize_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSNormalize_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSOrientPolygons_r(handle, g, exteriorCW)
-    @ccall libgeos.GEOSOrientPolygons_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        exteriorCW::Cint,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSOrientPolygons_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                exteriorCW::Cint,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 @cenum GEOSPrecisionRules::UInt32 begin
@@ -1891,304 +3136,526 @@ end
 end
 
 function GEOSGeom_setPrecision_r(handle, g, gridSize, flags)
-    @ccall libgeos.GEOSGeom_setPrecision_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        gridSize::Cdouble,
-        flags::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_setPrecision_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                gridSize::Cdouble,
+                flags::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_getPrecision_r(handle, g)
-    @ccall libgeos.GEOSGeom_getPrecision_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Cdouble
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_getPrecision_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cdouble
+        ),
+        handle,
+    )
 end
 
 function GEOSCurveToLine_r(handle, g, params)
-    @ccall libgeos.GEOSCurveToLine_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        params::Ptr{GEOSCurveToLineParams},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCurveToLine_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                params::Ptr{GEOSCurveToLineParams},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSCurveToLineParams_setMaxStepDegrees_r(extHandle, params, tolerance)
-    @ccall libgeos.GEOSCurveToLineParams_setMaxStepDegrees_r(
-        extHandle::GEOSContextHandle_t,
-        params::Ptr{GEOSCurveToLineParams},
-        tolerance::Cdouble,
-    )::Cint
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCurveToLineParams_setMaxStepDegrees_r(
+                extHandle::GEOSContextHandle_t,
+                params::Ptr{GEOSCurveToLineParams},
+                tolerance::Cdouble,
+            )::Cint
+        ),
+        extHandle,
+    )
 end
 
 function GEOSCurveToLineParams_setMaxDeviation_r(extHandle, params, tolerance)
-    @ccall libgeos.GEOSCurveToLineParams_setMaxDeviation_r(
-        extHandle::GEOSContextHandle_t,
-        params::Ptr{GEOSCurveToLineParams},
-        tolerance::Cdouble,
-    )::Cint
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSCurveToLineParams_setMaxDeviation_r(
+                extHandle::GEOSContextHandle_t,
+                params::Ptr{GEOSCurveToLineParams},
+                tolerance::Cdouble,
+            )::Cint
+        ),
+        extHandle,
+    )
 end
 
 function GEOSLineToCurve_r(handle, g, params)
-    @ccall libgeos.GEOSLineToCurve_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        params::Ptr{GEOSLineToCurveParams},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSLineToCurve_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                params::Ptr{GEOSLineToCurveParams},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSLineToCurveParams_setRadiusTolerance_r(extHandle, params, tolerance)
-    @ccall libgeos.GEOSLineToCurveParams_setRadiusTolerance_r(
-        extHandle::GEOSContextHandle_t,
-        params::Ptr{GEOSLineToCurveParams},
-        tolerance::Cdouble,
-    )::Cint
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSLineToCurveParams_setRadiusTolerance_r(
+                extHandle::GEOSContextHandle_t,
+                params::Ptr{GEOSLineToCurveParams},
+                tolerance::Cdouble,
+            )::Cint
+        ),
+        extHandle,
+    )
 end
 
 function GEOSLineToCurveParams_setMaxStepDegrees_r(extHandle, params, tolerance)
-    @ccall libgeos.GEOSLineToCurveParams_setMaxStepDegrees_r(
-        extHandle::GEOSContextHandle_t,
-        params::Ptr{GEOSLineToCurveParams},
-        tolerance::Cdouble,
-    )::Cint
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSLineToCurveParams_setMaxStepDegrees_r(
+                extHandle::GEOSContextHandle_t,
+                params::Ptr{GEOSLineToCurveParams},
+                tolerance::Cdouble,
+            )::Cint
+        ),
+        extHandle,
+    )
 end
 
 function GEOSLineToCurveParams_setMaxAngleDifferenceDegrees_r(extHandle, params, tolerance)
-    @ccall libgeos.GEOSLineToCurveParams_setMaxAngleDifferenceDegrees_r(
-        extHandle::GEOSContextHandle_t,
-        params::Ptr{GEOSLineToCurveParams},
-        tolerance::Cdouble,
-    )::Cint
+    clear_geos_error(extHandle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSLineToCurveParams_setMaxAngleDifferenceDegrees_r(
+                extHandle::GEOSContextHandle_t,
+                params::Ptr{GEOSLineToCurveParams},
+                tolerance::Cdouble,
+            )::Cint
+        ),
+        extHandle,
+    )
 end
 
 function GEOSGetNumInteriorRings_r(handle, g)
-    @ccall libgeos.GEOSGetNumInteriorRings_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGetNumInteriorRings_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomGetNumPoints_r(handle, g)
-    @ccall libgeos.GEOSGeomGetNumPoints_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomGetNumPoints_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomGetX_r(handle, g, x)
-    @ccall libgeos.GEOSGeomGetX_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        x::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomGetX_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                x::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomGetY_r(handle, g, y)
-    @ccall libgeos.GEOSGeomGetY_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        y::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomGetY_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                y::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomGetZ_r(handle, g, z)
-    @ccall libgeos.GEOSGeomGetZ_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        z::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomGetZ_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                z::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomGetM_r(handle, g, m)
-    @ccall libgeos.GEOSGeomGetM_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        m::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomGetM_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                m::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGetInteriorRingN_r(handle, g, n)
-    @ccall libgeos.GEOSGetInteriorRingN_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        n::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGetInteriorRingN_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                n::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGetExteriorRing_r(handle, g)
-    @ccall libgeos.GEOSGetExteriorRing_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGetExteriorRing_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGetNumCoordinates_r(handle, g)
-    @ccall libgeos.GEOSGetNumCoordinates_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGetNumCoordinates_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_getCoordSeq_r(handle, g)
-    @ccall libgeos.GEOSGeom_getCoordSeq_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSCoordSequence}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_getCoordSeq_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSCoordSequence}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_getDimensions_r(handle, g)
-    @ccall libgeos.GEOSGeom_getDimensions_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_getDimensions_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_getCoordinateDimension_r(handle, g)
-    @ccall libgeos.GEOSGeom_getCoordinateDimension_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_getCoordinateDimension_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_getXMin_r(handle, g, value)
-    @ccall libgeos.GEOSGeom_getXMin_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        value::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_getXMin_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                value::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_getYMin_r(handle, g, value)
-    @ccall libgeos.GEOSGeom_getYMin_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        value::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_getYMin_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                value::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_getXMax_r(handle, g, value)
-    @ccall libgeos.GEOSGeom_getXMax_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        value::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_getXMax_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                value::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_getYMax_r(handle, g, value)
-    @ccall libgeos.GEOSGeom_getYMax_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        value::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_getYMax_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                value::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_getExtent_r(handle, g, xmin, ymin, xmax, ymax)
-    @ccall libgeos.GEOSGeom_getExtent_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        xmin::Ptr{Cdouble},
-        ymin::Ptr{Cdouble},
-        xmax::Ptr{Cdouble},
-        ymax::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_getExtent_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                xmin::Ptr{Cdouble},
+                ymin::Ptr{Cdouble},
+                xmax::Ptr{Cdouble},
+                ymax::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomGetPointN_r(handle, g, n)
-    @ccall libgeos.GEOSGeomGetPointN_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        n::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomGetPointN_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                n::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomGetStartPoint_r(handle, g)
-    @ccall libgeos.GEOSGeomGetStartPoint_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomGetStartPoint_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomGetEndPoint_r(handle, g)
-    @ccall libgeos.GEOSGeomGetEndPoint_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomGetEndPoint_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSArea_r(handle, g, area)
-    @ccall libgeos.GEOSArea_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        area::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSArea_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                area::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSLength_r(handle, g, length)
-    @ccall libgeos.GEOSLength_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        length::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSLength_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                length::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSDistance_r(handle, g1, g2, dist)
-    @ccall libgeos.GEOSDistance_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSDistance_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                dist::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSDistanceWithin_r(handle, g1, g2, dist)
-    @ccall libgeos.GEOSDistanceWithin_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Cdouble,
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSDistanceWithin_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                dist::Cdouble,
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSDistanceIndexed_r(handle, g1, g2, dist)
-    @ccall libgeos.GEOSDistanceIndexed_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSDistanceIndexed_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                dist::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSHausdorffDistance_r(handle, g1, g2, dist)
-    @ccall libgeos.GEOSHausdorffDistance_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSHausdorffDistance_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                dist::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSHausdorffDistanceWithPoints_r(handle, g1, g2, dist, p1x, p1y, p2x, p2y)
-    @ccall libgeos.GEOSHausdorffDistanceWithPoints_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Ptr{Cdouble},
-        p1x::Ptr{Cdouble},
-        p1y::Ptr{Cdouble},
-        p2x::Ptr{Cdouble},
-        p2y::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSHausdorffDistanceWithPoints_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                dist::Ptr{Cdouble},
+                p1x::Ptr{Cdouble},
+                p1y::Ptr{Cdouble},
+                p2x::Ptr{Cdouble},
+                p2y::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSHausdorffDistanceDensify_r(handle, g1, g2, densifyFrac, dist)
-    @ccall libgeos.GEOSHausdorffDistanceDensify_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        densifyFrac::Cdouble,
-        dist::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSHausdorffDistanceDensify_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                densifyFrac::Cdouble,
+                dist::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSHausdorffDistanceDensifyWithPoints_r(
@@ -2202,168 +3669,282 @@ function GEOSHausdorffDistanceDensifyWithPoints_r(
     p2x,
     p2y,
 )
-    @ccall libgeos.GEOSHausdorffDistanceDensifyWithPoints_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        densifyFrac::Cdouble,
-        dist::Ptr{Cdouble},
-        p1x::Ptr{Cdouble},
-        p1y::Ptr{Cdouble},
-        p2x::Ptr{Cdouble},
-        p2y::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSHausdorffDistanceDensifyWithPoints_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                densifyFrac::Cdouble,
+                dist::Ptr{Cdouble},
+                p1x::Ptr{Cdouble},
+                p1y::Ptr{Cdouble},
+                p2x::Ptr{Cdouble},
+                p2y::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSFrechetDistance_r(handle, g1, g2, dist)
-    @ccall libgeos.GEOSFrechetDistance_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        dist::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSFrechetDistance_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                dist::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSFrechetDistanceDensify_r(handle, g1, g2, densifyFrac, dist)
-    @ccall libgeos.GEOSFrechetDistanceDensify_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-        densifyFrac::Cdouble,
-        dist::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSFrechetDistanceDensify_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+                densifyFrac::Cdouble,
+                dist::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSHilbertCode_r(handle, geom, extent, level, code)
-    @ccall libgeos.GEOSHilbertCode_r(
-        handle::GEOSContextHandle_t,
-        geom::Ptr{GEOSGeometry},
-        extent::Ptr{GEOSGeometry},
-        level::Cuint,
-        code::Ptr{Cuint},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSHilbertCode_r(
+                handle::GEOSContextHandle_t,
+                geom::Ptr{GEOSGeometry},
+                extent::Ptr{GEOSGeometry},
+                level::Cuint,
+                code::Ptr{Cuint},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomGetLength_r(handle, g, length)
-    @ccall libgeos.GEOSGeomGetLength_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        length::Ptr{Cdouble},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomGetLength_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                length::Ptr{Cdouble},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSNearestPoints_r(handle, g1, g2)
-    @ccall libgeos.GEOSNearestPoints_r(
-        handle::GEOSContextHandle_t,
-        g1::Ptr{GEOSGeometry},
-        g2::Ptr{GEOSGeometry},
-    )::Ptr{GEOSCoordSequence}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSNearestPoints_r(
+                handle::GEOSContextHandle_t,
+                g1::Ptr{GEOSGeometry},
+                g2::Ptr{GEOSGeometry},
+            )::Ptr{GEOSCoordSequence}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_transformXY_r(handle, g, callback, userdata)
-    @ccall libgeos.GEOSGeom_transformXY_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        callback::GEOSTransformXYCallback,
-        userdata::Ptr{Cvoid},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_transformXY_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                callback::GEOSTransformXYCallback,
+                userdata::Ptr{Cvoid},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeom_transformXYZ_r(handle, g, callback, userdata)
-    @ccall libgeos.GEOSGeom_transformXYZ_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        callback::GEOSTransformXYZCallback,
-        userdata::Ptr{Cvoid},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeom_transformXYZ_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                callback::GEOSTransformXYZCallback,
+                userdata::Ptr{Cvoid},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSClusterDBSCAN_r(handle, g, eps, minPoints)
-    @ccall libgeos.GEOSClusterDBSCAN_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        eps::Cdouble,
-        minPoints::Cuint,
-    )::Ptr{GEOSClusterInfo}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSClusterDBSCAN_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                eps::Cdouble,
+                minPoints::Cuint,
+            )::Ptr{GEOSClusterInfo}
+        ),
+        handle,
+    )
 end
 
 function GEOSClusterGeometryDistance_r(handle, g, d)
-    @ccall libgeos.GEOSClusterGeometryDistance_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        d::Cdouble,
-    )::Ptr{GEOSClusterInfo}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSClusterGeometryDistance_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                d::Cdouble,
+            )::Ptr{GEOSClusterInfo}
+        ),
+        handle,
+    )
 end
 
 function GEOSClusterGeometryIntersects_r(handle, g)
-    @ccall libgeos.GEOSClusterGeometryIntersects_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSClusterInfo}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSClusterGeometryIntersects_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSClusterInfo}
+        ),
+        handle,
+    )
 end
 
 function GEOSClusterEnvelopeDistance_r(handle, g, d)
-    @ccall libgeos.GEOSClusterEnvelopeDistance_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        d::Cdouble,
-    )::Ptr{GEOSClusterInfo}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSClusterEnvelopeDistance_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                d::Cdouble,
+            )::Ptr{GEOSClusterInfo}
+        ),
+        handle,
+    )
 end
 
 function GEOSClusterEnvelopeIntersects_r(handle, g)
-    @ccall libgeos.GEOSClusterEnvelopeIntersects_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSClusterInfo}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSClusterEnvelopeIntersects_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSClusterInfo}
+        ),
+        handle,
+    )
 end
 
 function GEOSClusterInfo_getNumClusters_r(arg1, clusters)
-    @ccall libgeos.GEOSClusterInfo_getNumClusters_r(
-        arg1::GEOSContextHandle_t,
-        clusters::Ptr{GEOSClusterInfo},
-    )::Csize_t
+    clear_geos_error(arg1)
+    geos_check(
+        @ccall(
+            libgeos.GEOSClusterInfo_getNumClusters_r(
+                arg1::GEOSContextHandle_t,
+                clusters::Ptr{GEOSClusterInfo},
+            )::Csize_t
+        ),
+        arg1,
+    )
 end
 
 function GEOSClusterInfo_getClusterSize_r(arg1, clusters, i)
-    @ccall libgeos.GEOSClusterInfo_getClusterSize_r(
-        arg1::GEOSContextHandle_t,
-        clusters::Ptr{GEOSClusterInfo},
-        i::Csize_t,
-    )::Csize_t
+    clear_geos_error(arg1)
+    geos_check(
+        @ccall(
+            libgeos.GEOSClusterInfo_getClusterSize_r(
+                arg1::GEOSContextHandle_t,
+                clusters::Ptr{GEOSClusterInfo},
+                i::Csize_t,
+            )::Csize_t
+        ),
+        arg1,
+    )
 end
 
 function GEOSClusterInfo_getClustersForInputs_r(arg1, clusters)
-    @ccall libgeos.GEOSClusterInfo_getClustersForInputs_r(
-        arg1::GEOSContextHandle_t,
-        clusters::Ptr{GEOSClusterInfo},
-    )::Ptr{Csize_t}
+    clear_geos_error(arg1)
+    geos_check(
+        @ccall(
+            libgeos.GEOSClusterInfo_getClustersForInputs_r(
+                arg1::GEOSContextHandle_t,
+                clusters::Ptr{GEOSClusterInfo},
+            )::Ptr{Csize_t}
+        ),
+        arg1,
+    )
 end
 
 function GEOSClusterInfo_getInputsForClusterN_r(arg1, clusters, i)
-    @ccall libgeos.GEOSClusterInfo_getInputsForClusterN_r(
-        arg1::GEOSContextHandle_t,
-        clusters::Ptr{GEOSClusterInfo},
-        i::Csize_t,
-    )::Ptr{Csize_t}
+    clear_geos_error(arg1)
+    geos_check(
+        @ccall(
+            libgeos.GEOSClusterInfo_getInputsForClusterN_r(
+                arg1::GEOSContextHandle_t,
+                clusters::Ptr{GEOSClusterInfo},
+                i::Csize_t,
+            )::Ptr{Csize_t}
+        ),
+        arg1,
+    )
 end
 
 function GEOSClusterInfo_destroy_r(arg1, info)
-    @ccall libgeos.GEOSClusterInfo_destroy_r(
-        arg1::GEOSContextHandle_t,
-        info::Ptr{GEOSClusterInfo},
-    )::Cvoid
+    clear_geos_error(arg1)
+    geos_check(
+        @ccall(
+            libgeos.GEOSClusterInfo_destroy_r(
+                arg1::GEOSContextHandle_t,
+                info::Ptr{GEOSClusterInfo},
+            )::Cvoid
+        ),
+        arg1,
+    )
 end
 
 function GEOSOrientationIndex_r(handle, Ax, Ay, Bx, By, Px, Py)
-    @ccall libgeos.GEOSOrientationIndex_r(
-        handle::GEOSContextHandle_t,
-        Ax::Cdouble,
-        Ay::Cdouble,
-        Bx::Cdouble,
-        By::Cdouble,
-        Px::Cdouble,
-        Py::Cdouble,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSOrientationIndex_r(
+                handle::GEOSContextHandle_t,
+                Ax::Cdouble,
+                Ay::Cdouble,
+                Bx::Cdouble,
+                By::Cdouble,
+                Px::Cdouble,
+                Py::Cdouble,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 const GEOSWKTReader_t = Cvoid
@@ -2391,93 +3972,163 @@ const GEOSGeoJSONWriter_t = Cvoid
 const GEOSGeoJSONWriter = GEOSGeoJSONWriter_t
 
 function GEOSWKTReader_create_r(handle)
-    @ccall libgeos.GEOSWKTReader_create_r(handle::GEOSContextHandle_t)::Ptr{GEOSWKTReader}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKTReader_create_r(handle::GEOSContextHandle_t)::Ptr{GEOSWKTReader}
+        ),
+        handle,
+    )
 end
 
 function GEOSWKTReader_destroy_r(handle, reader)
-    @ccall libgeos.GEOSWKTReader_destroy_r(
-        handle::GEOSContextHandle_t,
-        reader::Ptr{GEOSWKTReader},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKTReader_destroy_r(
+                handle::GEOSContextHandle_t,
+                reader::Ptr{GEOSWKTReader},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSWKTReader_read_r(handle, reader, wkt)
-    @ccall libgeos.GEOSWKTReader_read_r(
-        handle::GEOSContextHandle_t,
-        reader::Ptr{GEOSWKTReader},
-        wkt::Cstring,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKTReader_read_r(
+                handle::GEOSContextHandle_t,
+                reader::Ptr{GEOSWKTReader},
+                wkt::Cstring,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSWKTReader_setFixStructure_r(handle, reader, doFix)
-    @ccall libgeos.GEOSWKTReader_setFixStructure_r(
-        handle::GEOSContextHandle_t,
-        reader::Ptr{GEOSWKTReader},
-        doFix::Cchar,
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKTReader_setFixStructure_r(
+                handle::GEOSContextHandle_t,
+                reader::Ptr{GEOSWKTReader},
+                doFix::Cchar,
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSWKTWriter_create_r(handle)
-    @ccall libgeos.GEOSWKTWriter_create_r(handle::GEOSContextHandle_t)::Ptr{GEOSWKTWriter}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKTWriter_create_r(handle::GEOSContextHandle_t)::Ptr{GEOSWKTWriter}
+        ),
+        handle,
+    )
 end
 
 function GEOSWKTWriter_destroy_r(handle, writer)
-    @ccall libgeos.GEOSWKTWriter_destroy_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKTWriter},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKTWriter_destroy_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKTWriter},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSWKTWriter_write_r(handle, writer, g)
+    clear_geos_error(handle)
     string_copy_free(
-        @ccall(
-            libgeos.GEOSWKTWriter_write_r(
-                handle::GEOSContextHandle_t,
-                writer::Ptr{GEOSWKTWriter},
-                g::Ptr{GEOSGeometry},
-            )::Cstring
+        geos_check(
+            @ccall(
+                libgeos.GEOSWKTWriter_write_r(
+                    handle::GEOSContextHandle_t,
+                    writer::Ptr{GEOSWKTWriter},
+                    g::Ptr{GEOSGeometry},
+                )::Cstring
+            ),
+            handle,
         ),
         handle,
     )
 end
 
 function GEOSWKTWriter_setTrim_r(handle, writer, trim)
-    @ccall libgeos.GEOSWKTWriter_setTrim_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKTWriter},
-        trim::Cchar,
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKTWriter_setTrim_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKTWriter},
+                trim::Cchar,
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSWKTWriter_setRoundingPrecision_r(handle, writer, precision)
-    @ccall libgeos.GEOSWKTWriter_setRoundingPrecision_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKTWriter},
-        precision::Cint,
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKTWriter_setRoundingPrecision_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKTWriter},
+                precision::Cint,
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSWKTWriter_setOutputDimension_r(handle, writer, dim)
-    @ccall libgeos.GEOSWKTWriter_setOutputDimension_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKTWriter},
-        dim::Cint,
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKTWriter_setOutputDimension_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKTWriter},
+                dim::Cint,
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSWKTWriter_getOutputDimension_r(handle, writer)
-    @ccall libgeos.GEOSWKTWriter_getOutputDimension_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKTWriter},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKTWriter_getOutputDimension_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKTWriter},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSWKTWriter_setOld3D_r(handle, writer, useOld3D)
-    @ccall libgeos.GEOSWKTWriter_setOld3D_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKTWriter},
-        useOld3D::Cint,
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKTWriter_setOld3D_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKTWriter},
+                useOld3D::Cint,
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOS_printDouble(d, precision, result)
@@ -2485,196 +4136,348 @@ function GEOS_printDouble(d, precision, result)
 end
 
 function GEOSWKBReader_create_r(handle)
-    @ccall libgeos.GEOSWKBReader_create_r(handle::GEOSContextHandle_t)::Ptr{GEOSWKBReader}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBReader_create_r(handle::GEOSContextHandle_t)::Ptr{GEOSWKBReader}
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBReader_destroy_r(handle, reader)
-    @ccall libgeos.GEOSWKBReader_destroy_r(
-        handle::GEOSContextHandle_t,
-        reader::Ptr{GEOSWKBReader},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBReader_destroy_r(
+                handle::GEOSContextHandle_t,
+                reader::Ptr{GEOSWKBReader},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBReader_setFixStructure_r(handle, reader, doFix)
-    @ccall libgeos.GEOSWKBReader_setFixStructure_r(
-        handle::GEOSContextHandle_t,
-        reader::Ptr{GEOSWKBReader},
-        doFix::Cchar,
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBReader_setFixStructure_r(
+                handle::GEOSContextHandle_t,
+                reader::Ptr{GEOSWKBReader},
+                doFix::Cchar,
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBReader_read_r(handle, reader, wkb, size)
-    @ccall libgeos.GEOSWKBReader_read_r(
-        handle::GEOSContextHandle_t,
-        reader::Ptr{GEOSWKBReader},
-        wkb::Ptr{Cuchar},
-        size::Csize_t,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBReader_read_r(
+                handle::GEOSContextHandle_t,
+                reader::Ptr{GEOSWKBReader},
+                wkb::Ptr{Cuchar},
+                size::Csize_t,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBReader_readHEX_r(handle, reader, hex, size)
-    @ccall libgeos.GEOSWKBReader_readHEX_r(
-        handle::GEOSContextHandle_t,
-        reader::Ptr{GEOSWKBReader},
-        hex::Ptr{Cuchar},
-        size::Csize_t,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBReader_readHEX_r(
+                handle::GEOSContextHandle_t,
+                reader::Ptr{GEOSWKBReader},
+                hex::Ptr{Cuchar},
+                size::Csize_t,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBWriter_create_r(handle)
-    @ccall libgeos.GEOSWKBWriter_create_r(handle::GEOSContextHandle_t)::Ptr{GEOSWKBWriter}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBWriter_create_r(handle::GEOSContextHandle_t)::Ptr{GEOSWKBWriter}
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBWriter_destroy_r(handle, writer)
-    @ccall libgeos.GEOSWKBWriter_destroy_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKBWriter},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBWriter_destroy_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKBWriter},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBWriter_write_r(handle, writer, g, size)
-    @ccall libgeos.GEOSWKBWriter_write_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKBWriter},
-        g::Ptr{GEOSGeometry},
-        size::Ptr{Csize_t},
-    )::Ptr{Cuchar}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBWriter_write_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKBWriter},
+                g::Ptr{GEOSGeometry},
+                size::Ptr{Csize_t},
+            )::Ptr{Cuchar}
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBWriter_writeHEX_r(handle, writer, g, size)
-    @ccall libgeos.GEOSWKBWriter_writeHEX_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKBWriter},
-        g::Ptr{GEOSGeometry},
-        size::Ptr{Csize_t},
-    )::Ptr{Cuchar}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBWriter_writeHEX_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKBWriter},
+                g::Ptr{GEOSGeometry},
+                size::Ptr{Csize_t},
+            )::Ptr{Cuchar}
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBWriter_getOutputDimension_r(handle, writer)
-    @ccall libgeos.GEOSWKBWriter_getOutputDimension_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKBWriter},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBWriter_getOutputDimension_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKBWriter},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBWriter_setOutputDimension_r(handle, writer, newDimension)
-    @ccall libgeos.GEOSWKBWriter_setOutputDimension_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKBWriter},
-        newDimension::Cint,
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBWriter_setOutputDimension_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKBWriter},
+                newDimension::Cint,
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBWriter_getByteOrder_r(handle, writer)
-    @ccall libgeos.GEOSWKBWriter_getByteOrder_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKBWriter},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBWriter_getByteOrder_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKBWriter},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBWriter_setByteOrder_r(handle, writer, byteOrder)
-    @ccall libgeos.GEOSWKBWriter_setByteOrder_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKBWriter},
-        byteOrder::Cint,
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBWriter_setByteOrder_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKBWriter},
+                byteOrder::Cint,
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBWriter_getFlavor_r(handle, writer)
-    @ccall libgeos.GEOSWKBWriter_getFlavor_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKBWriter},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBWriter_getFlavor_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKBWriter},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBWriter_setFlavor_r(handle, writer, flavor)
-    @ccall libgeos.GEOSWKBWriter_setFlavor_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKBWriter},
-        flavor::Cint,
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBWriter_setFlavor_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKBWriter},
+                flavor::Cint,
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBWriter_getIncludeSRID_r(handle, writer)
-    @ccall libgeos.GEOSWKBWriter_getIncludeSRID_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKBWriter},
-    )::Cchar
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBWriter_getIncludeSRID_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKBWriter},
+            )::Cchar
+        ),
+        handle,
+    )
 end
 
 function GEOSWKBWriter_setIncludeSRID_r(handle, writer, writeSRID)
-    @ccall libgeos.GEOSWKBWriter_setIncludeSRID_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSWKBWriter},
-        writeSRID::Cchar,
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSWKBWriter_setIncludeSRID_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSWKBWriter},
+                writeSRID::Cchar,
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSGeoJSONReader_create_r(handle)
-    @ccall libgeos.GEOSGeoJSONReader_create_r(
-        handle::GEOSContextHandle_t,
-    )::Ptr{GEOSGeoJSONReader}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeoJSONReader_create_r(
+                handle::GEOSContextHandle_t,
+            )::Ptr{GEOSGeoJSONReader}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeoJSONReader_destroy_r(handle, reader)
-    @ccall libgeos.GEOSGeoJSONReader_destroy_r(
-        handle::GEOSContextHandle_t,
-        reader::Ptr{GEOSGeoJSONReader},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeoJSONReader_destroy_r(
+                handle::GEOSContextHandle_t,
+                reader::Ptr{GEOSGeoJSONReader},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSGeoJSONReader_readGeometry_r(handle, reader, geojson)
-    @ccall libgeos.GEOSGeoJSONReader_readGeometry_r(
-        handle::GEOSContextHandle_t,
-        reader::Ptr{GEOSGeoJSONReader},
-        geojson::Cstring,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeoJSONReader_readGeometry_r(
+                handle::GEOSContextHandle_t,
+                reader::Ptr{GEOSGeoJSONReader},
+                geojson::Cstring,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeoJSONWriter_create_r(handle)
-    @ccall libgeos.GEOSGeoJSONWriter_create_r(
-        handle::GEOSContextHandle_t,
-    )::Ptr{GEOSGeoJSONWriter}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeoJSONWriter_create_r(
+                handle::GEOSContextHandle_t,
+            )::Ptr{GEOSGeoJSONWriter}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeoJSONWriter_destroy_r(handle, writer)
-    @ccall libgeos.GEOSGeoJSONWriter_destroy_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSGeoJSONWriter},
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeoJSONWriter_destroy_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSGeoJSONWriter},
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSGeoJSONWriter_writeGeometry_r(handle, writer, g, indent)
+    clear_geos_error(handle)
     string_copy_free(
-        @ccall(
-            libgeos.GEOSGeoJSONWriter_writeGeometry_r(
-                handle::GEOSContextHandle_t,
-                writer::Ptr{GEOSGeoJSONWriter},
-                g::Ptr{GEOSGeometry},
-                indent::Cint,
-            )::Cstring
+        geos_check(
+            @ccall(
+                libgeos.GEOSGeoJSONWriter_writeGeometry_r(
+                    handle::GEOSContextHandle_t,
+                    writer::Ptr{GEOSGeoJSONWriter},
+                    g::Ptr{GEOSGeometry},
+                    indent::Cint,
+                )::Cstring
+            ),
+            handle,
         ),
         handle,
     )
 end
 
 function GEOSGeoJSONWriter_setOutputDimension_r(handle, writer, dim)
-    @ccall libgeos.GEOSGeoJSONWriter_setOutputDimension_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSGeoJSONWriter},
-        dim::Cint,
-    )::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeoJSONWriter_setOutputDimension_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSGeoJSONWriter},
+                dim::Cint,
+            )::Cvoid
+        ),
+        handle,
+    )
 end
 
 function GEOSGeoJSONWriter_getOutputDimension_r(handle, writer)
-    @ccall libgeos.GEOSGeoJSONWriter_getOutputDimension_r(
-        handle::GEOSContextHandle_t,
-        writer::Ptr{GEOSGeoJSONWriter},
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeoJSONWriter_getOutputDimension_r(
+                handle::GEOSContextHandle_t,
+                writer::Ptr{GEOSGeoJSONWriter},
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSFree_r(handle, buffer)
-    @ccall libgeos.GEOSFree_r(handle::GEOSContextHandle_t, buffer::Ptr{Cvoid})::Cvoid
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(libgeos.GEOSFree_r(handle::GEOSContextHandle_t, buffer::Ptr{Cvoid})::Cvoid),
+        handle,
+    )
 end
 
 function GEOSversion()
@@ -4547,15 +6350,21 @@ function GEOSSingleSidedBuffer_r(
     mitreLimit,
     leftSide,
 )
-    @ccall libgeos.GEOSSingleSidedBuffer_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        width::Cdouble,
-        quadsegs::Cint,
-        joinStyle::Cint,
-        mitreLimit::Cdouble,
-        leftSide::Cint,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSSingleSidedBuffer_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                width::Cdouble,
+                quadsegs::Cint,
+                joinStyle::Cint,
+                mitreLimit::Cdouble,
+                leftSide::Cint,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function initGEOS_r(notice_function, error_function)
@@ -4566,77 +6375,135 @@ function initGEOS_r(notice_function, error_function)
 end
 
 function finishGEOS_r(handle)
-    @ccall libgeos.finishGEOS_r(handle::GEOSContextHandle_t)::Cvoid
+    clear_geos_error(handle)
+    geos_check(@ccall(libgeos.finishGEOS_r(handle::GEOSContextHandle_t)::Cvoid), handle)
 end
 
 function GEOSGeomFromWKT_r(handle, wkt)
-    @ccall libgeos.GEOSGeomFromWKT_r(
-        handle::GEOSContextHandle_t,
-        wkt::Cstring,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomFromWKT_r(
+                handle::GEOSContextHandle_t,
+                wkt::Cstring,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomToWKT_r(handle, g)
+    clear_geos_error(handle)
     string_copy_free(
-        @ccall(
-            libgeos.GEOSGeomToWKT_r(
-                handle::GEOSContextHandle_t,
-                g::Ptr{GEOSGeometry},
-            )::Cstring
+        geos_check(
+            @ccall(
+                libgeos.GEOSGeomToWKT_r(
+                    handle::GEOSContextHandle_t,
+                    g::Ptr{GEOSGeometry},
+                )::Cstring
+            ),
+            handle,
         ),
         handle,
     )
 end
 
 function GEOS_getWKBOutputDims_r(handle)
-    @ccall libgeos.GEOS_getWKBOutputDims_r(handle::GEOSContextHandle_t)::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(libgeos.GEOS_getWKBOutputDims_r(handle::GEOSContextHandle_t)::Cint),
+        handle,
+    )
 end
 
 function GEOS_setWKBOutputDims_r(handle, newDims)
-    @ccall libgeos.GEOS_setWKBOutputDims_r(handle::GEOSContextHandle_t, newDims::Cint)::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOS_setWKBOutputDims_r(
+                handle::GEOSContextHandle_t,
+                newDims::Cint,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOS_getWKBByteOrder_r(handle)
-    @ccall libgeos.GEOS_getWKBByteOrder_r(handle::GEOSContextHandle_t)::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(libgeos.GEOS_getWKBByteOrder_r(handle::GEOSContextHandle_t)::Cint),
+        handle,
+    )
 end
 
 function GEOS_setWKBByteOrder_r(handle, byteOrder)
-    @ccall libgeos.GEOS_setWKBByteOrder_r(
-        handle::GEOSContextHandle_t,
-        byteOrder::Cint,
-    )::Cint
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOS_setWKBByteOrder_r(
+                handle::GEOSContextHandle_t,
+                byteOrder::Cint,
+            )::Cint
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomFromWKB_buf_r(handle, wkb, size)
-    @ccall libgeos.GEOSGeomFromWKB_buf_r(
-        handle::GEOSContextHandle_t,
-        wkb::Ptr{Cuchar},
-        size::Csize_t,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomFromWKB_buf_r(
+                handle::GEOSContextHandle_t,
+                wkb::Ptr{Cuchar},
+                size::Csize_t,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomToWKB_buf_r(handle, g, size)
-    @ccall libgeos.GEOSGeomToWKB_buf_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        size::Ptr{Csize_t},
-    )::Ptr{Cuchar}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomToWKB_buf_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                size::Ptr{Csize_t},
+            )::Ptr{Cuchar}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomFromHEX_buf_r(handle, hex, size)
-    @ccall libgeos.GEOSGeomFromHEX_buf_r(
-        handle::GEOSContextHandle_t,
-        hex::Ptr{Cuchar},
-        size::Csize_t,
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomFromHEX_buf_r(
+                handle::GEOSContextHandle_t,
+                hex::Ptr{Cuchar},
+                size::Csize_t,
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomToHEX_buf_r(handle, g, size)
-    @ccall libgeos.GEOSGeomToHEX_buf_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-        size::Ptr{Csize_t},
-    )::Ptr{Cuchar}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSGeomToHEX_buf_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+                size::Ptr{Csize_t},
+            )::Ptr{Cuchar}
+        ),
+        handle,
+    )
 end
 
 function GEOSGeomFromWKT(wkt)
@@ -4684,10 +6551,16 @@ function GEOSUnionCascaded(g)
 end
 
 function GEOSUnionCascaded_r(handle, g)
-    @ccall libgeos.GEOSUnionCascaded_r(
-        handle::GEOSContextHandle_t,
-        g::Ptr{GEOSGeometry},
-    )::Ptr{GEOSGeometry}
+    clear_geos_error(handle)
+    geos_check(
+        @ccall(
+            libgeos.GEOSUnionCascaded_r(
+                handle::GEOSContextHandle_t,
+                g::Ptr{GEOSGeometry},
+            )::Ptr{GEOSGeometry}
+        ),
+        handle,
+    )
 end
 
 const GEOS_VERSION_MAJOR = 3

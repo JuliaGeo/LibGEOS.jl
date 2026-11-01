@@ -13,17 +13,40 @@ involve objects that live in the context passed to the operation.
 """
 mutable struct GEOSContext
     ptr::Ptr{Cvoid}  # GEOSContextHandle_t
+    errormessage::String  # set by geosjl_errorhandler, thrown by geos_check
 
     function GEOSContext()
-        context = new(GEOS_init_r())
+        context = new(GEOS_init_r(), "")
         GEOSContext_setNoticeHandler_r(context, C_NULL)
-        GEOSContext_setErrorHandler_r(
+        GEOSContext_setErrorMessageHandler_r(
             context,
-            @cfunction(geosjl_errorhandler, Ptr{Cvoid}, (Ptr{UInt8}, Ptr{Cvoid}))
+            @cfunction(geosjl_errorhandler, Cvoid, (Cstring, Ptr{Cvoid})),
+            pointer_from_objref(context),
         )
         finalizer(context -> (GEOS_finish_r(context); context.ptr = C_NULL), context)
         context
     end
+end
+
+"Throw the error that GEOS reported to `context` during the last call, if any."
+@inline function geos_check(result, context::GEOSContext)
+    isempty(context.errormessage) || throw_geos_error(context)
+    return result
+end
+geos_check(result, handle) = result
+
+# A call that passes the raw pointer of a context doesn't throw, but leaves the error
+# message in the context. Clear it so that a later call doesn't throw it.
+@inline function clear_geos_error(context::GEOSContext)
+    isempty(context.errormessage) || (context.errormessage = "")
+    return nothing
+end
+clear_geos_error(handle) = nothing
+
+@noinline function throw_geos_error(context::GEOSContext)
+    message = context.errormessage
+    context.errormessage = ""
+    throw(GEOSError(message))
 end
 
 function Base.:(==)(c1::GEOSContext, c2::GEOSContext)
