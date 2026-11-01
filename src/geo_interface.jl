@@ -76,11 +76,16 @@ GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
 GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) =
     GeoInterface.ncoord(t, geom.ownedby)
 
+# Read one ordinate of the point, rather than all of its coordinate sequence
 function GeoInterface.getcoord(::AbstractPointTrait, geom::Point, i)
     context = get_context(geom)
-    # coordinates! keeps geom, which owns the coordinate sequence, alive while reading it
-    out = Vector{Float64}(undef, getCoordinateDimension(geom, context))
-    return coordinates!(out, geom, context)[i]
+    i == 1 && return getGeomX(geom, context)
+    i == 2 && return getGeomY(geom, context)
+    hasz = hasZ(geom, context)
+    i == 3 && hasz && return getGeomZ(geom, context)
+    # M is the last ordinate
+    i == 3 + hasz && GEOSHasM_r(context, geom) == 0x01 && return getGeomM(geom, context)
+    throw(BoundsError(geom, i))
 end
 GeoInterface.getcoord(t::AbstractPointTrait, geom::PreparedGeometry, i) =
     GeoInterface.getcoord(t, geom.ownedby, i)

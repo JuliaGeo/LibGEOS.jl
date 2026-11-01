@@ -1388,6 +1388,15 @@ function getGeomZ(obj::Point, context::GEOSContext = get_context(obj))
     out[]
 end
 
+function getGeomM(obj::Point, context::GEOSContext = get_context(obj))
+    out = Ref{Float64}()
+    result = GEOSGeomGetM_r(context, obj, out)
+    if result == -1
+        error("LibGEOS: Error in GEOSGeomGetM")
+    end
+    out[]
+end
+
 # Return NULL on exception, Geometry must be a Polygon.
 # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
 function interiorRing(obj::Polygon, n::Integer, context::GEOSContext = get_context(obj))
