@@ -18,6 +18,9 @@ import GeoInterface
         @test_throws ErrorException Point(1, 2, 3)
     end
     Point(1, 2, 3)
+    # the setting is restored when the function throws
+    @test_throws ErrorException LibGEOS.allow_global_context!(() -> error("failed"), false)
+    @test Point(1, 2, 3) isa Point
 end
 
 @testset "Context mixing" begin
