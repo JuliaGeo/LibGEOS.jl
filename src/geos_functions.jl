@@ -1357,6 +1357,42 @@ For a simple geometry, returns the geometry in a vector of length one.
 getGeometries(obj::Geometry, context::GEOSContext = get_context(obj)) =
     [getGeometry(obj, i, context) for i = 1:numGeometries(obj, context)]
 
+function numCurves(obj::Geometry, context::GEOSContext = get_context(obj)) 
+    result = GEOSGetNumCurves_r(context, obj)
+     if result == -1
+        error("LibGEOS: Error in GEOSGetNumCurves")
+    end
+    result
+end
+
+"""
+    getCurve(obj::Geometry, n::Integer, context::GEOSContext = get_context(obj))
+
+Returns a copy of the specified sub-curve of a compound curve.
+Numbering is one-based.
+For a simple geometry, returns a copy of the input.
+"""
+function getCurve(obj::Geometry, n::Integer, context::GEOSContext = get_context(obj))
+    n in 1:numCurves(obj, context) || error(
+        "GEOSGetCurveN: $(numCurves(obj, context)) sub-geometries in geom, therefore n should be in 1:$(numCurves(obj, context))",
+    )
+    result = GEOSGetCurveN_r(context, obj, n - 1)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGetCurveN")
+    end
+    geomFromGEOS(cloneGeom(result, context), context)
+end
+
+"""
+    getCurves(obj::Geometry, context::GEOSContext = get_context(obj))
+
+Returns a vector of copies of the sub-curves of a compound curve.
+For a simple geometry, returns the geometry in a vector of length one.
+"""
+getCurves(obj::Geometry, context::GEOSContext = get_context(obj)) =
+    [getCurve(obj, i, context) for i = 1:numCurves(obj, context)]
+
+
 # Converts Geometry to normal form (or canonical form).
 # Return -1 on exception, 0 otherwise.
 function normalize!(obj::Geometry, context::GEOSContext = get_context(obj))
