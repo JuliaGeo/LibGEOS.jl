@@ -70,6 +70,24 @@ GeoInterface.coordinates(t::AbstractGeometryTrait, geom::AbstractGeometry) =
     [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
 GeoInterface.coordinates(t::AbstractGeometryCollectionTrait, geom::AbstractMultiGeometry) =
     [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
+# Copy all coordinates in one call, rather than through a Point for each vertex
+function GeoInterface.coordinates(
+    ::Union{LineStringTrait,LinearRingTrait},
+    geom::Union{LineString,LinearRing},
+)
+    context = get_context(geom)
+    coords = GC.@preserve geom begin
+        seq = getCoordSeq(geom, context)
+        n = getSize(seq, context)
+        ndim = getDimensions(seq, context)
+        hasz = GEOSCoordSeq_hasZ_r(context, seq) == 1
+        hasm = GEOSCoordSeq_hasM_r(context, seq) == 1
+        buffer = Vector{Float64}(undef, ndim * n)
+        GEOSCoordSeq_copyToBuffer_r(context, seq, buffer, hasz, hasm)
+        reshape(buffer, ndim, n)
+    end
+    return [coords[:, i] for i = 1:size(coords, 2)]
+end
 
 GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom) ? 0 : Int(getCoordinateDimension(geom))
