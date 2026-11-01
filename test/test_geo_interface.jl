@@ -114,6 +114,18 @@ const LG = LibGEOS
                   (names, :Z in names, :M in names)
             @test GI.coordinates.(collect(GI.getpoint(line))) == vertices == GI.coordinates(line)
             @test GI.coordinates(Point(point)) == expected
+            if :M in names
+                @test GI.m(point) == GI.getcoord(point, length(names)) == GI.m(Point(point)) == expected[end]
+                native = Point(point)
+                LG.setCoordSeq!(LG.getCoordSeq(native), 1, Tuple(expected .+ 1))
+                @test GI.coordinates(native) == expected .+ 1
+            end
+            T = kind == "LINESTRING" ? LineString : LinearRing
+            @test GI.coordinates(T(Tuple.(vertices); hasm = :M in names)) == vertices
+            @test GI.coordinates(T(collect(GI.getpoint(line)))) == vertices
+            @test GI.coordinates(LineString(Point.(collect(GI.getpoint(line))))) == vertices
+            wrapped = kind == "LINESTRING" ? GI.LineString(line) : GI.LinearRing(line)
+            @test GI.coordinates(GI.convert(LibGEOS, wrapped)) == vertices
             @test LG.getGeomX(point) == 1 && GI.testgeometry(point)
             @test_throws BoundsError GI.getpoint(line, 0)
             @test_throws BoundsError GI.getpoint(line, n + 1)
@@ -124,6 +136,32 @@ const LG = LibGEOS
     @test GI.coordinates(LinearRing([(1, 2), (3, 4), (5, 6), (1, 2)]))[1] == [1, 2]
     @test GI.coordinates(MultiPoint([(1, 2, 3), (4, 5, 6)]))[1] == [1, 2, 3]
     @test GI.coordinates(Point((1, 2, 3))) == [1, 2, 3]
+
+    for z in (false, true)
+        coords = z ? [(0., 0., 3., 9.), (1., 0., 4., 10.), (0., 1., 5., 11.), (0., 0., 3., 9.)] :
+                     [(0., 0., 9.), (1., 0., 10.), (0., 1., 11.), (0., 0., 9.)]
+        point = GI.Point{z,true}(coords[1])
+        ring = GI.LinearRing{z,true}(coords)
+        line = GI.LineString{z,true}(coords)
+        polygon = GI.Polygon{z,true}([ring, ring])
+        for geom in (point, ring, line, polygon, GI.MultiPoint{z,true}(coords),
+                     GI.MultiLineString{z,true}([line]), GI.MultiPolygon{z,true}([polygon]),
+                     GI.Polygon{z,true}([collect.(coords), collect.(coords)]),
+                     GI.MultiLineString{z,true}([collect.(coords)]),
+                     GI.MultiPolygon{z,true}([[collect.(coords), collect.(coords)]]),
+                     GI.GeometryCollection{z,true}([point, line, polygon]))
+            converted = GI.convert(LibGEOS, geom)
+            @test GI.coordinates(converted) == GI.coordinates(geom)
+            @test (GI.is3d(converted), GI.ismeasured(converted)) == (z, true)
+            @test GI.coordinates(readgeom(writegeom(converted))) == GI.coordinates(geom)
+            @test GI.coordinates(readgeom(writegeom(converted, LG.WKBWriter(LG.get_context(converted))))) == GI.coordinates(geom)
+        end
+        @test GI.m(Point(coords[1]; hasm = true)) == 9
+        @test GI.m(GI.getpoint(MultiPoint(coords; hasm = true), 2)) == 10
+    end
+    @test_throws ArgumentError Point((1, 2, 3, 4); hasm = false)
+    @test GI.coordinates(Point([1., 2., 3., 9.])) == [1, 2, 3, 9]
+    @test GI.coordinates(LineString([[1., 2., 3., 9.], [4., 5., 6., 19.]]))[2] == [4, 5, 6, 19]
 
     ls = LibGEOS.readgeom("LINESTRING EMPTY")
     @test GeoInterface.coordinates(ls) == []

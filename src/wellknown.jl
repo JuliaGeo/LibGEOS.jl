@@ -17,7 +17,7 @@ mutable struct WKTWriter
     function WKTWriter(
         context::GEOSContext;
         trim::Bool = true,
-        outputdim::Int = 3,
+        outputdim::Int = 4,
         roundingprecision::Int = -1,
     )
         writer = new(GEOSWKTWriter_create_r(context))

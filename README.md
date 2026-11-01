@@ -74,7 +74,10 @@ lightweight value points that retain XY, XYZ, XYM or XYZM coordinates. For the
 accessors or `getGeomX/Y/Z`, and call `LibGEOS.Point(p)` when a GEOS-backed point
 is required. `LibGEOS.getPoint(line, i)` continues to return a GEOS-backed point.
 `Point` accepts coordinate tuples, and `LineString`, `LinearRing` and `MultiPoint`
-also accept vectors of XY or XYZ tuples.
+also accept vectors of coordinate tuples. Three-tuples default to XYZ;
+pass `hasm = true` for XYM, for example `Point((1, 2, 9); hasm = true)`.
+Four-tuples are XYZM. Lines, rings and multipoints also accept vectors of the
+value points returned by GeoInterface, preserving their Z/M flags.
 
 GeoInterace.jl OGC standards methods work on LibGEOS objects:
 
