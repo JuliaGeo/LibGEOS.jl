@@ -210,16 +210,21 @@ function GI.convert(
     )
 end
 
+# Collect the coordinates and copy them to GEOS in one call
 function _geom_to_coord_seq(geom, context)
-    npoint = GI.npoint(geom)
-    ndim = GI.is3d(geom) ? 3 : 2
-    seq = createCoordSeq(npoint, context; ndim)
-    for (i, p) in enumerate(GI.getpoint(geom))
-        if ndim == 2
-            setCoordSeq!(seq, i, (GI.x(p), GI.y(p)), context)
-        else
-            setCoordSeq!(seq, i, (GI.x(p), GI.y(p), GI.z(p)), context)
-        end
+    hasz = GI.is3d(geom)
+    ndim = hasz ? 3 : 2
+    coords = Vector{Float64}(undef, ndim * GI.npoint(geom))
+    i = 0
+    for p in GI.getpoint(geom)
+        coords[i+1] = GI.x(p)
+        coords[i+2] = GI.y(p)
+        hasz && (coords[i+3] = GI.z(p))
+        i += ndim
+    end
+    seq = GEOSCoordSeq_copyFromBuffer_r(context, coords, i ÷ ndim, hasz, false)
+    if seq == C_NULL
+        error("LibGEOS: Error in GEOSCoordSeq_copyFromBuffer")
     end
     return seq
 end

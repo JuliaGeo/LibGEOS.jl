@@ -369,6 +369,11 @@ const LG = LibGEOS
         geom = GeoInterface.convert(LineString, GeoInterface.LineString(coords))
         @test geom isa LineString
         @test GeoInterface.coordinates(geom) == coords
+        coords3d = [[0.0, 0, 1], [0.0, 10, 2], [10.0, 10, 3], [0.0, 0, 1]]
+        geom = GeoInterface.convert(LineString, GeoInterface.LineString(coords3d))
+        @test GeoInterface.coordinates(geom) == coords3d
+        geom = GeoInterface.convert(Polygon, GeoInterface.Polygon([coords3d]))
+        @test GeoInterface.coordinates(geom) == [coords3d]
         for f in one_arg_functions
             @test f(LibGEOS.LineString(coords)) == f(GeoInterface.LineString(coords))
         end
