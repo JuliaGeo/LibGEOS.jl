@@ -78,7 +78,9 @@ GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) =
 
 function GeoInterface.getcoord(::AbstractPointTrait, geom::Point, i)
     context = get_context(geom)
-    return getCoordinates(getCoordSeq(geom, context), 1, context)[i]
+    # coordinates! keeps geom, which owns the coordinate sequence, alive while reading it
+    out = Vector{Float64}(undef, getCoordinateDimension(geom, context))
+    return coordinates!(out, geom, context)[i]
 end
 GeoInterface.getcoord(t::AbstractPointTrait, geom::PreparedGeometry, i) =
     GeoInterface.getcoord(t, geom.ownedby, i)
