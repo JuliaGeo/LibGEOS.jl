@@ -15,7 +15,8 @@ end
 
 """
 Functions that return a Cstring are wrapped in unsafe_string to return a String.
-Functions that take a context handle throw the error GEOS reported during the call.
+Functions that take a context handle throw the error GEOS reported during the call,
+and first clear an error from an earlier call.
 """
 function rewrite(ex::Expr, cursor::Clang.CLFunctionDecl)
     if @capture(ex, function fname_(fargs__)
@@ -23,7 +24,9 @@ function rewrite(ex::Expr, cursor::Clang.CLFunctionDecl)
     end)
         # bind the ccall such that we can easily wrap it
         cc = :(@ccall $lib.$cname($(cargs...))::$rettype)
+        clear = nothing
         if !isempty(cargs) && @capture(cargs[1], handle_::T_) && T == :GEOSContextHandle_t
+            clear = :(clear_geos_error($handle))
             cc = :(geos_check($cc, $handle))
         end
 
@@ -43,8 +46,9 @@ function rewrite(ex::Expr, cursor::Clang.CLFunctionDecl)
         end
 
         # stitch the modified function expression back together
+        body = isnothing(clear) ? cc′ : Expr(:block, clear, cc′)
         f = :(function $fname($(fargs...))
-            $cc′
+            $body
         end) |> prettify
 
         return f

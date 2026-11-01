@@ -35,6 +35,14 @@ end
 end
 geos_check(result, handle) = result
 
+# A call that passes the raw pointer of a context doesn't throw, but leaves the error
+# message in the context. Clear it so that a later call doesn't throw it.
+@inline function clear_geos_error(context::GEOSContext)
+    isempty(context.errormessage) || (context.errormessage = "")
+    return nothing
+end
+clear_geos_error(handle) = nothing
+
 @noinline function throw_geos_error(context::GEOSContext)
     message = context.errormessage
     context.errormessage = ""

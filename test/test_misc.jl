@@ -245,7 +245,10 @@ end
 
 @testset "GEOS errors don't leak memory" begin
     # Throwing a Julia exception from inside GEOS leaked its C++ exception,
-    # about 250 bytes per error.
+    # about 250 bytes per error. This runs in a new Julia process, because
+    # Sys.maxrss is the peak memory use, which earlier tests may have raised.
+    code = """
+    using LibGEOS
     reader = LibGEOS.WKTReader(LibGEOS.get_global_context())
     readerror() =
         try
@@ -253,10 +256,25 @@ end
         catch e
             e
         end
-    @test readerror() isa LibGEOS.GEOSError
-    foreach(_ -> readerror(), 1:100_000)
+    readerror() isa LibGEOS.GEOSError || error("expected a GEOSError")
+    # collect garbage often, so that the Julia heap doesn't grow
+    readerrors() = (foreach(_ -> readerror(), 1:10_000); GC.gc(false))
+    foreach(_ -> readerrors(), 1:10)
     before = Int(Sys.maxrss())
-    foreach(_ -> readerror(), 1:200_000)
-    growth_mb = (Int(Sys.maxrss()) - before) / 2^20
+    foreach(_ -> readerrors(), 1:20)
+    print((Int(Sys.maxrss()) - before) / 2^20)
+    """
+    julia = `$(Base.julia_cmd()) --project=$(Base.active_project()) -e $code`
+    growth_mb = parse(Float64, read(julia, String))
     @test growth_mb < 20
+end
+
+@testset "An error in a call with a raw context pointer isn't thrown later" begin
+    context = LibGEOS.GEOSContext()
+    reader = LibGEOS.WKTReader(context)
+    @test LibGEOS.GEOSWKTReader_read_r(context.ptr, reader, "POINT (1 2") == C_NULL
+    @test readgeom("POINT (1 2)", reader, context) isa Point
+    @test LibGEOS.GEOSWKTReader_read_r(context.ptr, reader, "POINT (1 2") == C_NULL
+    finalize(reader)
+    @test reader.ptr == C_NULL
 end
