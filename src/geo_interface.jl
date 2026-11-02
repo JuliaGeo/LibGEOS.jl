@@ -92,6 +92,24 @@ GeoInterface.coordinates(t::AbstractGeometryTrait, geom::AbstractGeometry) =
     [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
 GeoInterface.coordinates(t::AbstractGeometryCollectionTrait, geom::AbstractMultiGeometry) =
     [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
+# Copy all coordinates in one call, rather than through a Point for each vertex
+function GeoInterface.coordinates(
+    ::Union{LineStringTrait,LinearRingTrait},
+    geom::Union{LineString,LinearRing},
+)
+    context = get_context(geom)
+    coords = GC.@preserve geom begin
+        seq = getCoordSeq(geom, context)
+        n = getSize(seq, context)
+        ndim = getDimensions(seq, context)
+        hasz = GEOSCoordSeq_hasZ_r(context, seq) == 1
+        hasm = GEOSCoordSeq_hasM_r(context, seq) == 1
+        buffer = Vector{Float64}(undef, ndim * n)
+        GEOSCoordSeq_copyToBuffer_r(context, seq, buffer, hasz, hasm)
+        reshape(buffer, ndim, n)
+    end
+    return [coords[:, i] for i = 1:size(coords, 2)]
+end
 
 GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom) ? 0 : Int(getCoordinateDimension(geom))
@@ -130,7 +148,7 @@ function GI.convert(
     geom;
     context = get_global_context(),
 )
-    points = Point[GI.convert(Point, PointTrait(), p) for p in GI.getpoint(t, geom)]
+    points = Point[GI.convert(Point, PointTrait(), p; context) for p in GI.getpoint(t, geom)]
     return MultiPoint(points, context)
 end
 GI.convert(::Type{LineString}, ::LineStringTrait, geom::LineString; context = nothing) =
@@ -172,7 +190,7 @@ function GI.convert(
     linestrings = LineString[
         GI.convert(LineString, LineStringTrait(), g; context) for g in getgeom(geom)
     ]
-    return MultiLineString(linestrings)
+    return MultiLineString(linestrings, context)
 end
 GI.convert(::Type{Polygon}, ::PolygonTrait, geom::Polygon; context = nothing) = geom
 function GI.convert(::Type{Polygon}, ::PolygonTrait, geom; context = get_global_context())
@@ -180,7 +198,7 @@ function GI.convert(::Type{Polygon}, ::PolygonTrait, geom; context = get_global_
     holes = LinearRing[
         GI.convert(LinearRing, GI.LinearRingTrait(), g; context) for g in GI.gethole(geom)
     ]
-    return Polygon(exterior, holes)
+    return Polygon(exterior, holes, context)
 end
 GI.convert(
     ::Type{MultiPolygon},
@@ -196,7 +214,7 @@ function GI.convert(
 )
     polygons =
         Polygon[GI.convert(Polygon, PolygonTrait(), g; context) for g in GI.getgeom(geom)]
-    return MultiPolygon(polygons)
+    return MultiPolygon(polygons, context)
 end
 GI.convert(
     ::Type{GeometryCollection},
@@ -213,12 +231,12 @@ function GI.convert(
     geometries = map(GI.getgeom(geom)) do g
         t = GI.trait(g)
         lg = geointerface_geomtype(t)
-        # We call the full invocation for LibGEOS directly, 
+        # We call the full invocation for LibGEOS directly,
         # so the context can be passed through, since
         # `GI.convert(Mod, x)` does not allow kwargs.
         GI.convert(lg, t, g; context)
     end
-    return GeometryCollection(geometries)
+    return GeometryCollection(geometries, context)
 end
 
 function GI.convert(
@@ -331,8 +349,6 @@ GeoInterface.union(
     b::AbstractGeometry,
 ) = union(a, b)
 
-GeoInterfaceRecipes.@enable_geo_plots AbstractGeometry
-
 # -----
 # LibGeos operations for any GeoInterface.jl compatible geometries
 # -----
@@ -403,3 +419,7 @@ for f in (
     @eval $f(geom1::AbstractGeometry, geom2::AbstractGeometry, args...; kw...) =
         throw(MethodError($f, (geom1, geom2, args...)))
 end
+
+# LibGEOS always uses Float64 for coordinates
+GeoInterface.coordtype(::GeoInterface.AbstractGeometryTrait, ::AbstractGeometry) = Float64
+GeoInterface.coordtype(::GeoInterface.PointTrait, ::AbstractGeometry) = Float64

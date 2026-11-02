@@ -393,7 +393,7 @@ end
         contexts = [LibGEOS.GEOSContext() for i = 1:Threads.nthreads()]
         p = [[[-1.0, -1], [+1, -1], [+1, +1], [-1, +1], [-1, -1]]]
         Threads.@threads :static for i = 1:n
-            ctx = contexts[Threads.threadid()]
+            ctx = contexts[Threads.threadid()-Threads.nthreads(:interactive)]
             g1 = LibGEOS.Polygon(p, ctx)
             g2 = LibGEOS.Polygon(p, ctx)
             for j = 1:n
@@ -410,7 +410,7 @@ end
             contexts = [LibGEOS.GEOSContext() for i = 1:Threads.nthreads()]
             p = LibGEOS.Polygon([[[-1.0, -1], [+1, -1], [+1, +1], [-1, +1], [-1, -1]]])
             Threads.@threads :static for i = 1:n
-                ctx = contexts[Threads.threadid()]
+                ctx = contexts[Threads.threadid()-Threads.nthreads(:interactive)]
                 g1 = LibGEOS.clone(p, ctx)
                 g2 = LibGEOS.clone(p, ctx)
                 for j = 1:n
@@ -478,4 +478,22 @@ end
         CurvePolygon(CircularString([[0.,0], [1,1], [2,0], [3,-1], [4,0], [2,2], [0,0]]))
         ]
     @test ngeom.(geom) == [3, 7, 1, 1]
+end
+
+@testset "Multi geometry from a pointer to one part" begin
+    point = readgeom("POINT (1 2)")
+    line = readgeom("LINESTRING (0 0, 1 1)")
+    polygon = readgeom("POLYGON ((0 0, 1 0, 1 1, 0 0))")
+    @test MultiPoint(LibGEOS.cloneGeom(point)) == MultiPoint([point])
+    @test MultiLineString(LibGEOS.cloneGeom(line)) == MultiLineString([line])
+    @test MultiPolygon(LibGEOS.cloneGeom(polygon)) == MultiPolygon([polygon])
+
+    # The part becomes part of the multi geometry, instead of being copied and leaked
+    ring = [[10cos(t), 10sin(t)] for t in range(0, 2pi, 10_000)]
+    ring[end] = ring[1]
+    large = LibGEOS.Polygon([ring])
+    before = Int(Sys.maxrss())
+    foreach(_ -> finalize(MultiPolygon(LibGEOS.cloneGeom(large))), 1:500)
+    growth_mb = (Int(Sys.maxrss()) - before) / 2^20
+    @test growth_mb < 20
 end
