@@ -1227,6 +1227,16 @@ end
 hasZ(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
     hasZ(obj.ownedby, context)
 
+function hasM(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSHasM_r(context, obj)
+    if result == 0x02
+        error("LibGEOS: Error in GEOSHasM")
+    end
+    result != 0x00
+end
+hasM(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
+    hasM(obj.ownedby, context)
+
 # Call only on LINESTRING (return 2 on exception, 1 on true, 0 on false)
 function isClosed(obj::LineString, context::GEOSContext = get_context(obj))
     result = GEOSisClosed_r(context, obj)
@@ -1455,6 +1465,15 @@ function getGeomZ(obj::Point, context::GEOSContext = get_context(obj))
     result = GEOSGeomGetZ_r(context, obj, out)
     if result == -1
         error("LibGEOS: Error in GEOSGeomGetY")
+    end
+    out[]
+end
+
+function getGeomM(obj::Point, context::GEOSContext = get_context(obj))
+    out = Ref{Float64}()
+    result = GEOSGeomGetM_r(context, obj, out)
+    if result == -1
+        error("LibGEOS: Error in GEOSGeomGetM")
     end
     out[]
 end

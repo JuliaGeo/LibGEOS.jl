@@ -13,6 +13,7 @@ const LG = LibGEOS
     @test GeoInterface.getcoord(pt, 1) ≈ 1.0
     @test GeoInterface.testgeometry(pt)
     @test GeoInterface.is3d(pt) == false
+    @test (GI.coordnames(pt), GI.is3d(pt), GI.ismeasured(pt)) == ((:X, :Y), false, false)
     @test GeoInterface.extent(pt) == Extent(X = (1.0, 1.0), Y = (2.0, 2.0))
     Plots.plot(pt)
     Makie.plot(pt)
@@ -26,12 +27,20 @@ const LG = LibGEOS
     @test GeoInterface.getcoord(pt, 3) ≈ 3.0
     @test GeoInterface.testgeometry(pt)
     @test GeoInterface.is3d(pt) == true
+    @test (GI.coordnames(pt), GI.is3d(pt), GI.ismeasured(pt)) == ((:X, :Y, :Z), true, false)
     # This doesn't return the Z extent
     @test_broken GeoInterface.extent(pt) ==
                  Extent(X = (1.0, 1.0), Y = (2.0, 2.0), Z = (3.0, 3.0))
     Plots.plot(pt)
     Makie.plot(pt)
     Makie.plot(pt)
+
+    pt = LibGEOS.readgeom("POINT M (1 2 4)")
+    @test (GI.coordnames(pt), GI.is3d(pt), GI.ismeasured(pt)) == ((:X, :Y, :M), false, true)
+    @test GI.m(pt) == 4
+    pt = LibGEOS.readgeom("POINT ZM (1 2 3 4)")
+    @test (GI.coordnames(pt), GI.is3d(pt), GI.ismeasured(pt)) == ((:X, :Y, :Z, :M), true, true)
+    @test GI.m(pt) == 4
 
     pt = LibGEOS.Point(1, 2)
     @test GeoInterface.coordinates(pt) ≈ [1, 2] atol = 1e-5
@@ -74,6 +83,17 @@ const LG = LibGEOS
     @inferred GeoInterface.ngeom(mpt)
     @inferred GeoInterface.getgeom(mpt)
     @inferred GeoInterface.coordinates(mpt)
+
+    for (wkt, coords) in [
+        "POINT (1 2)" => [1, 2],
+        "POINT Z (1 2 3)" => [1, 2, 3],
+        "POINT M (1 2 4)" => [1, 2, 4],
+        "POINT ZM (1 2 3 4)" => [1, 2, 3, 4],
+    ]
+        pt = readgeom(wkt)
+        @test [GeoInterface.getcoord(pt, i) for i in eachindex(coords)] == coords
+        @test_throws BoundsError GeoInterface.getcoord(pt, length(coords) + 1)
+    end
 
     coords = Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2]]
     ls = LibGEOS.LineString(coords)

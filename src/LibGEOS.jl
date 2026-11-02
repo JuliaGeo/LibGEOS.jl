@@ -112,4 +112,6 @@ function __init__()
     _GLOBAL_CONTEXT[] = GEOSContext()
 end
 
+include("precompile.jl")
+
 end  # module

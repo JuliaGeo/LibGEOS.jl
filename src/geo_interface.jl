@@ -49,6 +49,14 @@ GI.getexterior(::AbstractPolygonTrait, geom::Union{Polygon,CurvePolygon}) =
     exteriorRing(geom)
 GI.gethole(::AbstractPolygonTrait, geom::Union{Polygon,CurvePolygon}, n) =
     interiorRing(geom, n)
+GI.ismeasured(::AbstractGeometryTrait, geom::AbstractGeometry) = hasM(geom)
+function GI.coordnames(::AbstractGeometryTrait, geom::AbstractGeometry)
+    if hasZ(geom)
+        return hasM(geom) ? (:X, :Y, :Z, :M) : (:X, :Y, :Z)
+    else
+        return hasM(geom) ? (:X, :Y, :M) : (:X, :Y)
+    end
+end
 
 function GeoInterface.getgeom(
     ::AbstractGeometryCollectionTrait,
@@ -116,8 +124,17 @@ GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
 GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) =
     GeoInterface.ncoord(t, geom.ownedby)
 
-GeoInterface.getcoord(::AbstractPointTrait, geom::Point, i) =
-    getCoordinates(getCoordSeq(geom), 1)[i]
+# Read one ordinate of the point, rather than all of its coordinate sequence
+function GeoInterface.getcoord(::AbstractPointTrait, geom::Point, i)
+    context = get_context(geom)
+    i == 1 && return getGeomX(geom, context)
+    i == 2 && return getGeomY(geom, context)
+    hasz = hasZ(geom, context)
+    i == 3 && hasz && return getGeomZ(geom, context)
+    # M is the last ordinate
+    i == 3 + hasz && GEOSHasM_r(context, geom) == 0x01 && return getGeomM(geom, context)
+    throw(BoundsError(geom, i))
+end
 GeoInterface.getcoord(t::AbstractPointTrait, geom::PreparedGeometry, i) =
     GeoInterface.getcoord(t, geom.ownedby, i)
 
