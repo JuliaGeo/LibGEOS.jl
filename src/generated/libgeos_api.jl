@@ -153,8 +153,7 @@ function GEOS_init_r()
 end
 
 function GEOS_finish_r(handle)
-    clear_geos_error(handle)
-    geos_check(@ccall(libgeos.GEOS_finish_r(handle::GEOSContextHandle_t)::Cvoid), handle)
+    @ccall libgeos.GEOS_finish_r(handle::GEOSContextHandle_t)::Cvoid
 end
 
 function GEOSContext_setNoticeHandler_r(extHandle, nf)
@@ -1148,16 +1147,10 @@ function GEOSGeom_createEmptyCurvePolygon_r(handle)
 end
 
 function GEOSGeom_destroy_r(handle, g)
-    clear_geos_error(handle)
-    geos_check(
-        @ccall(
-            libgeos.GEOSGeom_destroy_r(
-                handle::GEOSContextHandle_t,
-                g::Ptr{GEOSGeometry},
-            )::Cvoid
-        ),
-        handle,
-    )
+    @ccall libgeos.GEOSGeom_destroy_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+    )::Cvoid
 end
 
 function GEOSCoverageUnion_r(handle, g)
@@ -2274,16 +2267,10 @@ function GEOSPrepare_r(handle, g)
 end
 
 function GEOSPreparedGeom_destroy_r(handle, g)
-    clear_geos_error(handle)
-    geos_check(
-        @ccall(
-            libgeos.GEOSPreparedGeom_destroy_r(
-                handle::GEOSContextHandle_t,
-                g::Ptr{GEOSPreparedGeometry},
-            )::Cvoid
-        ),
-        handle,
-    )
+    @ccall libgeos.GEOSPreparedGeom_destroy_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSPreparedGeometry},
+    )::Cvoid
 end
 
 function GEOSPreparedContains_r(handle, pg1, g2)
@@ -2658,16 +2645,10 @@ function GEOSSTRtree_remove_r(handle, tree, g, item)
 end
 
 function GEOSSTRtree_destroy_r(handle, tree)
-    clear_geos_error(handle)
-    geos_check(
-        @ccall(
-            libgeos.GEOSSTRtree_destroy_r(
-                handle::GEOSContextHandle_t,
-                tree::Ptr{GEOSSTRtree},
-            )::Cvoid
-        ),
-        handle,
-    )
+    @ccall libgeos.GEOSSTRtree_destroy_r(
+        handle::GEOSContextHandle_t,
+        tree::Ptr{GEOSSTRtree},
+    )::Cvoid
 end
 
 function GEOSisEmpty_r(handle, g)
@@ -3982,16 +3963,10 @@ function GEOSWKTReader_create_r(handle)
 end
 
 function GEOSWKTReader_destroy_r(handle, reader)
-    clear_geos_error(handle)
-    geos_check(
-        @ccall(
-            libgeos.GEOSWKTReader_destroy_r(
-                handle::GEOSContextHandle_t,
-                reader::Ptr{GEOSWKTReader},
-            )::Cvoid
-        ),
-        handle,
-    )
+    @ccall libgeos.GEOSWKTReader_destroy_r(
+        handle::GEOSContextHandle_t,
+        reader::Ptr{GEOSWKTReader},
+    )::Cvoid
 end
 
 function GEOSWKTReader_read_r(handle, reader, wkt)
@@ -4033,16 +4008,10 @@ function GEOSWKTWriter_create_r(handle)
 end
 
 function GEOSWKTWriter_destroy_r(handle, writer)
-    clear_geos_error(handle)
-    geos_check(
-        @ccall(
-            libgeos.GEOSWKTWriter_destroy_r(
-                handle::GEOSContextHandle_t,
-                writer::Ptr{GEOSWKTWriter},
-            )::Cvoid
-        ),
-        handle,
-    )
+    @ccall libgeos.GEOSWKTWriter_destroy_r(
+        handle::GEOSContextHandle_t,
+        writer::Ptr{GEOSWKTWriter},
+    )::Cvoid
 end
 
 function GEOSWKTWriter_write_r(handle, writer, g)
@@ -4146,16 +4115,10 @@ function GEOSWKBReader_create_r(handle)
 end
 
 function GEOSWKBReader_destroy_r(handle, reader)
-    clear_geos_error(handle)
-    geos_check(
-        @ccall(
-            libgeos.GEOSWKBReader_destroy_r(
-                handle::GEOSContextHandle_t,
-                reader::Ptr{GEOSWKBReader},
-            )::Cvoid
-        ),
-        handle,
-    )
+    @ccall libgeos.GEOSWKBReader_destroy_r(
+        handle::GEOSContextHandle_t,
+        reader::Ptr{GEOSWKBReader},
+    )::Cvoid
 end
 
 function GEOSWKBReader_setFixStructure_r(handle, reader, doFix)
@@ -4213,16 +4176,10 @@ function GEOSWKBWriter_create_r(handle)
 end
 
 function GEOSWKBWriter_destroy_r(handle, writer)
-    clear_geos_error(handle)
-    geos_check(
-        @ccall(
-            libgeos.GEOSWKBWriter_destroy_r(
-                handle::GEOSContextHandle_t,
-                writer::Ptr{GEOSWKBWriter},
-            )::Cvoid
-        ),
-        handle,
-    )
+    @ccall libgeos.GEOSWKBWriter_destroy_r(
+        handle::GEOSContextHandle_t,
+        writer::Ptr{GEOSWKBWriter},
+    )::Cvoid
 end
 
 function GEOSWKBWriter_write_r(handle, writer, g, size)

@@ -287,3 +287,34 @@ end
     finalize(reader)
     @test reader.ptr == C_NULL
 end
+
+@testset "Finalizers leave the error of a running call alone" begin
+    # A finalizer can run on another thread between GEOS reporting an error
+    # and the call that caused it throwing that error.
+    context = LibGEOS.GEOSContext()
+    point = Point(1.0, 2.0, context)
+    polygon = readgeom("POLYGON((0 0, 1 0, 1 1, 0 0))", context)
+    objects = (
+        LibGEOS.WKTReader(context),
+        LibGEOS.WKTWriter(context),
+        LibGEOS.WKBReader(context),
+        LibGEOS.WKBWriter(context),
+        LibGEOS.prepareGeom(polygon, context),
+        STRtree([point]; context),
+        point,
+    )
+    context.errormessage = "error of a running call"
+    for object in objects
+        finalize(object)
+        @test object.ptr == C_NULL
+        @test context.errormessage == "error of a running call"
+    end
+    @test_throws LibGEOS.GEOSError LibGEOS.geos_check(nothing, context)
+    @test isempty(context.errormessage)
+
+    finished = LibGEOS.GEOSContext()
+    finished.errormessage = "error of a running call"
+    finalize(finished)
+    @test finished.ptr == C_NULL
+    @test finished.errormessage == "error of a running call"
+end

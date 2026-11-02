@@ -13,10 +13,23 @@ function return_type_is_const_char(cursor::Clang.CLFunctionDecl)
     return false
 end
 
+# The functions that finalizers call. A finalizer can run on another thread during a call
+# that uses the same context, so these must not read or clear the context's error message.
+const FINALIZER_FUNCTIONS = (
+    :GEOS_finish_r,
+    :GEOSGeom_destroy_r,
+    :GEOSPreparedGeom_destroy_r,
+    :GEOSSTRtree_destroy_r,
+    :GEOSWKBReader_destroy_r,
+    :GEOSWKBWriter_destroy_r,
+    :GEOSWKTReader_destroy_r,
+    :GEOSWKTWriter_destroy_r,
+)
+
 """
 Functions that return a Cstring are wrapped in unsafe_string to return a String.
 Functions that take a context handle throw the error GEOS reported during the call,
-and first clear an error from an earlier call.
+and first clear an error from an earlier call, except for `FINALIZER_FUNCTIONS`.
 """
 function rewrite(ex::Expr, cursor::Clang.CLFunctionDecl)
     if @capture(ex, function fname_(fargs__)
@@ -25,7 +38,10 @@ function rewrite(ex::Expr, cursor::Clang.CLFunctionDecl)
         # bind the ccall such that we can easily wrap it
         cc = :(@ccall $lib.$cname($(cargs...))::$rettype)
         clear = nothing
-        if !isempty(cargs) && @capture(cargs[1], handle_::T_) && T == :GEOSContextHandle_t
+        if cname ∉ FINALIZER_FUNCTIONS &&
+           !isempty(cargs) &&
+           @capture(cargs[1], handle_::T_) &&
+           T == :GEOSContextHandle_t
             clear = :(clear_geos_error($handle))
             cc = :(geos_check($cc, $handle))
         end
