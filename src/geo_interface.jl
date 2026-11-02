@@ -342,12 +342,15 @@ to_geos(trait, geom) = GI.convert(geointerface_geomtype(trait), trait, geom)
 
 # Convert `geom` for one call of `f`, and free the converted geometry when it returns,
 # rather than leaving it to the garbage collector, which doesn't see GEOS memory.
+# `destroyGeom` sets the pointer to C_NULL, so the finalizer does nothing later.
+# Don't use `finalize` here: it searches the list of all finalizers, so each call
+# would take time proportional to the number of live geometries.
 function with_geos(f, geom)
     converted = to_geos(geom)
     try
         return f(converted)
     finally
-        converted === geom || finalize(converted)
+        converted === geom || destroyGeom(converted)
     end
 end
 

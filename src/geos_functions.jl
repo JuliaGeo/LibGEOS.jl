@@ -614,6 +614,7 @@ function cloneGeom(
 end
 
 function destroyGeom(obj::Geometry, context::GEOSContext = get_context(obj))
+    obj.ptr == C_NULL && return  # already freed, or taken over by another geometry
     GEOSGeom_destroy_r(context, obj)
     obj.ptr = C_NULL
 end

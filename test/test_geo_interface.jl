@@ -463,6 +463,17 @@ const LG = LibGEOS
         converted = nothing
         @test LibGEOS.with_geos(g -> (converted = g; area(g)), small) == 0.5
         @test converted.ptr == C_NULL
+        finalize(converted)  # the finalizer must not free it again
+        @test converted.ptr == C_NULL
+
+        # Parts taken over by their parent are freed only with the parent
+        part = LibGEOS.readgeom("POINT (1 2)")
+        multi = MultiPoint(
+            LibGEOS.createCollection(LibGEOS.GEOS_MULTIPOINT, [LibGEOS._take_ptr(part)]),
+        )
+        @test part.ptr == C_NULL
+        finalize(part)
+        @test GeoInterface.coordinates(multi) == [[1.0, 2.0]]
 
         # If a part fails to convert, the parts converted before it are freed later
         line = GeoInterface.Line([(0.0, 0.0), (1.0, 1.0)])
