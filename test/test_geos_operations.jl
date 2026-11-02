@@ -490,4 +490,72 @@ end
             "POLYGON ((40 40, 20 45, 45 30, 40 40))",
         ]
     end
+
+    @testset "lineToCurve/curveToLine" begin
+        @test isapprox(
+            curveToLine(readgeom("LINESTRING (0 0, 1 1, 2 0)")),
+            readgeom("LINESTRING (0 0, 1 1, 2 0)"),
+            atol = 0,
+        )
+        @test isapprox(
+            curveToLine(
+                readgeom("CIRCULARSTRING (0 0, 100 100, 200 0)"),
+                maxStepDegrees = 30,
+            ),
+            readgeom(
+                "LINESTRING(0 0,13.3975 50,50 86.6025,100 100,150 86.6025,186.6025 50,200 0)",
+            ),
+            atol = 1e-3,
+        )
+        @test isapprox(
+            curveToLine(
+                readgeom("CIRCULARSTRING (0 0, 100 100, 200 0)"),
+                maxStepDegrees = 90,
+                maxDeviation = 10,
+            ),
+            readgeom("LINESTRING(0 0,30 70,100 100,170 70,200 0)"),
+            atol = 1.43,
+        ) # ? `atol = 1.4` in https://github.com/libgeos/geos/blob/3.15.0/tests/unit/capi/GEOSCurveToLineTest.cpp#L86
+
+        @test isapprox(
+            lineToCurve(readgeom("CIRCULARSTRING (0 0, 1 1, 2 0)")),
+            readgeom("CIRCULARSTRING (0 0, 1 1, 2 0)"),
+            atol = 0,
+        )
+        wkt = "LINESTRING(0 0,13.3975 50,50 86.6025,100 100,150 86.6025,186.6025 50,200 0)"
+        @test isapprox(
+            lineToCurve(readgeom(wkt), radiusTolerance = 1e-5),
+            readgeom("CIRCULARSTRING (0 0, 100 100, 200 0)"),
+            atol = 1e-3,
+        )
+        @test isapprox(
+            lineToCurve(
+                readgeom(wkt),
+                maxStepDegrees = 90,
+                maxAngleDifferenceDegrees = 1e-14,
+            ),
+            readgeom(wkt),
+            atol = 0,
+        )
+    end
+end
+
+@testset "getCurve/getCurves" begin
+    circularstring = readgeom("CIRCULARSTRING (0 0, 1 1, 2 0)")
+    @test numCurves(circularstring) == 1
+    @test writegeom(getCurve(circularstring, 1)) == "CIRCULARSTRING (0 0, 1 1, 2 0)"
+    @test_throws ErrorException getCurve(circularstring, 0)
+    @test_throws ErrorException getCurve(circularstring, 2)
+    @test writegeom.(getCurves(circularstring)) == ["CIRCULARSTRING (0 0, 1 1, 2 0)"]
+    compoundcurve = readgeom("COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 2 0), (2 0, 2 -1, 0 -1, 0 0))")
+    @test numCurves(compoundcurve) == 2
+    @test writegeom(getCurve(compoundcurve, 1)) == "CIRCULARSTRING (0 0, 1 1, 2 0)"
+    @test writegeom(getCurve(compoundcurve, 2)) == "LINESTRING (2 0, 2 -1, 0 -1, 0 0)"
+    @test writegeom.(getCurves(compoundcurve)) == ["CIRCULARSTRING (0 0, 1 1, 2 0)", "LINESTRING (2 0, 2 -1, 0 -1, 0 0)"]
+    polygon = readgeom("POLYGON ((0 0, 1 0, 0 1, 0 0))")
+    @test numCurves(polygon) == 0
+    @test isempty(getCurves(polygon))
+    curvepolygon = readgeom("CURVEPOLYGON (COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 2 0), (2 0, 2 -1, 0 -1, 0 0)))")
+    @test numCurves(curvepolygon) == 0
+    @test numCurves(exteriorRing(curvepolygon)) == 2
 end
