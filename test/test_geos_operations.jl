@@ -491,3 +491,23 @@ end
         ]
     end
 end
+
+@testset "getCurve/getCurves" begin
+    circularstring = readgeom("CIRCULARSTRING (0 0, 1 1, 2 0)")
+    @test numCurves(circularstring) == 1
+    @test writegeom(getCurve(circularstring, 1)) == "CIRCULARSTRING (0 0, 1 1, 2 0)"
+    @test_throws ErrorException getCurve(circularstring, 0)
+    @test_throws ErrorException getCurve(circularstring, 2)
+    @test writegeom.(getCurves(circularstring)) == ["CIRCULARSTRING (0 0, 1 1, 2 0)"]
+    compoundcurve = readgeom("COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 2 0), (2 0, 2 -1, 0 -1, 0 0))")
+    @test numCurves(compoundcurve) == 2
+    @test writegeom(getCurve(compoundcurve, 1)) == "CIRCULARSTRING (0 0, 1 1, 2 0)"
+    @test writegeom(getCurve(compoundcurve, 2)) == "LINESTRING (2 0, 2 -1, 0 -1, 0 0)"
+    @test writegeom.(getCurves(compoundcurve)) == ["CIRCULARSTRING (0 0, 1 1, 2 0)", "LINESTRING (2 0, 2 -1, 0 -1, 0 0)"]
+    polygon = readgeom("POLYGON ((0 0, 1 0, 0 1, 0 0))")
+    @test numCurves(polygon) == 0
+    @test isempty(getCurves(polygon))
+    curvepolygon = readgeom("CURVEPOLYGON (COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 2 0), (2 0, 2 -1, 0 -1, 0 0)))")
+    @test numCurves(curvepolygon) == 0
+    @test numCurves(exteriorRing(curvepolygon)) == 2
+end
