@@ -605,7 +605,7 @@ const geomtypes = [
     MultiSurface,
 ]
 
-const HasCoordSeq = Union{LineString,LinearRing,Point}
+const HasCoordSeq = Union{LineString,LinearRing,Point,CircularString}
 """
 
     coordinates!(out::Vector{Float64}, geo::$HasCoordSeq, i::Integer)
