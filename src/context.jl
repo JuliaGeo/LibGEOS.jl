@@ -100,6 +100,9 @@ end
 function allow_global_context!(f, bool::Bool)
     old = _GLOBAL_CONTEXT_ALLOWED[]
     allow_global_context!(bool)
-    f()
-    allow_global_context!(old)
+    try
+        f()
+    finally
+        allow_global_context!(old)
+    end
 end

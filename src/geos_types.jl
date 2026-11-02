@@ -77,7 +77,7 @@ mutable struct MultiPoint <: AbstractMultiGeometry
         multipoint = if id == GEOS_MULTIPOINT
             new(obj, context)
         elseif id == GEOS_POINT
-            new(createCollection(GEOS_MULTIPOINT, [cloneGeom(obj, context)], context), context)
+            new(createCollection(GEOS_MULTIPOINT, [obj], context), context)
         else
             open_issue_if_conversion_makes_sense(MultiPoint, id)
         end
@@ -164,10 +164,7 @@ mutable struct MultiLineString <: AbstractMultiGeometry
         multiline = if id == GEOS_MULTILINESTRING
             new(obj, context)
         elseif id == GEOS_LINESTRING
-            new(
-                createCollection(GEOS_MULTILINESTRING, [cloneGeom(obj, context)], context),
-                context,
-            )
+            new(createCollection(GEOS_MULTILINESTRING, [obj], context), context)
         else
             open_issue_if_conversion_makes_sense(MultiLineString, id)
         end
@@ -305,10 +302,7 @@ mutable struct MultiPolygon <: AbstractMultiGeometry
         multipolygon = if id == GEOS_MULTIPOLYGON
             new(obj, context)
         elseif id == GEOS_POLYGON
-            new(
-                createCollection(GEOS_MULTIPOLYGON, [cloneGeom(obj, context)], context),
-                context,
-            )
+            new(createCollection(GEOS_MULTIPOLYGON, [obj], context), context)
         else
             open_issue_if_conversion_makes_sense(MultiPolygon, id)
         end

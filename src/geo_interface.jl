@@ -32,6 +32,14 @@ GeoInterface.ngeom(::AbstractPointTrait, geom::Point) = 0
 GeoInterface.ngeom(::AbstractPointTrait, geom::PreparedGeometry) = 0
 
 GI.is3d(::AbstractGeometryTrait, geom::AbstractGeometry) = hasZ(geom)
+GI.ismeasured(::AbstractGeometryTrait, geom::AbstractGeometry) = hasM(geom)
+function GI.coordnames(::AbstractGeometryTrait, geom::AbstractGeometry)
+    if hasZ(geom)
+        return hasM(geom) ? (:X, :Y, :Z, :M) : (:X, :Y, :Z)
+    else
+        return hasM(geom) ? (:X, :Y, :M) : (:X, :Y)
+    end
+end
 GI.getexterior(::AbstractPolygonTrait, geom::Polygon) = exteriorRing(geom)
 GI.gethole(::AbstractPolygonTrait, geom::Polygon, n) = interiorRing(geom, n)
 
@@ -70,14 +78,41 @@ GeoInterface.coordinates(t::AbstractGeometryTrait, geom::AbstractGeometry) =
     [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
 GeoInterface.coordinates(t::AbstractGeometryCollectionTrait, geom::AbstractMultiGeometry) =
     [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
+# Copy all coordinates in one call, rather than through a Point for each vertex
+function GeoInterface.coordinates(
+    ::Union{LineStringTrait,LinearRingTrait},
+    geom::Union{LineString,LinearRing},
+)
+    context = get_context(geom)
+    coords = GC.@preserve geom begin
+        seq = getCoordSeq(geom, context)
+        n = getSize(seq, context)
+        ndim = getDimensions(seq, context)
+        hasz = GEOSCoordSeq_hasZ_r(context, seq) == 1
+        hasm = GEOSCoordSeq_hasM_r(context, seq) == 1
+        buffer = Vector{Float64}(undef, ndim * n)
+        GEOSCoordSeq_copyToBuffer_r(context, seq, buffer, hasz, hasm)
+        reshape(buffer, ndim, n)
+    end
+    return [coords[:, i] for i = 1:size(coords, 2)]
+end
 
 GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom) ? 0 : Int(getCoordinateDimension(geom))
 GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) =
     GeoInterface.ncoord(t, geom.ownedby)
 
-GeoInterface.getcoord(::AbstractPointTrait, geom::Point, i) =
-    getCoordinates(getCoordSeq(geom), 1)[i]
+# Read one ordinate of the point, rather than all of its coordinate sequence
+function GeoInterface.getcoord(::AbstractPointTrait, geom::Point, i)
+    context = get_context(geom)
+    i == 1 && return getGeomX(geom, context)
+    i == 2 && return getGeomY(geom, context)
+    hasz = hasZ(geom, context)
+    i == 3 && hasz && return getGeomZ(geom, context)
+    # M is the last ordinate
+    i == 3 + hasz && GEOSHasM_r(context, geom) == 0x01 && return getGeomM(geom, context)
+    throw(BoundsError(geom, i))
+end
 GeoInterface.getcoord(t::AbstractPointTrait, geom::PreparedGeometry, i) =
     GeoInterface.getcoord(t, geom.ownedby, i)
 
