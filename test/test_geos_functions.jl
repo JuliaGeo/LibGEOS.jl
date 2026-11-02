@@ -959,4 +959,21 @@ end
     geo = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))")
     mic = LibGEOS.maximumInscribedCircle(geo, 1e-4)
     @test mic == readgeom("LINESTRING (0.5000000000000001 0.5, 1 0.5)")
+
+    @testset "clearance" begin
+        function testClearance(in_wkt, out_wkt, out_distance)
+            @test LibGEOS.minimumClearance(readgeom(in_wkt)) == out_distance
+            @test LibGEOS.minimumClearanceLine(readgeom(in_wkt)) == readgeom(out_wkt)
+        end
+        testClearance(
+            "MULTIPOINT ((100 100), (10 100), (30 100))",
+            "LINESTRING (30 100, 10 100)",
+            20,
+        )
+        testClearance(
+            "POLYGON ((100 100, 300 100, 200 200, 100 100))",
+            "LINESTRING (200 200, 200 100)",
+            100,
+        )
+    end
 end
