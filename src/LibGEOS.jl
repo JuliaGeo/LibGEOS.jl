@@ -2,7 +2,6 @@ module LibGEOS
 
 using GEOS_jll
 using GeoInterface
-using GeoInterfaceRecipes
 using Extents
 using CEnum
 
@@ -48,6 +47,8 @@ export area,
     geomLength,
     getGeometries,
     getGeometry,
+    getCurves,
+    getCurve,
     getPrecision,
     getXMax,
     getXMin,
@@ -72,6 +73,7 @@ export area,
     nearestPoints,
     node,
     numGeometries,
+    numCurves,
     numPoints,
     overlaps,
     pointOnSurface,

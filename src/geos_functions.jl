@@ -283,7 +283,7 @@ function getX(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     xcoords = Vector{Float64}(undef, ncoords)
     start = pointer(xcoords)
     floatsize = sizeof(Float64)
-    for i = 0:ncoords-1
+    for i = 0:(ncoords-1)
         GEOSCoordSeq_getX_r(context, ptr, i, start + i * floatsize)
     end
     xcoords
@@ -308,7 +308,7 @@ function getY(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     ycoords = Vector{Float64}(undef, ncoords)
     start = pointer(ycoords)
     floatsize = sizeof(Float64)
-    for i = 0:ncoords-1
+    for i = 0:(ncoords-1)
         GEOSCoordSeq_getY_r(context, ptr, i, start + i * floatsize)
     end
     ycoords
@@ -333,7 +333,7 @@ function getZ(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
     zcoords = Array{Float64}(undef, ncoords)
     start = pointer(zcoords)
     floatsize = sizeof(Float64)
-    for i = 0:ncoords-1
+    for i = 0:(ncoords-1)
         GEOSCoordSeq_getZ_r(context, ptr, i, start + i * floatsize)
     end
     zcoords
@@ -349,7 +349,8 @@ function getCoordinates!(out::Vector{Float64}, ptr::GEOSCoordSeq, i::Integer, co
     @assert length(out) == ndim
     start = pointer(out)
     floatsize = sizeof(Float64)
-    if ndim == 3
+    hasm = GEOSCoordSeq_hasM_r(context, ptr) == 1
+    if ndim - hasm == 3  # XYZ or XYZM
         GEOSCoordSeq_getXYZ_r(
             context,
             ptr,
@@ -360,6 +361,9 @@ function getCoordinates!(out::Vector{Float64}, ptr::GEOSCoordSeq, i::Integer, co
         )
     else
         GEOSCoordSeq_getXY_r(context, ptr, i - 1, start, start + floatsize)
+    end
+    if hasm  # M is the last ordinate
+        GEOSCoordSeq_getM_r(context, ptr, i - 1, start + (ndim - 1) * floatsize)
     end
     out
 end
@@ -648,7 +652,6 @@ end
 
 function destroyGeom(obj::PreparedGeometry, context::GEOSContext = get_context(obj))
     destroyPreparedGeom(obj, context)
-    obj.ptr = C_NULL
 end
 
 
@@ -1037,7 +1040,7 @@ function prepareGeom(obj::Geometry, context::GEOSContext = get_context(obj))
     if result == C_NULL
         error("LibGEOS: Error in GEOSPrepare")
     end
-    PreparedGeometry(result, obj)
+    finalizer(destroyGeom, PreparedGeometry(result, obj))
 end
 
 function destroyPreparedGeom(
@@ -1045,6 +1048,7 @@ function destroyPreparedGeom(
     context::GEOSContext = get_global_context(),
 )
     GEOSPreparedGeom_destroy_r(context, obj)
+    obj.ptr = C_NULL
 end
 
 Base.contains(
@@ -1356,6 +1360,42 @@ For a simple geometry, returns the geometry in a vector of length one.
 """
 getGeometries(obj::Geometry, context::GEOSContext = get_context(obj)) =
     [getGeometry(obj, i, context) for i = 1:numGeometries(obj, context)]
+
+function numCurves(obj::Geometry, context::GEOSContext = get_context(obj)) 
+    result = GEOSGetNumCurves_r(context, obj)
+     if result == -1
+        error("LibGEOS: Error in GEOSGetNumCurves")
+    end
+    result
+end
+
+"""
+    getCurve(obj::Geometry, n::Integer, context::GEOSContext = get_context(obj))
+
+Returns a copy of the specified sub-curve of a compound curve.
+Numbering is one-based.
+For a simple geometry, returns a copy of the input.
+"""
+function getCurve(obj::Geometry, n::Integer, context::GEOSContext = get_context(obj))
+    n in 1:numCurves(obj, context) || error(
+        "GEOSGetCurveN: $(numCurves(obj, context)) sub-geometries in geom, therefore n should be in 1:$(numCurves(obj, context))",
+    )
+    result = GEOSGetCurveN_r(context, obj, n - 1)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGetCurveN")
+    end
+    geomFromGEOS(cloneGeom(result, context), context)
+end
+
+"""
+    getCurves(obj::Geometry, context::GEOSContext = get_context(obj))
+
+Returns a vector of copies of the sub-curves of a compound curve.
+For a simple geometry, returns the geometry in a vector of length one.
+"""
+getCurves(obj::Geometry, context::GEOSContext = get_context(obj)) =
+    [getCurve(obj, i, context) for i = 1:numCurves(obj, context)]
+
 
 # Converts Geometry to normal form (or canonical form).
 # Return -1 on exception, 0 otherwise.
@@ -1722,10 +1762,12 @@ function nearestPoints(
     if points == C_NULL
         return Point[]
     else
-        return Point[
+        result = Point[
             Point(getCoordinates(points, 1, context), context),
             Point(getCoordinates(points, 2, context), context),
         ]
+        destroyCoordSeq(points, context)
+        return result
     end
 end
 
@@ -1738,10 +1780,12 @@ function nearestPoints(
     if points == C_NULL
         return Point[]
     else
-        return Point[
+        result = Point[
             Point(getCoordinates(points, 1, context), context),
             Point(getCoordinates(points, 2, context), context),
         ]
+        destroyCoordSeq(points, context)
+        return result
     end
 end
 

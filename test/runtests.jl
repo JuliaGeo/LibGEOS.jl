@@ -1,6 +1,7 @@
-using GeoInterface, GeoInterfaceRecipes, Extents
-using GeoInterface, Extents
-using Test, LibGEOS, RecipesBase
+using Extents
+using GeoInterface
+using LibGEOS
+using Test
 
 import Aqua
 
@@ -17,11 +18,7 @@ end
 
 @testset "LibGEOS" begin
     @testset "Aqua.jl" begin
-        Aqua.test_all(
-            LibGEOS;
-            ambiguities = (exclude = [GeoInterfaceRecipes.RecipesBase.apply_recipe],),
-            stale_deps = (ignore = [:GeoInterfaceMakie],),
-        )
+        Aqua.test_all(LibGEOS)
     end
 
     include("test_geos_types.jl")

@@ -8,6 +8,9 @@ const GEOSMessageHandler = Ptr{Cvoid}
 # typedef void ( * GEOSMessageHandler_r ) ( const char * message , void * userdata )
 const GEOSMessageHandler_r = Ptr{Cvoid}
 
+# typedef void ( GEOSProgressCallback ) ( double progressRatio , const char * message , void * userdata )
+const GEOSProgressCallback = Cvoid
+
 const GEOSGeom_t = Cvoid
 
 const GEOSGeometry = GEOSGeom_t
@@ -28,9 +31,25 @@ const GEOSBufParams_t = Cvoid
 
 const GEOSBufferParams = GEOSBufParams_t
 
+const GEOSCoverageCleanParams_t = Cvoid
+
+const GEOSCoverageCleanParams = GEOSCoverageCleanParams_t
+
 const GEOSMakeValidParams_t = Cvoid
 
 const GEOSMakeValidParams = GEOSMakeValidParams_t
+
+const GEOSClusterInfo_t = Cvoid
+
+const GEOSClusterInfo = GEOSClusterInfo_t
+
+const GEOSCurveToLineParams_t = Cvoid
+
+const GEOSCurveToLineParams = GEOSCurveToLineParams_t
+
+const GEOSLineToCurveParams_t = Cvoid
+
+const GEOSLineToCurveParams = GEOSLineToCurveParams_t
 
 const GEOSGeom = Ptr{GEOSGeometry}
 
@@ -62,6 +81,13 @@ end
     GEOS_WKB_ISO = 2
 end
 
+@cenum GEOSOverlapMerge::UInt32 begin
+    GEOS_MERGE_LONGEST_BORDER = 0
+    GEOS_MERGE_MAX_AREA = 1
+    GEOS_MERGE_MIN_AREA = 2
+    GEOS_MERGE_MIN_INDEX = 3
+end
+
 # typedef void ( * GEOSQueryCallback ) ( void * item , void * userdata )
 const GEOSQueryCallback = Ptr{Cvoid}
 
@@ -71,13 +97,27 @@ const GEOSDistanceCallback = Ptr{Cvoid}
 # typedef int ( * GEOSTransformXYCallback ) ( double * x , double * y , void * userdata )
 const GEOSTransformXYCallback = Ptr{Cvoid}
 
+# typedef int ( * GEOSTransformXYZCallback ) ( double * x , double * y , double * z , void * userdata )
+const GEOSTransformXYZCallback = Ptr{Cvoid}
+
 # typedef void ( GEOSInterruptCallback ) ( void )
 const GEOSInterruptCallback = Cvoid
+
+# typedef int ( GEOSContextInterruptCallback ) ( void * )
+const GEOSContextInterruptCallback = Cvoid
 
 function GEOS_interruptRegisterCallback(cb)
     @ccall libgeos.GEOS_interruptRegisterCallback(
         cb::Ptr{GEOSInterruptCallback},
     )::Ptr{GEOSInterruptCallback}
+end
+
+function GEOSContext_setInterruptCallback_r(extHandle, cb, userData)
+    @ccall libgeos.GEOSContext_setInterruptCallback_r(
+        extHandle::GEOSContextHandle_t,
+        cb::Ptr{GEOSContextInterruptCallback},
+        userData::Ptr{Cvoid},
+    )::Ptr{GEOSContextInterruptCallback}
 end
 
 function GEOS_interruptRequest()
@@ -86,6 +126,14 @@ end
 
 function GEOS_interruptCancel()
     @ccall libgeos.GEOS_interruptCancel()::Cvoid
+end
+
+function GEOSContext_setProgressCallback_r(extHandle, cb, userData)
+    @ccall libgeos.GEOSContext_setProgressCallback_r(
+        extHandle::GEOSContextHandle_t,
+        cb::Ptr{GEOSProgressCallback},
+        userData::Ptr{Cvoid},
+    )::Ptr{GEOSProgressCallback}
 end
 
 function GEOS_init_r()
@@ -126,11 +174,34 @@ function GEOSContext_setErrorMessageHandler_r(extHandle, ef, userData)
     )::GEOSMessageHandler_r
 end
 
+function GEOSContext_setCurveToLineParams_r(extHandle, params)
+    @ccall libgeos.GEOSContext_setCurveToLineParams_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSCurveToLineParams},
+    )::Cvoid
+end
+
+function GEOSContext_setLineToCurveParams_r(extHandle, params)
+    @ccall libgeos.GEOSContext_setLineToCurveParams_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSLineToCurveParams},
+    )::Cvoid
+end
+
 function GEOSCoordSeq_create_r(handle, size, dims)
     @ccall libgeos.GEOSCoordSeq_create_r(
         handle::GEOSContextHandle_t,
         size::Cuint,
         dims::Cuint,
+    )::Ptr{GEOSCoordSequence}
+end
+
+function GEOSCoordSeq_createWithDimensions_r(handle, size, hasZ, hasM)
+    @ccall libgeos.GEOSCoordSeq_createWithDimensions_r(
+        handle::GEOSContextHandle_t,
+        size::Cuint,
+        hasZ::Cint,
+        hasM::Cint,
     )::Ptr{GEOSCoordSequence}
 end
 
@@ -190,6 +261,20 @@ function GEOSCoordSeq_destroy_r(handle, s)
     )::Cvoid
 end
 
+function GEOSCoordSeq_hasZ_r(handle, s)
+    @ccall libgeos.GEOSCoordSeq_hasZ_r(
+        handle::GEOSContextHandle_t,
+        s::Ptr{GEOSCoordSequence},
+    )::Cchar
+end
+
+function GEOSCoordSeq_hasM_r(handle, s)
+    @ccall libgeos.GEOSCoordSeq_hasM_r(
+        handle::GEOSContextHandle_t,
+        s::Ptr{GEOSCoordSequence},
+    )::Cchar
+end
+
 function GEOSCoordSeq_setX_r(handle, s, idx, val)
     @ccall libgeos.GEOSCoordSeq_setX_r(
         handle::GEOSContextHandle_t,
@@ -210,6 +295,15 @@ end
 
 function GEOSCoordSeq_setZ_r(handle, s, idx, val)
     @ccall libgeos.GEOSCoordSeq_setZ_r(
+        handle::GEOSContextHandle_t,
+        s::Ptr{GEOSCoordSequence},
+        idx::Cuint,
+        val::Cdouble,
+    )::Cint
+end
+
+function GEOSCoordSeq_setM_r(handle, s, idx, val)
+    @ccall libgeos.GEOSCoordSeq_setM_r(
         handle::GEOSContextHandle_t,
         s::Ptr{GEOSCoordSequence},
         idx::Cuint,
@@ -268,6 +362,15 @@ end
 
 function GEOSCoordSeq_getZ_r(handle, s, idx, val)
     @ccall libgeos.GEOSCoordSeq_getZ_r(
+        handle::GEOSContextHandle_t,
+        s::Ptr{GEOSCoordSequence},
+        idx::Cuint,
+        val::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSCoordSeq_getM_r(handle, s, idx, val)
+    @ccall libgeos.GEOSCoordSeq_getM_r(
         handle::GEOSContextHandle_t,
         s::Ptr{GEOSCoordSequence},
         idx::Cuint,
@@ -655,6 +758,70 @@ function GEOSCoverageSimplifyVW_r(extHandle, input, tolerance, preserveBoundary)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSCoverageEdges_r(handle, input, edgetype)
+    @ccall libgeos.GEOSCoverageEdges_r(
+        handle::GEOSContextHandle_t,
+        input::Ptr{GEOSGeometry},
+        edgetype::Cint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSCoverageCleanParams_create_r(extHandle)
+    @ccall libgeos.GEOSCoverageCleanParams_create_r(
+        extHandle::GEOSContextHandle_t,
+    )::Ptr{GEOSCoverageCleanParams}
+end
+
+function GEOSCoverageCleanParams_destroy_r(extHandle, params)
+    @ccall libgeos.GEOSCoverageCleanParams_destroy_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSCoverageCleanParams},
+    )::Cvoid
+end
+
+function GEOSCoverageCleanParams_setSnappingDistance_r(extHandle, params, snappingDistance)
+    @ccall libgeos.GEOSCoverageCleanParams_setSnappingDistance_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSCoverageCleanParams},
+        snappingDistance::Cdouble,
+    )::Cint
+end
+
+function GEOSCoverageCleanParams_setGapMaximumWidth_r(extHandle, params, gapMaximumWidth)
+    @ccall libgeos.GEOSCoverageCleanParams_setGapMaximumWidth_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSCoverageCleanParams},
+        gapMaximumWidth::Cdouble,
+    )::Cint
+end
+
+function GEOSCoverageCleanParams_setOverlapMergeStrategy_r(
+    extHandle,
+    params,
+    overlapMergeStrategy,
+)
+    @ccall libgeos.GEOSCoverageCleanParams_setOverlapMergeStrategy_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSCoverageCleanParams},
+        overlapMergeStrategy::Cint,
+    )::Cint
+end
+
+function GEOSCoverageCleanWithParams_r(extHandle, input, params)
+    @ccall libgeos.GEOSCoverageCleanWithParams_r(
+        extHandle::GEOSContextHandle_t,
+        input::Ptr{GEOSGeometry},
+        params::Ptr{GEOSCoverageCleanParams},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSCoverageClean_r(extHandle, input)
+    @ccall libgeos.GEOSCoverageClean_r(
+        extHandle::GEOSContextHandle_t,
+        input::Ptr{GEOSGeometry},
+    )::Ptr{GEOSGeometry}
+end
+
 function GEOSEnvelope_r(handle, g)
     @ccall libgeos.GEOSEnvelope_r(
         handle::GEOSContextHandle_t,
@@ -711,6 +878,11 @@ function GEOSPolygonHullSimplify_r(handle, g, isOuter, vertexNumFraction)
         isOuter::Cuint,
         vertexNumFraction::Cdouble,
     )::Ptr{GEOSGeometry}
+end
+
+@cenum GEOSPolygonHullParameterModes::UInt32 begin
+    GEOSHULL_PARAM_VERTEX_RATIO = 1
+    GEOSHULL_PARAM_AREA_RATIO = 2
 end
 
 function GEOSPolygonHullSimplifyMode_r(handle, g, isOuter, parameterMode, parameter)
@@ -889,6 +1061,14 @@ function GEOSNode_r(handle, g)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSSplit_r(handle, g, edge)
+    @ccall libgeos.GEOSSplit_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        edge::Ptr{GEOSGeometry},
+    )::Ptr{GEOSGeometry}
+end
+
 function GEOSClipByRect_r(handle, g, xmin, ymin, xmax, ymax)
     @ccall libgeos.GEOSClipByRect_r(
         handle::GEOSContextHandle_t,
@@ -898,6 +1078,34 @@ function GEOSClipByRect_r(handle, g, xmin, ymin, xmax, ymax)
         xmax::Cdouble,
         ymax::Cdouble,
     )::Ptr{GEOSGeometry}
+end
+
+function GEOSSubdivideByGrid_r(handle, g, xmin, ymin, xmax, ymax, nx, ny, includeExterior)
+    @ccall libgeos.GEOSSubdivideByGrid_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        xmin::Cdouble,
+        ymin::Cdouble,
+        xmax::Cdouble,
+        ymax::Cdouble,
+        nx::Cuint,
+        ny::Cuint,
+        includeExterior::Cint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSGridIntersectionFractions_r(handle, g, xmin, ymin, xmax, ymax, nx, ny, buf)
+    @ccall libgeos.GEOSGridIntersectionFractions_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        xmin::Cdouble,
+        ymin::Cdouble,
+        xmax::Cdouble,
+        ymax::Cdouble,
+        nx::Cuint,
+        ny::Cuint,
+        buf::Ptr{Cfloat},
+    )::Cint
 end
 
 function GEOSPolygonize_r(handle, geoms, ngeoms)
@@ -946,6 +1154,14 @@ function GEOSLineMerge_r(handle, g)
         handle::GEOSContextHandle_t,
         g::Ptr{GEOSGeometry},
     )::Ptr{GEOSGeometry}
+end
+
+function GEOSMinimumSpanningTree_r(handle, geoms, ngeoms)
+    @ccall libgeos.GEOSMinimumSpanningTree_r(
+        handle::GEOSContextHandle_t,
+        geoms::Ptr{Ptr{GEOSGeometry}},
+        ngeoms::Cuint,
+    )::Ptr{Csize_t}
 end
 
 function GEOSLineMergeDirected_r(handle, g)
@@ -1025,6 +1241,11 @@ function GEOSConstrainedDelaunayTriangulation_r(handle, g)
         handle::GEOSContextHandle_t,
         g::Ptr{GEOSGeometry},
     )::Ptr{GEOSGeometry}
+end
+
+@cenum GEOSVoronoiFlags::UInt32 begin
+    GEOS_VORONOI_ONLY_EDGES = 1
+    GEOS_VORONOI_PRESERVE_ORDER = 2
 end
 
 function GEOSVoronoiDiagram_r(extHandle, g, env, tolerance, flags)
@@ -1502,6 +1723,15 @@ function GEOSisValidReason_r(handle, g)
     )
 end
 
+function GEOSisSimpleDetail_r(handle, g, findAllLocations, location)
+    @ccall libgeos.GEOSisSimpleDetail_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        findAllLocations::Cint,
+        location::Ptr{Ptr{GEOSGeometry}},
+    )::Cchar
+end
+
 function GEOSisValidDetail_r(handle, g, flags, reason, location)
     @ccall libgeos.GEOSisValidDetail_r(
         handle::GEOSContextHandle_t,
@@ -1627,6 +1857,21 @@ function GEOSGetGeometryN_r(handle, g, n)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSGetNumCurves_r(handle, g)
+    @ccall libgeos.GEOSGetNumCurves_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+    )::Cint
+end
+
+function GEOSGetCurveN_r(handle, g, n)
+    @ccall libgeos.GEOSGetCurveN_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        n::Cint,
+    )::Ptr{GEOSGeometry}
+end
+
 function GEOSNormalize_r(handle, g)
     @ccall libgeos.GEOSNormalize_r(handle::GEOSContextHandle_t, g::Ptr{GEOSGeometry})::Cint
 end
@@ -1659,6 +1904,62 @@ function GEOSGeom_getPrecision_r(handle, g)
         handle::GEOSContextHandle_t,
         g::Ptr{GEOSGeometry},
     )::Cdouble
+end
+
+function GEOSCurveToLine_r(handle, g, params)
+    @ccall libgeos.GEOSCurveToLine_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        params::Ptr{GEOSCurveToLineParams},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSCurveToLineParams_setMaxStepDegrees_r(extHandle, params, tolerance)
+    @ccall libgeos.GEOSCurveToLineParams_setMaxStepDegrees_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSCurveToLineParams},
+        tolerance::Cdouble,
+    )::Cint
+end
+
+function GEOSCurveToLineParams_setMaxDeviation_r(extHandle, params, tolerance)
+    @ccall libgeos.GEOSCurveToLineParams_setMaxDeviation_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSCurveToLineParams},
+        tolerance::Cdouble,
+    )::Cint
+end
+
+function GEOSLineToCurve_r(handle, g, params)
+    @ccall libgeos.GEOSLineToCurve_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        params::Ptr{GEOSLineToCurveParams},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSLineToCurveParams_setRadiusTolerance_r(extHandle, params, tolerance)
+    @ccall libgeos.GEOSLineToCurveParams_setRadiusTolerance_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSLineToCurveParams},
+        tolerance::Cdouble,
+    )::Cint
+end
+
+function GEOSLineToCurveParams_setMaxStepDegrees_r(extHandle, params, tolerance)
+    @ccall libgeos.GEOSLineToCurveParams_setMaxStepDegrees_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSLineToCurveParams},
+        tolerance::Cdouble,
+    )::Cint
+end
+
+function GEOSLineToCurveParams_setMaxAngleDifferenceDegrees_r(extHandle, params, tolerance)
+    @ccall libgeos.GEOSLineToCurveParams_setMaxAngleDifferenceDegrees_r(
+        extHandle::GEOSContextHandle_t,
+        params::Ptr{GEOSLineToCurveParams},
+        tolerance::Cdouble,
+    )::Cint
 end
 
 function GEOSGetNumInteriorRings_r(handle, g)
@@ -1867,6 +2168,19 @@ function GEOSHausdorffDistance_r(handle, g1, g2, dist)
     )::Cint
 end
 
+function GEOSHausdorffDistanceWithPoints_r(handle, g1, g2, dist, p1x, p1y, p2x, p2y)
+    @ccall libgeos.GEOSHausdorffDistanceWithPoints_r(
+        handle::GEOSContextHandle_t,
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+        dist::Ptr{Cdouble},
+        p1x::Ptr{Cdouble},
+        p1y::Ptr{Cdouble},
+        p2x::Ptr{Cdouble},
+        p2y::Ptr{Cdouble},
+    )::Cint
+end
+
 function GEOSHausdorffDistanceDensify_r(handle, g1, g2, densifyFrac, dist)
     @ccall libgeos.GEOSHausdorffDistanceDensify_r(
         handle::GEOSContextHandle_t,
@@ -1874,6 +2188,30 @@ function GEOSHausdorffDistanceDensify_r(handle, g1, g2, densifyFrac, dist)
         g2::Ptr{GEOSGeometry},
         densifyFrac::Cdouble,
         dist::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSHausdorffDistanceDensifyWithPoints_r(
+    handle,
+    g1,
+    g2,
+    densifyFrac,
+    dist,
+    p1x,
+    p1y,
+    p2x,
+    p2y,
+)
+    @ccall libgeos.GEOSHausdorffDistanceDensifyWithPoints_r(
+        handle::GEOSContextHandle_t,
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+        densifyFrac::Cdouble,
+        dist::Ptr{Cdouble},
+        p1x::Ptr{Cdouble},
+        p1y::Ptr{Cdouble},
+        p2x::Ptr{Cdouble},
+        p2y::Ptr{Cdouble},
     )::Cint
 end
 
@@ -1929,6 +2267,91 @@ function GEOSGeom_transformXY_r(handle, g, callback, userdata)
         callback::GEOSTransformXYCallback,
         userdata::Ptr{Cvoid},
     )::Ptr{GEOSGeometry}
+end
+
+function GEOSGeom_transformXYZ_r(handle, g, callback, userdata)
+    @ccall libgeos.GEOSGeom_transformXYZ_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        callback::GEOSTransformXYZCallback,
+        userdata::Ptr{Cvoid},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSClusterDBSCAN_r(handle, g, eps, minPoints)
+    @ccall libgeos.GEOSClusterDBSCAN_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        eps::Cdouble,
+        minPoints::Cuint,
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterGeometryDistance_r(handle, g, d)
+    @ccall libgeos.GEOSClusterGeometryDistance_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        d::Cdouble,
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterGeometryIntersects_r(handle, g)
+    @ccall libgeos.GEOSClusterGeometryIntersects_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterEnvelopeDistance_r(handle, g, d)
+    @ccall libgeos.GEOSClusterEnvelopeDistance_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+        d::Cdouble,
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterEnvelopeIntersects_r(handle, g)
+    @ccall libgeos.GEOSClusterEnvelopeIntersects_r(
+        handle::GEOSContextHandle_t,
+        g::Ptr{GEOSGeometry},
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterInfo_getNumClusters_r(arg1, clusters)
+    @ccall libgeos.GEOSClusterInfo_getNumClusters_r(
+        arg1::GEOSContextHandle_t,
+        clusters::Ptr{GEOSClusterInfo},
+    )::Csize_t
+end
+
+function GEOSClusterInfo_getClusterSize_r(arg1, clusters, i)
+    @ccall libgeos.GEOSClusterInfo_getClusterSize_r(
+        arg1::GEOSContextHandle_t,
+        clusters::Ptr{GEOSClusterInfo},
+        i::Csize_t,
+    )::Csize_t
+end
+
+function GEOSClusterInfo_getClustersForInputs_r(arg1, clusters)
+    @ccall libgeos.GEOSClusterInfo_getClustersForInputs_r(
+        arg1::GEOSContextHandle_t,
+        clusters::Ptr{GEOSClusterInfo},
+    )::Ptr{Csize_t}
+end
+
+function GEOSClusterInfo_getInputsForClusterN_r(arg1, clusters, i)
+    @ccall libgeos.GEOSClusterInfo_getInputsForClusterN_r(
+        arg1::GEOSContextHandle_t,
+        clusters::Ptr{GEOSClusterInfo},
+        i::Csize_t,
+    )::Ptr{Csize_t}
+end
+
+function GEOSClusterInfo_destroy_r(arg1, info)
+    @ccall libgeos.GEOSClusterInfo_destroy_r(
+        arg1::GEOSContextHandle_t,
+        info::Ptr{GEOSClusterInfo},
+    )::Cvoid
 end
 
 function GEOSOrientationIndex_r(handle, Ax, Ay, Bx, By, Px, Py)
@@ -2235,6 +2658,21 @@ function GEOSGeoJSONWriter_writeGeometry_r(handle, writer, g, indent)
     )
 end
 
+function GEOSGeoJSONWriter_setOutputDimension_r(handle, writer, dim)
+    @ccall libgeos.GEOSGeoJSONWriter_setOutputDimension_r(
+        handle::GEOSContextHandle_t,
+        writer::Ptr{GEOSGeoJSONWriter},
+        dim::Cint,
+    )::Cvoid
+end
+
+function GEOSGeoJSONWriter_getOutputDimension_r(handle, writer)
+    @ccall libgeos.GEOSGeoJSONWriter_getOutputDimension_r(
+        handle::GEOSContextHandle_t,
+        writer::Ptr{GEOSGeoJSONWriter},
+    )::Cint
+end
+
 function GEOSFree_r(handle, buffer)
     @ccall libgeos.GEOSFree_r(handle::GEOSContextHandle_t, buffer::Ptr{Cvoid})::Cvoid
 end
@@ -2260,6 +2698,14 @@ end
 
 function GEOSCoordSeq_create(size, dims)
     @ccall libgeos.GEOSCoordSeq_create(size::Cuint, dims::Cuint)::Ptr{GEOSCoordSequence}
+end
+
+function GEOSCoordSeq_createWithDimensions(size, hasZ, hasM)
+    @ccall libgeos.GEOSCoordSeq_createWithDimensions(
+        size::Cuint,
+        hasZ::Cint,
+        hasM::Cint,
+    )::Ptr{GEOSCoordSequence}
 end
 
 function GEOSCoordSeq_copyFromBuffer(buf, size, hasZ, hasM)
@@ -2308,6 +2754,14 @@ function GEOSCoordSeq_destroy(s)
     @ccall libgeos.GEOSCoordSeq_destroy(s::Ptr{GEOSCoordSequence})::Cvoid
 end
 
+function GEOSCoordSeq_hasZ(s)
+    @ccall libgeos.GEOSCoordSeq_hasZ(s::Ptr{GEOSCoordSequence})::Cchar
+end
+
+function GEOSCoordSeq_hasM(s)
+    @ccall libgeos.GEOSCoordSeq_hasM(s::Ptr{GEOSCoordSequence})::Cchar
+end
+
 function GEOSCoordSeq_setX(s, idx, val)
     @ccall libgeos.GEOSCoordSeq_setX(
         s::Ptr{GEOSCoordSequence},
@@ -2326,6 +2780,14 @@ end
 
 function GEOSCoordSeq_setZ(s, idx, val)
     @ccall libgeos.GEOSCoordSeq_setZ(
+        s::Ptr{GEOSCoordSequence},
+        idx::Cuint,
+        val::Cdouble,
+    )::Cint
+end
+
+function GEOSCoordSeq_setM(s, idx, val)
+    @ccall libgeos.GEOSCoordSeq_setM(
         s::Ptr{GEOSCoordSequence},
         idx::Cuint,
         val::Cdouble,
@@ -2378,6 +2840,14 @@ end
 
 function GEOSCoordSeq_getZ(s, idx, val)
     @ccall libgeos.GEOSCoordSeq_getZ(
+        s::Ptr{GEOSCoordSequence},
+        idx::Cuint,
+        val::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSCoordSeq_getM(s, idx, val)
+    @ccall libgeos.GEOSCoordSeq_getM(
         s::Ptr{GEOSCoordSequence},
         idx::Cuint,
         val::Ptr{Cdouble},
@@ -2469,7 +2939,6 @@ function GEOSGeom_createCircularString(s)
     )::Ptr{GEOSGeometry}
 end
 
-# no prototype is found for this function at geos_c.h:2519:31, please use with caution
 function GEOSGeom_createEmptyCircularString()
     @ccall libgeos.GEOSGeom_createEmptyCircularString()::Ptr{GEOSGeometry}
 end
@@ -2481,7 +2950,6 @@ function GEOSGeom_createCompoundCurve(curves, ncurves)
     )::Ptr{GEOSGeometry}
 end
 
-# no prototype is found for this function at geos_c.h:2538:31, please use with caution
 function GEOSGeom_createEmptyCompoundCurve()
     @ccall libgeos.GEOSGeom_createEmptyCompoundCurve()::Ptr{GEOSGeometry}
 end
@@ -2494,7 +2962,6 @@ function GEOSGeom_createCurvePolygon(shell, holes, nholes)
     )::Ptr{GEOSGeometry}
 end
 
-# no prototype is found for this function at geos_c.h:2564:31, please use with caution
 function GEOSGeom_createEmptyCurvePolygon()
     @ccall libgeos.GEOSGeom_createEmptyCurvePolygon()::Ptr{GEOSGeometry}
 end
@@ -2557,6 +3024,14 @@ end
 
 function GEOSGetGeometryN(g, n)
     @ccall libgeos.GEOSGetGeometryN(g::Ptr{GEOSGeometry}, n::Cint)::Ptr{GEOSGeometry}
+end
+
+function GEOSGetNumCurves(g)
+    @ccall libgeos.GEOSGetNumCurves(g::Ptr{GEOSGeometry})::Cint
+end
+
+function GEOSGetCurveN(g, n)
+    @ccall libgeos.GEOSGetCurveN(g::Ptr{GEOSGeometry}, n::Cint)::Ptr{GEOSGeometry}
 end
 
 function GEOSGeom_getPrecision(g)
@@ -2689,6 +3164,14 @@ function GEOSisSimple(g)
     @ccall libgeos.GEOSisSimple(g::Ptr{GEOSGeometry})::Cchar
 end
 
+function GEOSisSimpleDetail(g, findAllLocations, locations)
+    @ccall libgeos.GEOSisSimpleDetail(
+        g::Ptr{GEOSGeometry},
+        findAllLocations::Cint,
+        locations::Ptr{Ptr{GEOSGeometry}},
+    )::Cchar
+end
+
 function GEOSisValid(g)
     @ccall libgeos.GEOSisValid(g::Ptr{GEOSGeometry})::Cchar
 end
@@ -2805,12 +3288,46 @@ function GEOSHausdorffDistance(g1, g2, dist)
     )::Cint
 end
 
+function GEOSHausdorffDistanceWithPoints(g1, g2, dist, p1x, p1y, p2x, p2y)
+    @ccall libgeos.GEOSHausdorffDistanceWithPoints(
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+        dist::Ptr{Cdouble},
+        p1x::Ptr{Cdouble},
+        p1y::Ptr{Cdouble},
+        p2x::Ptr{Cdouble},
+        p2y::Ptr{Cdouble},
+    )::Cint
+end
+
 function GEOSHausdorffDistanceDensify(g1, g2, densifyFrac, dist)
     @ccall libgeos.GEOSHausdorffDistanceDensify(
         g1::Ptr{GEOSGeometry},
         g2::Ptr{GEOSGeometry},
         densifyFrac::Cdouble,
         dist::Ptr{Cdouble},
+    )::Cint
+end
+
+function GEOSHausdorffDistanceDensifyWithPoints(
+    g1,
+    g2,
+    densifyFrac,
+    dist,
+    p1x,
+    p1y,
+    p2x,
+    p2y,
+)
+    @ccall libgeos.GEOSHausdorffDistanceDensifyWithPoints(
+        g1::Ptr{GEOSGeometry},
+        g2::Ptr{GEOSGeometry},
+        densifyFrac::Cdouble,
+        dist::Ptr{Cdouble},
+        p1x::Ptr{Cdouble},
+        p1y::Ptr{Cdouble},
+        p2x::Ptr{Cdouble},
+        p2y::Ptr{Cdouble},
     )::Cint
 end
 
@@ -2938,11 +3455,95 @@ function GEOSClipByRect(g, xmin, ymin, xmax, ymax)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSSubdivideByGrid(g, xmin, ymin, xmax, ymax, nx, ny, includeExterior)
+    @ccall libgeos.GEOSSubdivideByGrid(
+        g::Ptr{GEOSGeometry},
+        xmin::Cdouble,
+        ymin::Cdouble,
+        xmax::Cdouble,
+        ymax::Cdouble,
+        nx::Cuint,
+        ny::Cuint,
+        includeExterior::Cint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSGridIntersectionFractions(g, xmin, ymin, xmax, ymax, nx, ny, buf)
+    @ccall libgeos.GEOSGridIntersectionFractions(
+        g::Ptr{GEOSGeometry},
+        xmin::Cdouble,
+        ymin::Cdouble,
+        xmax::Cdouble,
+        ymax::Cdouble,
+        nx::Cuint,
+        ny::Cuint,
+        buf::Ptr{Cfloat},
+    )::Cint
+end
+
 function GEOSSharedPaths(g1, g2)
     @ccall libgeos.GEOSSharedPaths(
         g1::Ptr{GEOSGeometry},
         g2::Ptr{GEOSGeometry},
     )::Ptr{GEOSGeometry}
+end
+
+function GEOSClusterDBSCAN(g, eps, minPoints)
+    @ccall libgeos.GEOSClusterDBSCAN(
+        g::Ptr{GEOSGeometry},
+        eps::Cdouble,
+        minPoints::Cuint,
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterGeometryDistance(g, d)
+    @ccall libgeos.GEOSClusterGeometryDistance(
+        g::Ptr{GEOSGeometry},
+        d::Cdouble,
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterGeometryIntersects(g)
+    @ccall libgeos.GEOSClusterGeometryIntersects(g::Ptr{GEOSGeometry})::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterEnvelopeDistance(g, d)
+    @ccall libgeos.GEOSClusterEnvelopeDistance(
+        g::Ptr{GEOSGeometry},
+        d::Cdouble,
+    )::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterEnvelopeIntersects(g)
+    @ccall libgeos.GEOSClusterEnvelopeIntersects(g::Ptr{GEOSGeometry})::Ptr{GEOSClusterInfo}
+end
+
+function GEOSClusterInfo_getNumClusters(clusters)
+    @ccall libgeos.GEOSClusterInfo_getNumClusters(clusters::Ptr{GEOSClusterInfo})::Csize_t
+end
+
+function GEOSClusterInfo_getClusterSize(clusters, i)
+    @ccall libgeos.GEOSClusterInfo_getClusterSize(
+        clusters::Ptr{GEOSClusterInfo},
+        i::Csize_t,
+    )::Csize_t
+end
+
+function GEOSClusterInfo_getClustersForInputs(clusters)
+    @ccall libgeos.GEOSClusterInfo_getClustersForInputs(
+        clusters::Ptr{GEOSClusterInfo},
+    )::Ptr{Csize_t}
+end
+
+function GEOSClusterInfo_getInputsForClusterN(clusters, i)
+    @ccall libgeos.GEOSClusterInfo_getInputsForClusterN(
+        clusters::Ptr{GEOSClusterInfo},
+        i::Csize_t,
+    )::Ptr{Csize_t}
+end
+
+function GEOSClusterInfo_destroy(clusters)
+    @ccall libgeos.GEOSClusterInfo_destroy(clusters::Ptr{GEOSClusterInfo})::Cvoid
 end
 
 function GEOSBuffer(g, width, quadsegs)
@@ -3045,6 +3646,55 @@ function GEOSCoverageSimplifyVW(input, tolerance, preserveBoundary)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSCoverageEdges(input, edgetype)
+    @ccall libgeos.GEOSCoverageEdges(
+        input::Ptr{GEOSGeometry},
+        edgetype::Cint,
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSCoverageCleanParams_create()
+    @ccall libgeos.GEOSCoverageCleanParams_create()::Ptr{GEOSCoverageCleanParams}
+end
+
+function GEOSCoverageCleanParams_destroy(params)
+    @ccall libgeos.GEOSCoverageCleanParams_destroy(
+        params::Ptr{GEOSCoverageCleanParams},
+    )::Cvoid
+end
+
+function GEOSCoverageCleanParams_setSnappingDistance(params, snappingDistance)
+    @ccall libgeos.GEOSCoverageCleanParams_setSnappingDistance(
+        params::Ptr{GEOSCoverageCleanParams},
+        snappingDistance::Cdouble,
+    )::Cint
+end
+
+function GEOSCoverageCleanParams_setGapMaximumWidth(params, gapMaximumWidth)
+    @ccall libgeos.GEOSCoverageCleanParams_setGapMaximumWidth(
+        params::Ptr{GEOSCoverageCleanParams},
+        gapMaximumWidth::Cdouble,
+    )::Cint
+end
+
+function GEOSCoverageCleanParams_setOverlapMergeStrategy(params, overlapMergeStrategy)
+    @ccall libgeos.GEOSCoverageCleanParams_setOverlapMergeStrategy(
+        params::Ptr{GEOSCoverageCleanParams},
+        overlapMergeStrategy::Cint,
+    )::Cint
+end
+
+function GEOSCoverageCleanWithParams(input, params)
+    @ccall libgeos.GEOSCoverageCleanWithParams(
+        input::Ptr{GEOSGeometry},
+        params::Ptr{GEOSCoverageCleanParams},
+    )::Ptr{GEOSGeometry}
+end
+
+function GEOSCoverageClean(input)
+    @ccall libgeos.GEOSCoverageClean(input::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
 function GEOSEnvelope(g)
     @ccall libgeos.GEOSEnvelope(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
 end
@@ -3088,11 +3738,6 @@ function GEOSPolygonHullSimplify(g, isOuter, vertexNumFraction)
         isOuter::Cuint,
         vertexNumFraction::Cdouble,
     )::Ptr{GEOSGeometry}
-end
-
-@cenum GEOSPolygonHullParameterModes::UInt32 begin
-    GEOSHULL_PARAM_VERTEX_RATIO = 1
-    GEOSHULL_PARAM_AREA_RATIO = 2
 end
 
 function GEOSPolygonHullSimplifyMode(g, isOuter, parameterMode, parameter)
@@ -3157,11 +3802,6 @@ function GEOSConstrainedDelaunayTriangulation(g)
     )::Ptr{GEOSGeometry}
 end
 
-@cenum GEOSVoronoiFlags::UInt32 begin
-    GEOS_VORONOI_ONLY_EDGES = 1
-    GEOS_VORONOI_PRESERVE_ORDER = 2
-end
-
 function GEOSVoronoiDiagram(g, env, tolerance, flags)
     @ccall libgeos.GEOSVoronoiDiagram(
         g::Ptr{GEOSGeometry},
@@ -3173,6 +3813,13 @@ end
 
 function GEOSNode(g)
     @ccall libgeos.GEOSNode(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSSplit(g, edge)
+    @ccall libgeos.GEOSSplit(
+        g::Ptr{GEOSGeometry},
+        edge::Ptr{GEOSGeometry},
+    )::Ptr{GEOSGeometry}
 end
 
 function GEOSPolygonize(geoms, ngeoms)
@@ -3215,6 +3862,13 @@ end
 
 function GEOSLineMerge(g)
     @ccall libgeos.GEOSLineMerge(g::Ptr{GEOSGeometry})::Ptr{GEOSGeometry}
+end
+
+function GEOSMinimumSpanningTree(geoms, ngeoms)
+    @ccall libgeos.GEOSMinimumSpanningTree(
+        geoms::Ptr{Ptr{GEOSGeometry}},
+        ngeoms::Cuint,
+    )::Ptr{Csize_t}
 end
 
 function GEOSLineMergeDirected(g)
@@ -3265,6 +3919,14 @@ function GEOSGeom_transformXY(g, callback, userdata)
     )::Ptr{GEOSGeometry}
 end
 
+function GEOSGeom_transformXYZ(g, callback, userdata)
+    @ccall libgeos.GEOSGeom_transformXYZ(
+        g::Ptr{GEOSGeometry},
+        callback::GEOSTransformXYZCallback,
+        userdata::Ptr{Cvoid},
+    )::Ptr{GEOSGeometry}
+end
+
 function GEOSSnap(input, snap_target, tolerance)
     @ccall libgeos.GEOSSnap(
         input::Ptr{GEOSGeometry},
@@ -3279,6 +3941,73 @@ function GEOSGeom_setPrecision(g, gridSize, flags)
         gridSize::Cdouble,
         flags::Cint,
     )::Ptr{GEOSGeometry}
+end
+
+function GEOSCurveToLine(g, params)
+    @ccall libgeos.GEOSCurveToLine(
+        g::Ptr{GEOSGeometry},
+        params::Ptr{GEOSCurveToLineParams},
+    )::Ptr{GEOSGeometry}
+end
+
+# no prototype is found for this function at geos_c.h:6304:40, please use with caution
+function GEOSCurveToLineParams_create()
+    @ccall libgeos.GEOSCurveToLineParams_create()::Ptr{GEOSCurveToLineParams}
+end
+
+function GEOSCurveToLineParams_destroy(params)
+    @ccall libgeos.GEOSCurveToLineParams_destroy(params::Ptr{GEOSCurveToLineParams})::Cvoid
+end
+
+function GEOSCurveToLineParams_setMaxStepDegrees(params, tolerance)
+    @ccall libgeos.GEOSCurveToLineParams_setMaxStepDegrees(
+        params::Ptr{GEOSCurveToLineParams},
+        tolerance::Cdouble,
+    )::Cint
+end
+
+function GEOSCurveToLineParams_setMaxDeviation(params, tolerance)
+    @ccall libgeos.GEOSCurveToLineParams_setMaxDeviation(
+        params::Ptr{GEOSCurveToLineParams},
+        tolerance::Cdouble,
+    )::Cint
+end
+
+function GEOSLineToCurve(g, params)
+    @ccall libgeos.GEOSLineToCurve(
+        g::Ptr{GEOSGeometry},
+        params::Ptr{GEOSLineToCurveParams},
+    )::Ptr{GEOSGeometry}
+end
+
+# no prototype is found for this function at geos_c.h:6346:40, please use with caution
+function GEOSLineToCurveParams_create()
+    @ccall libgeos.GEOSLineToCurveParams_create()::Ptr{GEOSLineToCurveParams}
+end
+
+function GEOSLineToCurveParams_destroy(params)
+    @ccall libgeos.GEOSLineToCurveParams_destroy(params::Ptr{GEOSLineToCurveParams})::Cvoid
+end
+
+function GEOSLineToCurveParams_setRadiusTolerance(params, tolerance)
+    @ccall libgeos.GEOSLineToCurveParams_setRadiusTolerance(
+        params::Ptr{GEOSLineToCurveParams},
+        tolerance::Cdouble,
+    )::Cint
+end
+
+function GEOSLineToCurveParams_setMaxStepDegrees(params, tolerance)
+    @ccall libgeos.GEOSLineToCurveParams_setMaxStepDegrees(
+        params::Ptr{GEOSLineToCurveParams},
+        tolerance::Cdouble,
+    )::Cint
+end
+
+function GEOSLineToCurveParams_setMaxAngleDifferenceDegrees(params, tolerance)
+    @ccall libgeos.GEOSLineToCurveParams_setMaxAngleDifferenceDegrees(
+        params::Ptr{GEOSLineToCurveParams},
+        tolerance::Cdouble,
+    )::Cint
 end
 
 function GEOSDisjoint(g1, g2)
@@ -3785,6 +4514,19 @@ function GEOSGeoJSONWriter_writeGeometry(writer, g, indent)
     )
 end
 
+function GEOSGeoJSONWriter_setOutputDimension(writer, dim)
+    @ccall libgeos.GEOSGeoJSONWriter_setOutputDimension(
+        writer::Ptr{GEOSGeoJSONWriter},
+        dim::Cint,
+    )::Cvoid
+end
+
+function GEOSGeoJSONWriter_getOutputDimension(writer)
+    @ccall libgeos.GEOSGeoJSONWriter_getOutputDimension(
+        writer::Ptr{GEOSGeoJSONWriter},
+    )::Cint
+end
+
 function GEOSSingleSidedBuffer(g, width, quadsegs, joinStyle, mitreLimit, leftSide)
     @ccall libgeos.GEOSSingleSidedBuffer(
         g::Ptr{GEOSGeometry},
@@ -3950,21 +4692,21 @@ end
 
 const GEOS_VERSION_MAJOR = 3
 
-const GEOS_VERSION_MINOR = 13
+const GEOS_VERSION_MINOR = 15
 
 const GEOS_VERSION_PATCH = 0
 
-const GEOS_VERSION = "3.13.0"
+const GEOS_VERSION = "3.15.0"
 
-const GEOS_JTS_PORT = "1.18.0"
+const GEOS_JTS_PORT = "1.20.0"
 
 const GEOS_CAPI_VERSION_MAJOR = 1
 
-const GEOS_CAPI_VERSION_MINOR = 19
+const GEOS_CAPI_VERSION_MINOR = 21
 
 const GEOS_CAPI_VERSION_PATCH = 0
 
-const GEOS_CAPI_VERSION = "3.13.0-CAPI-1.19.0"
+const GEOS_CAPI_VERSION = "3.15.0-CAPI-1.21.0"
 
 const GEOS_CAPI_FIRST_INTERFACE = GEOS_CAPI_VERSION_MAJOR
 

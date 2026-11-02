@@ -77,7 +77,7 @@ mutable struct MultiPoint <: AbstractMultiGeometry
         multipoint = if id == GEOS_MULTIPOINT
             new(obj, context)
         elseif id == GEOS_POINT
-            new(createCollection(GEOS_MULTIPOINT, [cloneGeom(obj, context)], context), context)
+            new(createCollection(GEOS_MULTIPOINT, [obj], context), context)
         else
             open_issue_if_conversion_makes_sense(MultiPoint, id)
         end
@@ -164,10 +164,7 @@ mutable struct MultiLineString <: AbstractMultiGeometry
         multiline = if id == GEOS_MULTILINESTRING
             new(obj, context)
         elseif id == GEOS_LINESTRING
-            new(
-                createCollection(GEOS_MULTILINESTRING, [cloneGeom(obj, context)], context),
-                context,
-            )
+            new(createCollection(GEOS_MULTILINESTRING, [obj], context), context)
         else
             open_issue_if_conversion_makes_sense(MultiLineString, id)
         end
@@ -305,10 +302,7 @@ mutable struct MultiPolygon <: AbstractMultiGeometry
         multipolygon = if id == GEOS_MULTIPOLYGON
             new(obj, context)
         elseif id == GEOS_POLYGON
-            new(
-                createCollection(GEOS_MULTIPOLYGON, [cloneGeom(obj, context)], context),
-                context,
-            )
+            new(createCollection(GEOS_MULTIPOLYGON, [obj], context), context)
         else
             open_issue_if_conversion_makes_sense(MultiPolygon, id)
         end
@@ -378,12 +372,12 @@ mutable struct GeometryCollection <: AbstractMultiGeometry
         context,
     )
     GeometryCollection(
-        collection::Vector{<:AbstractGeometry},
+        collection::AbstractVector{<:AbstractGeometry},
         context::GEOSContext = get_global_context(),
     ) = GeometryCollection(
         createCollection(
             GEOS_GEOMETRYCOLLECTION,
-            GEOSGeom[cloneGeom(geom, context) for geom in collection],
+            vec(GEOSGeom[cloneGeom(geom, context) for geom in collection]), # just in case `collection` has custom axes
             context,
         ),
         context,
@@ -580,6 +574,8 @@ Return the `GEOSContext` that `obj` belongs to. If obj is not a GEOS object with
 a context, return the global context.
 """
 get_context(obj::Geometry) = obj.context
+get_context(objs::AbstractVector{<:AbstractGeometry}) =
+    isempty(objs) ? get_global_context() : get_context(first(objs))
 get_context(obj::Any) = get_global_context()
 
 mutable struct PreparedGeometry{G<:AbstractGeometry} <: AbstractGeometry
@@ -671,6 +667,8 @@ function compare(
     end
     return true
 end
+compare(cmp, geo1::PreparedGeometry, geo2::PreparedGeometry, ctx = get_context(geo1)) =
+    compare(cmp, geo1.ownedby, geo2.ownedby, ctx)
 
 npoints(pt::Point) = 1
 npoints(geo::HasCoordSeq) = GeoInterface.ngeom(geo)
@@ -680,6 +678,7 @@ function compare_coord_seqs(cmp, geo1, geo2, ctx)
     ncoords2 = GeoInterface.ncoord(geo2)
     ncoords1 == ncoords2 || return false
     ncoords1 == 0 && return true
+    hasZ(geo1, ctx) == hasZ(geo2, ctx) || return false  # XYZ vs XYM
     np1 = npoints(geo1)
     np2 = npoints(geo2)
     np1 == np2 || return false
@@ -698,7 +697,7 @@ function compare_coord_seqs(cmp::IsApprox, geo1, geo2, ctx)
     ncoords2 = GeoInterface.ncoord(geo2)
     ncoords1 == ncoords2 || return false
     ncoords1 == 0 && return true
-    @assert ncoords1 in 2:3
+    hasZ(geo1, ctx) == hasZ(geo2, ctx) || return false  # XYZ vs XYM
     ncoords1 == ncoords2 || return false
     np1 = npoints(geo1)
     np2 = npoints(geo2)
@@ -713,14 +712,8 @@ function compare_coord_seqs(cmp::IsApprox, geo1, geo2, ctx)
     for i = 1:np1
         coordinates!(coords1, geo1, i, ctx)
         coordinates!(coords2, geo2, i, ctx)
-        if ncoords1 == 2
-            x1, y1 = coords1
-            x2, y2 = coords2
-            s12 += (x1 - x2)^2 + (y1 - y2)^2
-        else
-            x1, y1, z1 = coords1
-            x2, y2, z2 = coords2
-            s12 += (x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2
+        for k = 1:ncoords1
+            s12 += (coords1[k] - coords2[k])^2
         end
         s1 += sum(abs2, coords1)
         s2 += sum(abs2, coords2)
@@ -754,6 +747,8 @@ function Base.hash(geo::AbstractGeometry, h::UInt)::UInt
     end
     return h
 end
+Base.hash(geo::PreparedGeometry, h::UInt) =
+    hash(geo.ownedby, hash(typesalt(PreparedGeometry), h))
 function hash_coord_seq(geo::HasCoordSeq, h::UInt)::UInt
     nc = GeoInterface.ncoord(geo)
     if nc == 0
