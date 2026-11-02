@@ -162,6 +162,29 @@ end
     LibGEOS.destroyGeom(expected_)
     LibGEOS.destroyGeom(output_)
 
+    @testset "Concave hulls" begin
+        points = LibGEOS.readgeom("MULTIPOINT (0 0, 0 4, 2 1, 4 4, 4 0)")
+        hull = LibGEOS.convexhull(points)
+        @test LibGEOS.equals(LibGEOS.concavehull(points; ratio = 1), hull)
+        @test LibGEOS.area(LibGEOS.concavehull(points; ratio = 0)) < LibGEOS.area(hull)
+        @test LibGEOS.equals(LibGEOS.concavehull(points; length_ratio = 10), hull)
+        @test LibGEOS.equals(
+            LibGEOS.concavehull(points; length_ratio = 1.0),
+            LibGEOS.concavehull(points; ratio = 0),
+        )
+        @test_throws ArgumentError LibGEOS.concavehull(points)
+        @test_throws ArgumentError LibGEOS.concavehull(points; ratio = 0.3, length_ratio = 1)
+
+        polygons = LibGEOS.readgeom(
+            "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)), ((3 0, 3 1, 4 1, 4 0, 3 0)))",
+        )
+        @test LibGEOS.equals(LibGEOS.concavehull_of_polygons(polygons, 0; tight = true), polygons)
+        @test LibGEOS.equals(
+            LibGEOS.concavehull_of_polygons(polygons, 1; allow_holes = false),
+            LibGEOS.convexhull(polygons),
+        )
+    end
+
     # GEOSCoordSeqTest
     cs_ = LibGEOS.createCoordSeq(5, 3)
     @test LibGEOS.getSize(cs_) == 1
