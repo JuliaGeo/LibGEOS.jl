@@ -75,6 +75,17 @@ const LG = LibGEOS
     @inferred GeoInterface.getgeom(mpt)
     @inferred GeoInterface.coordinates(mpt)
 
+    for (wkt, coords) in [
+        "POINT (1 2)" => [1, 2],
+        "POINT Z (1 2 3)" => [1, 2, 3],
+        "POINT M (1 2 4)" => [1, 2, 4],
+        "POINT ZM (1 2 3 4)" => [1, 2, 3, 4],
+    ]
+        pt = readgeom(wkt)
+        @test [GeoInterface.getcoord(pt, i) for i in eachindex(coords)] == coords
+        @test_throws BoundsError GeoInterface.getcoord(pt, length(coords) + 1)
+    end
+
     coords = Vector{Float64}[[8, 1], [9, 1], [9, 2], [8, 2]]
     ls = LibGEOS.LineString(coords)
     @test GeoInterface.coordinates(ls) == coords
