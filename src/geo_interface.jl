@@ -8,6 +8,11 @@ geointerface_geomtype(::LinearRingTrait) = LinearRing
 geointerface_geomtype(::PolygonTrait) = Polygon
 geointerface_geomtype(::MultiPolygonTrait) = MultiPolygon
 geointerface_geomtype(::GeometryCollectionTrait) = GeometryCollection
+geointerface_geomtype(::CircularStringTrait) = CircularString
+geointerface_geomtype(::CompoundCurveTrait) = CompoundCurve
+geointerface_geomtype(::CurvePolygonTrait) = CurvePolygon
+geointerface_geomtype(::MultiSurfaceTrait) = MultiSurface
+geointerface_geomtype(::MultiCurveTrait) = MultiCurve
 
 GeoInterface.geomtrait(::Point) = PointTrait()
 GeoInterface.geomtrait(::MultiPoint) = MultiPointTrait()
@@ -17,6 +22,11 @@ GeoInterface.geomtrait(::LinearRing) = LinearRingTrait()
 GeoInterface.geomtrait(::Polygon) = PolygonTrait()
 GeoInterface.geomtrait(::MultiPolygon) = MultiPolygonTrait()
 GeoInterface.geomtrait(::GeometryCollection) = GeometryCollectionTrait()
+GeoInterface.geomtrait(::CircularString) = CircularStringTrait()
+GeoInterface.geomtrait(::CompoundCurve) = CompoundCurveTrait()
+GeoInterface.geomtrait(::CurvePolygon) = CurvePolygonTrait()
+GeoInterface.geomtrait(::MultiSurface) = MultiSurfaceTrait()
+GeoInterface.geomtrait(::MultiCurve) = MultiCurveTrait()
 GeoInterface.geomtrait(geom::PreparedGeometry) = GeoInterface.geomtrait(geom.ownedby)
 
 GeoInterface.isempty(::AbstractGeometryTrait, geom::AbstractGeometry) = isEmpty(geom)
@@ -24,16 +34,29 @@ GeoInterface.isempty(::AbstractGeometryTrait, geom::AbstractGeometry) = isEmpty(
 GeoInterface.ngeom(::AbstractGeometryCollectionTrait, geom::AbstractMultiGeometry) =
     isEmpty(geom) ? 0 : Int(numGeometries(geom))
 GeoInterface.ngeom(::LineStringTrait, geom::LineString) = Int(numPoints(geom))
+GeoInterface.ngeom(::CircularStringTrait, geom::CircularString) = Int(numPoints(geom))
 GeoInterface.ngeom(::LinearRingTrait, geom::LinearRing) = Int(numPoints(geom))
 GeoInterface.ngeom(::PolygonTrait, geom::Polygon) = Int(numInteriorRings(geom)) + 1
+GeoInterface.ngeom(::CurvePolygonTrait, geom::CurvePolygon) =
+    Int(numInteriorRings(geom)) + 1
 GeoInterface.ngeom(t::AbstractGeometryTrait, geom::PreparedGeometry) =
     GeoInterface.ngeom(t, geom.ownedby)
 GeoInterface.ngeom(::AbstractPointTrait, geom::Point) = 0
 GeoInterface.ngeom(::AbstractPointTrait, geom::PreparedGeometry) = 0
 
 GI.is3d(::AbstractGeometryTrait, geom::AbstractGeometry) = hasZ(geom)
-GI.getexterior(::AbstractPolygonTrait, geom::Polygon) = exteriorRing(geom)
-GI.gethole(::AbstractPolygonTrait, geom::Polygon, n) = interiorRing(geom, n)
+GI.getexterior(::AbstractPolygonTrait, geom::Union{Polygon,CurvePolygon}) =
+    exteriorRing(geom)
+GI.gethole(::AbstractPolygonTrait, geom::Union{Polygon,CurvePolygon}, n) =
+    interiorRing(geom, n)
+GI.ismeasured(::AbstractGeometryTrait, geom::AbstractGeometry) = hasM(geom)
+function GI.coordnames(::AbstractGeometryTrait, geom::AbstractGeometry)
+    if hasZ(geom)
+        return hasM(geom) ? (:X, :Y, :Z, :M) : (:X, :Y, :Z)
+    else
+        return hasM(geom) ? (:X, :Y, :M) : (:X, :Y)
+    end
+end
 
 function GeoInterface.getgeom(
     ::AbstractGeometryCollectionTrait,
@@ -60,6 +83,13 @@ function GeoInterface.getgeom(::PolygonTrait, geom::Polygon, i::Int)
         interiorRing(geom, i - 1)
     end
 end
+function GeoInterface.getgeom(::CurvePolygonTrait, geom::CurvePolygon, i::Int)
+    if i == 1
+        exteriorRing(geom)
+    else
+        interiorRing(geom, i - 1)
+    end
+end
 GeoInterface.getgeom(t::AbstractGeometryTrait, geom::PreparedGeometry, i) =
     GeoInterface.getgeom(t, geom.ownedby, i)
 GeoInterface.getgeom(t::AbstractPointTrait, geom::PreparedGeometry, i) = 0
@@ -70,14 +100,41 @@ GeoInterface.coordinates(t::AbstractGeometryTrait, geom::AbstractGeometry) =
     [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
 GeoInterface.coordinates(t::AbstractGeometryCollectionTrait, geom::AbstractMultiGeometry) =
     [GeoInterface.coordinates(x) for x in getgeom(t, geom)]
+# Copy all coordinates in one call, rather than through a Point for each vertex
+function GeoInterface.coordinates(
+    ::Union{LineStringTrait,LinearRingTrait},
+    geom::Union{LineString,LinearRing},
+)
+    context = get_context(geom)
+    coords = GC.@preserve geom begin
+        seq = getCoordSeq(geom, context)
+        n = getSize(seq, context)
+        ndim = getDimensions(seq, context)
+        hasz = GEOSCoordSeq_hasZ_r(context, seq) == 1
+        hasm = GEOSCoordSeq_hasM_r(context, seq) == 1
+        buffer = Vector{Float64}(undef, ndim * n)
+        GEOSCoordSeq_copyToBuffer_r(context, seq, buffer, hasz, hasm)
+        reshape(buffer, ndim, n)
+    end
+    return [coords[:, i] for i = 1:size(coords, 2)]
+end
 
 GeoInterface.ncoord(::AbstractGeometryTrait, geom::AbstractGeometry) =
     isEmpty(geom) ? 0 : Int(getCoordinateDimension(geom))
 GeoInterface.ncoord(t::AbstractGeometryTrait, geom::PreparedGeometry) =
     GeoInterface.ncoord(t, geom.ownedby)
 
-GeoInterface.getcoord(::AbstractPointTrait, geom::Point, i) =
-    getCoordinates(getCoordSeq(geom), 1)[i]
+# Read one ordinate of the point, rather than all of its coordinate sequence
+function GeoInterface.getcoord(::AbstractPointTrait, geom::Point, i)
+    context = get_context(geom)
+    i == 1 && return getGeomX(geom, context)
+    i == 2 && return getGeomY(geom, context)
+    hasz = hasZ(geom, context)
+    i == 3 && hasz && return getGeomZ(geom, context)
+    # M is the last ordinate
+    i == 3 + hasz && GEOSHasM_r(context, geom) == 0x01 && return getGeomM(geom, context)
+    throw(BoundsError(geom, i))
+end
 GeoInterface.getcoord(t::AbstractPointTrait, geom::PreparedGeometry, i) =
     GeoInterface.getcoord(t, geom.ownedby, i)
 
@@ -94,11 +151,8 @@ end
 
 GI.convert(::Type{Point}, ::PointTrait, geom::Point; context = nothing) = geom
 function GI.convert(::Type{Point}, ::PointTrait, geom; context = get_global_context())
-    if GI.is3d(geom)
-        return Point(GI.x(geom), GI.y(geom), GI.z(geom), context)
-    else
-        return Point(GI.x(geom), GI.y(geom), context)
-    end
+    seq = _coord_seq((geom,), 1, GI.is3d(geom), GI.ismeasured(geom), context)
+    return Point(createPoint(seq, context), context)
 end
 # Parent geometries are built from their converted parts with `_convert_part` and
 # `_take_ptr`. Copying the parts into the parent instead would leave them to the
@@ -230,18 +284,30 @@ function GI.convert(
     )
 end
 
-function _geom_to_coord_seq(geom, context)
-    npoint = GI.npoint(geom)
-    ndim = GI.is3d(geom) ? 3 : 2
-    seq = createCoordSeq(npoint, context; ndim)
-    for (i, p) in enumerate(GI.getpoint(geom))
-        if ndim == 2
-            setCoordSeq!(seq, i, (GI.x(p), GI.y(p)), context)
-        else
-            setCoordSeq!(seq, i, (GI.x(p), GI.y(p), GI.z(p)), context)
-        end
+# Collect the coordinates of `points` and copy them to GEOS in one call
+function _coord_seq(points, npoint, hasz, hasm, context)
+    ndim = 2 + hasz + hasm
+    coords = Vector{Float64}(undef, ndim * npoint)
+    i = 0
+    for p in points
+        coords[i+1] = GI.x(p)
+        coords[i+2] = GI.y(p)
+        hasz && (coords[i+3] = GI.z(p))
+        hasm && (coords[i+ndim] = GI.m(p))
+        i += ndim
+    end
+    seq = GEOSCoordSeq_copyFromBuffer_r(context, coords, i ÷ ndim, hasz, hasm)
+    if seq == C_NULL
+        error("LibGEOS: Error in GEOSCoordSeq_copyFromBuffer")
     end
     return seq
+end
+function _geom_to_coord_seq(geom, context)
+    npoint = GI.npoint(geom)
+    # Keep M only if the points have it.
+    # ArchGDAL lines are measured, but their points aren't.
+    hasm = GI.ismeasured(geom) && npoint > 0 && GI.ismeasured(GI.getpoint(geom, 1))
+    return _coord_seq(GI.getpoint(geom), npoint, GI.is3d(geom), hasm, context)
 end
 
 GeoInterface.distance(
@@ -380,6 +446,17 @@ for f in (
 )
     # We convert the geometry to a GEOS geometry and forward it to the geos method
     @eval $f(geom, args...; kw...) = with_geos(g -> $f(g, args...; kw...), geom)
+    @eval $f(geom::AbstractGeometry, args...; kw...) =
+        throw(MethodError($f, (geom, args...)))
+end
+
+# Concave hulls accept a context keyword, including for input conversion.
+for f in (:concavehull, :concavehull_of_polygons)
+    @eval function $f(geom, args...; context::GEOSContext = get_global_context(), kw...)
+        trait = GI.geomtrait(geom)
+        obj = GI.convert(geointerface_geomtype(trait), trait, geom; context)
+        return $f(obj, args...; context, kw...)
+    end
     @eval $f(geom::AbstractGeometry, args...; kw...) =
         throw(MethodError($f, (geom, args...)))
 end

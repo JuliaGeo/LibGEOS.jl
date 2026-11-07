@@ -1,3 +1,4 @@
+import TaskLocalValues
 
 @testset "open_issue_if_conversion_makes_sense" begin
     polygon = readgeom("POLYGON EMPTY")
@@ -390,10 +391,10 @@ end
 @testset "Multi threading" begin
     function f91(n)
         # adapted from https://github.com/JuliaGeo/LibGEOS.jl/issues/91#issuecomment-1267732709
-        contexts = [LibGEOS.GEOSContext() for i = 1:Threads.nthreads()]
+        contexts = TaskLocalValues.TaskLocalValue{LibGEOS.GEOSContext}(() -> LibGEOS.GEOSContext())
         p = [[[-1.0, -1], [+1, -1], [+1, +1], [-1, +1], [-1, -1]]]
-        Threads.@threads :static for i = 1:n
-            ctx = contexts[Threads.threadid()-Threads.nthreads(:interactive)]
+        Threads.@threads for i = 1:n
+            ctx = contexts[]
             g1 = LibGEOS.Polygon(p, ctx)
             g2 = LibGEOS.Polygon(p, ctx)
             for j = 1:n
@@ -407,10 +408,10 @@ end
     @testset "clone" begin
         function f(n)
             # adapted from https://github.com/JuliaGeo/LibGEOS.jl/issues/91#issuecomment-1267732709
-            contexts = [LibGEOS.GEOSContext() for i = 1:Threads.nthreads()]
+            contexts = TaskLocalValues.TaskLocalValue{LibGEOS.GEOSContext}(() -> LibGEOS.GEOSContext())
             p = LibGEOS.Polygon([[[-1.0, -1], [+1, -1], [+1, +1], [-1, +1], [-1, -1]]])
-            Threads.@threads :static for i = 1:n
-                ctx = contexts[Threads.threadid()-Threads.nthreads(:interactive)]
+            Threads.@threads for i = 1:n
+                ctx = contexts[]
                 g1 = LibGEOS.clone(p, ctx)
                 g2 = LibGEOS.clone(p, ctx)
                 for j = 1:n
@@ -441,4 +442,59 @@ end
         @test g1 !== g2
         @test LibGEOS.equals(g1, g2)
     end
+end
+
+@testset "Curved geometry types" begin
+    wkt = [
+        "CIRCULARSTRING(0 0,1 1,2 0)"
+        "CIRCULARSTRING (0 0, 1 1, 2 0, 3 -1, 4 0, 2 2, 0 0)"
+        "CURVEPOLYGON ((0 0, 2 0, 0 2, 0 0))"
+        "CURVEPOLYGON (CIRCULARSTRING (0 0, 1 1, 2 0, 3 -1, 4 0, 2 2, 0 0))"
+        "COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 2 0), (2 0, 2 -1, 0 -1, 0 0))"
+        "CURVEPOLYGON (COMPOUNDCURVE (CIRCULARSTRING (0 0, 1 1, 2 0), (2 0, 2 -1, 0 -1, 0 0)))"
+        "MULTISURFACE (CURVEPOLYGON (CIRCULARSTRING (0 0, 1 1, 2 0, 3 -1, 4 0, 2 2, 0 0)))"
+        "MULTICURVE((1 0, 2 0))"
+        "CURVEPOLYGON (COMPOUNDCURVE (CIRCULARSTRING (0 0, 2 2, 4 0), (4 0, 4 -1, 0 -1, 0 0)), LINEARRING (1 0, 3 0, 3 1, 1 1, 1 0))"
+    ]
+
+    geom = readgeom.(wkt)
+    @test all(geomLength.(geom) .≈ [pi, 4pi, 4 + 2 * sqrt(2), 4pi, pi + 4, pi + 4, 4pi, 1, 2pi + 12])
+    @test all(area.(geom) .≈ [0, 0, 2, 2pi, 0, pi / 2 + 2, 2pi, 0, 2pi + 2])
+
+    cp = geom[5]
+    @test_broken ngeom(cp) # not defined, not supported in GEOS 3.13.0
+
+    cp = geom[6]
+    @test_broken isequal(cp, CurvePolygon(cp)) # needs ngeom for compoundcurve
+
+    cp = geom[9]
+    @test length(interiorRings(cp)) == 1
+    @test typeof(exteriorRing(cp)) == CompoundCurve
+    @test typeof(interiorRings(cp)[1]) == LinearRing
+
+    geom = [
+        CircularString([[0.,0], [1,1], [2,0]])
+        CircularString([[0.,0], [1,1], [2,0], [3,-1], [4,0], [2,2], [0,0]])
+        CurvePolygon([[[0.,0], [2,0], [0,2], [0,0]]])
+        CurvePolygon(CircularString([[0.,0], [1,1], [2,0], [3,-1], [4,0], [2,2], [0,0]]))
+        ]
+    @test ngeom.(geom) == [3, 7, 1, 1]
+end
+
+@testset "Multi geometry from a pointer to one part" begin
+    point = readgeom("POINT (1 2)")
+    line = readgeom("LINESTRING (0 0, 1 1)")
+    polygon = readgeom("POLYGON ((0 0, 1 0, 1 1, 0 0))")
+    @test MultiPoint(LibGEOS.cloneGeom(point)) == MultiPoint([point])
+    @test MultiLineString(LibGEOS.cloneGeom(line)) == MultiLineString([line])
+    @test MultiPolygon(LibGEOS.cloneGeom(polygon)) == MultiPolygon([polygon])
+
+    # The part becomes part of the multi geometry, instead of being copied and leaked
+    ring = [[10cos(t), 10sin(t)] for t in range(0, 2pi, 10_000)]
+    ring[end] = ring[1]
+    large = LibGEOS.Polygon([ring])
+    before = Int(Sys.maxrss())
+    foreach(_ -> finalize(MultiPolygon(LibGEOS.cloneGeom(large))), 1:500)
+    growth_mb = (Int(Sys.maxrss()) - before) / 2^20
+    @test growth_mb < 20
 end
