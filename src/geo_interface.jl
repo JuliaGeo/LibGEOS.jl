@@ -414,6 +414,17 @@ for f in (
         throw(MethodError($f, (geom, args...)))
 end
 
+# Concave hulls accept a context keyword, including for input conversion.
+for f in (:concavehull, :concavehull_of_polygons)
+    @eval function $f(geom, args...; context::GEOSContext = get_global_context(), kw...)
+        trait = GI.geomtrait(geom)
+        obj = GI.convert(geointerface_geomtype(trait), trait, geom; context)
+        return $f(obj, args...; context, kw...)
+    end
+    @eval $f(geom::AbstractGeometry, args...; kw...) =
+        throw(MethodError($f, (geom, args...)))
+end
+
 # 2 geom methods
 for f in (
     :project,
