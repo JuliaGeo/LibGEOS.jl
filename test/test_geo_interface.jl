@@ -328,6 +328,17 @@ import LibGEOS: Point
     @test GeoInterface.geomtrait(geomcollection) == GeometryCollectionTrait()
     @test GeoInterface.is3d(geomcollection) == false
     @test GeoInterface.testgeometry(geomcollection)
+    @testset "concavehull does not free the caller's geometry" begin
+        # `invoke` reaches the generic GeoInterface method that the dispatch normally
+        # avoids for LibGEOS geometries; its converted input is then the caller's own.
+        poly = LG.readgeom("POLYGON((0 0, 1 0, 1 1, 0.5 0.2, 0 1, 0 0))")
+        hull = invoke(LG.concavehull, Tuple{Any,Vararg{Any}}, poly; ratio = 0.3)
+        @test poly.ptr != C_NULL
+        @test LG.area(poly) > 0
+        hull = invoke(LG.concavehull_of_polygons, Tuple{Any,Vararg{Any}}, poly, 0.0)
+        @test poly.ptr != C_NULL
+        @test LG.isValid(poly)
+    end
     @testset "Conversion" begin
         _concavehull(x) = LG.concavehull(x; ratio = 0.3)
         one_arg_functions = (

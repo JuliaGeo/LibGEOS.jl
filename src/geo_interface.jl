@@ -458,8 +458,9 @@ for f in (:concavehull, :concavehull_of_polygons)
         try
             return $f(obj, args...; context, kw...)
         finally
-            # the hull is a new geometry, so free the converted input now
-            destroyGeom(obj, context)
+            # the hull is a new geometry, so free the converted input now,
+            # unless it is the caller's own geometry
+            obj === geom || destroyGeom(obj, context)
         end
     end
     @eval $f(geom::AbstractGeometry, args...; kw...) =
