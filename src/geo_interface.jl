@@ -455,7 +455,12 @@ for f in (:concavehull, :concavehull_of_polygons)
     @eval function $f(geom, args...; context::GEOSContext = get_global_context(), kw...)
         trait = GI.geomtrait(geom)
         obj = GI.convert(geointerface_geomtype(trait), trait, geom; context)
-        return $f(obj, args...; context, kw...)
+        try
+            return $f(obj, args...; context, kw...)
+        finally
+            # the hull is a new geometry, so free the converted input now
+            destroyGeom(obj, context)
+        end
     end
     @eval $f(geom::AbstractGeometry, args...; kw...) =
         throw(MethodError($f, (geom, args...)))
