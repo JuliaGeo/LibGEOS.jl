@@ -328,6 +328,17 @@ import LibGEOS: Point
     @test GeoInterface.geomtrait(geomcollection) == GeometryCollectionTrait()
     @test GeoInterface.is3d(geomcollection) == false
     @test GeoInterface.testgeometry(geomcollection)
+    @testset "concavehull does not free the caller's geometry" begin
+        # `invoke` reaches the generic GeoInterface method that the dispatch normally
+        # avoids for LibGEOS geometries; its converted input is then the caller's own.
+        poly = LG.readgeom("POLYGON((0 0, 1 0, 1 1, 0.5 0.2, 0 1, 0 0))")
+        hull = invoke(LG.concavehull, Tuple{Any,Vararg{Any}}, poly; ratio = 0.3)
+        @test poly.ptr != C_NULL
+        @test LG.area(poly) > 0
+        hull = invoke(LG.concavehull_of_polygons, Tuple{Any,Vararg{Any}}, poly, 0.0)
+        @test poly.ptr != C_NULL
+        @test LG.isValid(poly)
+    end
     @testset "Conversion" begin
         _concavehull(x) = LG.concavehull(x; ratio = 0.3)
         one_arg_functions = (
@@ -530,6 +541,46 @@ import LibGEOS: Point
         @test c(GeoInterface.intersection(a, b)) == c(LibGEOS.intersection(a, b))
         @test c(GeoInterface.union(a, b)) == c(LibGEOS.union(a, b))
 
+    end
+
+    @testset "Geometries converted for an operation are freed" begin
+        # https://github.com/JuliaGeo/LibGEOS.jl/issues/206
+        # The garbage collector doesn't see GEOS memory, so converted geometries
+        # that waited for it made memory grow in a loop.
+        ring = [(10cos(t), 10sin(t)) for t in range(0, 2pi, 10_000)]
+        ring[end] = ring[1]
+        large = GeoInterface.MultiPolygon([GeoInterface.Polygon([ring])])
+        small = GeoInterface.Polygon([[(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 0.0)]])
+        @test intersects(small, large)
+        converted = nothing
+        @test LibGEOS.with_geos(g -> (converted = g; area(g)), small) == 0.5
+        @test converted.ptr == C_NULL
+        finalize(converted)  # the finalizer must not free it again
+        @test converted.ptr == C_NULL
+
+        # Parts taken over by their parent are freed only with the parent
+        part = LibGEOS.readgeom("POINT (1 2)")
+        multi = MultiPoint(
+            LibGEOS.createCollection(LibGEOS.GEOS_MULTIPOINT, [LibGEOS._take_ptr(part)]),
+        )
+        @test part.ptr == C_NULL
+        finalize(part)
+        @test GeoInterface.coordinates(multi) == [[1.0, 2.0]]
+
+        # If a part fails to convert, the parts converted before it are freed later
+        line = GeoInterface.Line([(0.0, 0.0), (1.0, 1.0)])
+        @test_throws MethodError GeoInterface.convert(
+            LibGEOS,
+            GeoInterface.GeometryCollection([small, line]),
+        )
+        GC.gc()
+
+        # LibGEOS geometries that are passed in are not freed
+        triangle = LibGEOS.Polygon([[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 0.0]]])
+        @test intersects(triangle, large)
+        @test GeoInterface.convert(LibGEOS, GeoInterface.MultiPolygon([triangle])) isa
+              MultiPolygon
+        @test area(triangle) == 0.5
     end
 
 end
