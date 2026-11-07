@@ -559,6 +559,38 @@ function createCollection(
     result
 end
 
+function createCircularString(ptr::GEOSCoordSeq, context::GEOSContext = get_global_context())
+    result = GEOSGeom_createCircularString_r(context, ptr)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_createCircularString")
+    end
+    result
+end
+createCircularString(
+    coords::Vector{Vector{Float64}},
+    context::GEOSContext = get_global_context(),
+) = GEOSGeom_createCircularString_r(context, createCoordSeq(coords, context))
+
+# Second argument is an array of GEOSGeometry* objects.
+# The caller remains owner of the array, but pointed-to
+# objects become ownership of the returned GEOSGeometry.
+function createCurvePolygon(
+    shell::Union{LinearRing,CircularString,CompoundCurve,GEOSGeom},
+    holes::AbstractVector,
+    context::GEOSContext = get_global_context(),
+)
+    result = GEOSGeom_createCurvePolygon_r(context, shell, holes, length(holes))
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGeom_createCurvePolygon")
+    end
+    result
+end
+# convenience function to create polygon without holes
+createCurvePolygon(
+    shell::Union{LinearRing,CircularString,CompoundCurve,GEOSGeom},
+    context::GEOSContext = get_global_context(),
+) = createCurvePolygon(shell, GEOSGeom[], context)
+
 function createEmptyCollection(
     geomtype::GEOSGeomTypes,
     context::GEOSContext = get_global_context(),
@@ -676,6 +708,76 @@ function convexhull(obj::Geometry, context::GEOSContext = get_context(obj))
     result = GEOSConvexHull_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSConvexHull")
+    end
+    geomFromGEOS(result, context)
+end
+
+"""
+    concavehull(geom; ratio = nothing, length_ratio = nothing, allow_holes = true,
+                context = get_context(geom))
+
+Compute the concave hull of `geom`. Supply exactly one of `ratio` or `length_ratio`.
+
+`ratio` is a normalized edge length in [0, 1], relative to the shortest and longest
+edges of the Delaunay triangulation. A value of 0 gives maximum concaveness;
+1 gives the convex hull. This calls `GEOSConcaveHull`.
+
+`length_ratio` is an absolute maximum edge length (0 or greater), in the coordinate
+units of `geom`, despite its name. A value of 0 gives maximum concaveness;
+a sufficiently large value gives the convex hull. This calls `GEOSConcaveHullByLength`.
+
+If `allow_holes` is true, the output may contain holes; false disallows holes.
+
+See also [`convexhull`](@ref), [`concavehull_of_polygons`](@ref).
+"""
+function concavehull(
+    obj::Geometry;
+    ratio::Union{Real,Nothing} = nothing,
+    length_ratio::Union{Real,Nothing} = nothing,
+    allow_holes::Bool = true,
+    context::GEOSContext = get_context(obj),
+)
+    result = if isnothing(ratio) && isnothing(length_ratio)
+        throw(ArgumentError("Either `ratio` or `length_ratio` must be provided to `LibGEOS.concavehull`, none were provided."))
+    elseif !isnothing(ratio) && !isnothing(length_ratio)
+        throw(ArgumentError("Only one of `ratio` or `length_ratio` may be provided to `LibGEOS.concavehull`; got both."))
+    elseif !isnothing(ratio)
+        GEOSConcaveHull_r(context, obj, ratio, allow_holes)
+    else
+        GEOSConcaveHullByLength_r(context, obj, length_ratio, allow_holes)
+    end
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSConcaveHull")
+    end
+    geomFromGEOS(result, context)
+end
+
+"""
+    concavehull_of_polygons(geom, ratio; tight = false, allow_holes = true,
+                           context = get_context(geom))
+
+Compute a concave hull containing the polygons of a valid, non-overlapping
+MultiPolygon `geom`, filling gaps between them while respecting their interiors.
+
+`ratio` in [0, 1] normalizes the maximum edge length between polygons relative to
+the shortest and longest edges. A value of 0 produces the original polygons;
+1 produces the convex hull.
+
+If `tight` is true, the hull follows the outer boundaries of the input polygons.
+If `allow_holes` is true, the hull may contain holes; false disallows holes.
+
+See also [`concavehull`](@ref), [`convexhull`](@ref).
+"""
+function concavehull_of_polygons(
+    obj::Geometry,
+    ratio::Real;
+    tight::Bool = false,
+    allow_holes::Bool = true,
+    context::GEOSContext = get_context(obj),
+)
+    result = GEOSConcaveHullOfPolygons_r(context, obj, ratio, tight, allow_holes)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSConcaveHullOfPolygons")
     end
     geomFromGEOS(result, context)
 end
@@ -1195,6 +1297,16 @@ end
 hasZ(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
     hasZ(obj.ownedby, context)
 
+function hasM(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSHasM_r(context, obj)
+    if result == 0x02
+        error("LibGEOS: Error in GEOSHasM")
+    end
+    result != 0x00
+end
+hasM(obj::PreparedGeometry, context::GEOSContext = get_context(obj)) =
+    hasM(obj.ownedby, context)
+
 # Call only on LINESTRING (return 2 on exception, 1 on true, 0 on false)
 function isClosed(obj::LineString, context::GEOSContext = get_context(obj))
     result = GEOSisClosed_r(context, obj)
@@ -1329,6 +1441,42 @@ For a simple geometry, returns the geometry in a vector of length one.
 getGeometries(obj::Geometry, context::GEOSContext = get_context(obj)) =
     [getGeometry(obj, i, context) for i = 1:numGeometries(obj, context)]
 
+function numCurves(obj::Geometry, context::GEOSContext = get_context(obj)) 
+    result = GEOSGetNumCurves_r(context, obj)
+     if result == -1
+        error("LibGEOS: Error in GEOSGetNumCurves")
+    end
+    result
+end
+
+"""
+    getCurve(obj::Geometry, n::Integer, context::GEOSContext = get_context(obj))
+
+Returns a copy of the specified sub-curve of a compound curve.
+Numbering is one-based.
+For a simple geometry, returns a copy of the input.
+"""
+function getCurve(obj::Geometry, n::Integer, context::GEOSContext = get_context(obj))
+    n in 1:numCurves(obj, context) || error(
+        "GEOSGetCurveN: $(numCurves(obj, context)) sub-geometries in geom, therefore n should be in 1:$(numCurves(obj, context))",
+    )
+    result = GEOSGetCurveN_r(context, obj, n - 1)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGetCurveN")
+    end
+    geomFromGEOS(cloneGeom(result, context), context)
+end
+
+"""
+    getCurves(obj::Geometry, context::GEOSContext = get_context(obj))
+
+Returns a vector of copies of the sub-curves of a compound curve.
+For a simple geometry, returns the geometry in a vector of length one.
+"""
+getCurves(obj::Geometry, context::GEOSContext = get_context(obj)) =
+    [getCurve(obj, i, context) for i = 1:numCurves(obj, context)]
+
+
 # Converts Geometry to normal form (or canonical form).
 # Return -1 on exception, 0 otherwise.
 function normalize!(obj::Geometry, context::GEOSContext = get_context(obj))
@@ -1340,7 +1488,10 @@ function normalize!(obj::Geometry, context::GEOSContext = get_context(obj))
 end
 
 # Return -1 on exception
-function numInteriorRings(obj::Polygon, context::GEOSContext = get_context(obj))
+function numInteriorRings(
+    obj::Union{Polygon,CurvePolygon},
+    context::GEOSContext = get_context(obj),
+)
     result = GEOSGetNumInteriorRings_r(context, obj)
     if result == -1
         error("LibGEOS: Error in GEOSGetNumInteriorRings")
@@ -1350,7 +1501,7 @@ end
 
 # Call only on LINESTRING (returns -1 on exception)
 function numPoints(
-    obj::Union{LineString,LinearRing},
+    obj::Union{LineString,LinearRing,CircularString},
     context::GEOSContext = get_context(obj),
 )
     result = GEOSGeomGetNumPoints_r(context, obj)
@@ -1388,6 +1539,15 @@ function getGeomZ(obj::Point, context::GEOSContext = get_context(obj))
     out[]
 end
 
+function getGeomM(obj::Point, context::GEOSContext = get_context(obj))
+    out = Ref{Float64}()
+    result = GEOSGeomGetM_r(context, obj, out)
+    if result == -1
+        error("LibGEOS: Error in GEOSGeomGetM")
+    end
+    out[]
+end
+
 # Return NULL on exception, Geometry must be a Polygon.
 # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
 function interiorRing(obj::Polygon, n::Integer, context::GEOSContext = get_context(obj))
@@ -1412,15 +1572,58 @@ function interiorRings(obj::Polygon, context::GEOSContext = get_context(obj))
     end
 end
 
+# Polygon rings are of type LinearRing, and can be inferred, but CurvePolygon rings can be Union{LinearRing,CircularString,CompoundCurve}
+function interiorRing(
+    obj::CurvePolygon,
+    n::Integer,
+    context::GEOSContext = get_context(obj),
+)
+    if !(0 < n <= numInteriorRings(obj, context))
+        error(
+            "LibGEOS: n=$n is out of bounds for CurvePolygon with $(numInteriorRings(obj, context)) interior ring(s)",
+        )
+    end
+    result = GEOSGetInteriorRingN_r(context, obj, n - 1)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGetInteriorRingN")
+    end
+    geomFromGEOS(cloneGeom(result, context), context)
+end
+
+function interiorRings(obj::CurvePolygon, context::GEOSContext = get_context(obj))
+    n = numInteriorRings(obj, context)
+    if n == 0
+        return LinearRing[]
+    else
+        return [interiorRing(obj, i, context) for i = 1:n]
+    end
+end
+
+
 # Return NULL on exception, Geometry must be a Polygon.
 # Returned object is a pointer to internal storage: it must NOT be destroyed directly.
-function exteriorRing(obj::Polygon, context::GEOSContext = get_context(obj))
+function exteriorRing(
+    obj::Polygon,
+    context::GEOSContext = get_context(obj),
+)::LinearRing
     result = GEOSGetExteriorRing_r(context, obj)
     if result == C_NULL
         error("LibGEOS: Error in GEOSGetExteriorRing")
     end
     LinearRing(cloneGeom(result, context), context)
 end
+
+function exteriorRing(
+    obj::CurvePolygon,
+    context::GEOSContext = get_context(obj),
+)::Union{LinearRing,CircularString,CompoundCurve}
+    result = GEOSGetExteriorRing_r(context, obj)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSGetExteriorRing")
+    end
+    geomFromGEOS(cloneGeom(result, context), context)
+end
+
 
 # Return -1 on exception
 function numCoordinates(obj::Geometry, context::GEOSContext = get_context(obj))
@@ -1721,4 +1924,65 @@ function setPrecision(
         error("LibGEOS: Error in GEOSGeom_setPrecision_r")
     end
     result
+end
+
+# -----
+# Curve functions
+# -----
+
+"""
+    curveToLine(geom::LibGEOS.Geometry, context = LibGEOS.get_context(geom);  maxDeviation = Inf, maxStepDegrees = 4.0)
+
+Approximate all circular arcs in a geometry using line segments. If the input has no circular arcs, a copy will be returned. 
+
+* `maxdeviation`: Set the maximum deviation between an arc and its linear approximate.
+* `maxStepDegrees``: Set the maximum step (in degrees) between subsequent points.
+"""
+function curveToLine(
+    geom::LibGEOS.Geometry,
+    context = LibGEOS.get_context(geom);
+    maxDeviation = Inf,
+    maxStepDegrees = 4.0, # https://github.com/libgeos/geos/blob/3.15.0/include/geos/algorithm/CurveToLineParams.h#L27
+)
+    params = GEOSCurveToLineParams_create()
+    GEOSCurveToLineParams_setMaxDeviation_r(context, params, Float64(maxDeviation))
+    GEOSCurveToLineParams_setMaxStepDegrees_r(context, params, Float64(maxStepDegrees))
+    result = GEOSCurveToLine_r(context, geom, params)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSCurveToLine")
+    end
+    GEOSCurveToLineParams_destroy(params)
+    geomFromGEOS(cloneGeom(result, context), context)
+end
+
+"""
+    lineToCurve(geom::LibGEOS.Geometry, context = LibGEOS.get_context(geom); radiusTolerance = 1e-6, maxStepDegrees = 45.01, maxAngleDifferenceDegrees = 0.573)
+
+Approximate all circular arcs in a geometry using line segments. If the input has no circular arcs, a copy will be returned. 
+
+* `radiusTolerance`: Set the radius tolerance used in line-to-curve conversion. A vertex may be considered to continue a circular arc if its distance to the previously-computed circle center is within the specified fraction of the circle radius.
+* `maxStepDegrees`: Set the maximum angle spacing used in line-to-curve conversion. A point may be considered to continue a circular arc if the angle between the point and the final point in the arc is less than the specified tolerance. Because of round-off errors, this value should be slightly greater than `setMaxStepDegrees`.
+* `maxAngleDifferenceDegrees`: Set the maximum angle difference used in line-to-curve conversion. A point may be considered to continue a circular arc if the angle between the point and the final point in the arc is within the specified tolerance of the angle calculated when the final point in the arc was added. This tolerance can be used to ensure that the step spacing is regular, which is an indication of a line that was generated by linearizing a curve.
+"""
+function lineToCurve(
+    geom::LibGEOS.Geometry,
+    context = LibGEOS.get_context(geom);
+    radiusTolerance = 1e-6,
+    maxStepDegrees = 45.01,
+    maxAngleDifferenceDegrees = 0.573,
+)
+    params = GEOSLineToCurveParams_create()
+    GEOSLineToCurveParams_setRadiusTolerance_r(context, params, Float64(radiusTolerance))
+    GEOSLineToCurveParams_setMaxStepDegrees_r(context, params, Float64(maxStepDegrees))
+    GEOSLineToCurveParams_setMaxAngleDifferenceDegrees_r(
+        context,
+        params,
+        Float64(maxAngleDifferenceDegrees),
+    )
+    result = GEOSLineToCurve_r(context, geom, params)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSLineToCurve")
+    end
+    GEOSLineToCurveParams_destroy(params)
+    geomFromGEOS(cloneGeom(result, context), context)
 end
