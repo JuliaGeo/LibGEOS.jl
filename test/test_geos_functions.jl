@@ -993,8 +993,27 @@ end
     # as well as Polylabel.jl in Julia (soon to be integrated into GeometryOps).
     geo = readgeom("POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))")
     mic = LibGEOS.maximumInscribedCircle(geo, 1e-4)
+    @test mic == readgeom("LINESTRING (0.5000000000000001 0.5, 1 0.5)")
     @test GI.coordinates(GI.getpoint(mic, 1)) ≈ [0.5, 0.5] atol = 1e-5
     x1, y1 = GI.coordinates(GI.getpoint(mic, 1))
     x2, y2 = GI.coordinates(GI.getpoint(mic, 2))
     @test hypot(x1 - x2, y1 - y2) ≈ 0.5 atol = 1e-5
+
+    @testset "clearance" begin
+        function testClearance(in_wkt, out_wkt, out_distance)
+            g = readgeom(in_wkt)
+            @test LibGEOS.minimumClearance(g) == out_distance
+            @test LibGEOS.minimumClearanceLine(g) == readgeom(out_wkt)
+        end
+        testClearance(
+            "MULTIPOINT ((3 1), (6 5), (8 -1))",
+            "LINESTRING (6 5, 3 1)",
+            5,
+        )
+        testClearance(
+            "POLYGON ((2 1, 6 1, 4 2, 2 1))",
+            "LINESTRING (4 2, 4 1)",
+            1,
+        )
+    end
 end

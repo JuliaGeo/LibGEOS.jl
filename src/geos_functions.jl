@@ -1839,6 +1839,39 @@ function hausdorffdistance(
     out[]
 end
 
+"""
+    minimumClearance(obj::Geometry, context::GEOSContext = get_context(obj))
+
+Return the minimum clearance distance as `Float64` for geometry `obj`.
+
+The result is the distance associated with the smallest change to the geometry
+that could affect its validity. `Inf` may be returned when no finite clearance
+distance exists.
+"""
+function minimumClearance(obj::Geometry, context::GEOSContext = get_context(obj))
+    out = Ref{Float64}()
+    result = GEOSMinimumClearance_r(context, obj, out)
+    if result == 2
+        error("LibGEOS: Error in GEOSMinimumClearance")
+    end
+    out[]
+end
+
+"""
+    minimumClearanceLine(obj::Geometry, context::GEOSContext = get_context(obj))
+
+Return a `LineString` connecting the two points that define the minimum
+clearance distance of geometry `obj`.
+"""
+function minimumClearanceLine(obj::Geometry, context::GEOSContext = get_context(obj))
+    result = GEOSMinimumClearanceLine_r(context, obj)
+    if result == C_NULL
+        error("LibGEOS: Error in GEOSMinimumClearanceLine")
+    end
+    geomFromGEOS(result, context)
+end
+
+
 # Returns the closest points of the two geometries.
 # The first point comes from g1 geometry and the second point comes from g2.
 # Return 0 on exception, the closest points of the two geometries otherwise.
