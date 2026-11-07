@@ -7,12 +7,17 @@ using CEnum
 
 const GI = GeoInterface
 
-export GeometryCollection,
+export CircularString,
+    CompoundCurve,
+    CurvePolygon,
+    GeometryCollection,
     LineString,
     LinearRing,
+    MultiCurve,
     MultiLineString,
     MultiPoint,
     MultiPolygon,
+    MultiSurface,
     Point,
     Polygon,
     STRtree
@@ -28,6 +33,7 @@ export area,
     coveredby,
     covers,
     crosses,
+    curveToLine,
     delaunayTriangulation,
     delaunayTriangulationEdges,
     difference,
@@ -41,6 +47,8 @@ export area,
     geomLength,
     getGeometries,
     getGeometry,
+    getCurves,
+    getCurve,
     getPrecision,
     getXMax,
     getXMin,
@@ -60,12 +68,14 @@ export area,
     isSimple,
     isValid,
     lineMerge,
+    lineToCurve,
     minimumClearance,
     minimumClearanceLine,
     minimumRotatedRectangle,
     nearestPoints,
     node,
     numGeometries,
+    numCurves,
     numPoints,
     overlaps,
     pointOnSurface,
@@ -103,5 +113,7 @@ function __init__()
     _GLOBAL_CONTEXT_ALLOWED[] = true
     _GLOBAL_CONTEXT[] = GEOSContext()
 end
+
+include("precompile.jl")
 
 end  # module

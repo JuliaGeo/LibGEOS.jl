@@ -8,6 +8,7 @@ CEnum = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 Extents = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
 GEOS_jll = "d604d12d-fa86-5845-992e-78dc15976526"
 GeoInterface = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
+PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 
 [weakdeps]
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
@@ -25,7 +26,9 @@ GEOS_jll = "3.15"
 GeoInterface = "1.6"
 Makie = "0.23, 0.24"
 Plots = "1"
+PrecompileTools = "1"
 RecipesBase = "1"
+TaskLocalValues = "0.1"
 Test = "<0.0.1,1"
 julia = "1.9"
 
@@ -33,7 +36,8 @@ julia = "1.9"
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+TaskLocalValues = "ed4db957-447d-4319-bfb6-7fa9ae7ecf34"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "Makie", "Plots", "RecipesBase", "Test"]
+test = ["Aqua", "Makie", "Plots", "RecipesBase", "TaskLocalValues", "Test"]
