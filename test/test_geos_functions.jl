@@ -962,18 +962,19 @@ end
 
     @testset "clearance" begin
         function testClearance(in_wkt, out_wkt, out_distance)
-            @test LibGEOS.minimumClearance(readgeom(in_wkt)) == out_distance
-            @test LibGEOS.minimumClearanceLine(readgeom(in_wkt)) == readgeom(out_wkt)
+            g = readgeom(in_wkt)
+            @test LibGEOS.minimumClearance(g) == out_distance
+            @test LibGEOS.minimumClearanceLine(g) == readgeom(out_wkt)
         end
         testClearance(
-            "MULTIPOINT ((100 100), (10 100), (30 100))",
-            "LINESTRING (30 100, 10 100)",
-            20,
+            "MULTIPOINT ((3 1), (6 5), (8 -1))",
+            "LINESTRING (6 5, 3 1)",
+            5,
         )
         testClearance(
-            "POLYGON ((100 100, 300 100, 200 200, 100 100))",
-            "LINESTRING (200 200, 200 100)",
-            100,
+            "POLYGON ((2 1, 6 1, 4 2, 2 1))",
+            "LINESTRING (4 2, 4 1)",
+            1,
         )
     end
 end
