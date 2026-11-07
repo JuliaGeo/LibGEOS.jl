@@ -16,8 +16,17 @@ import GeoInterface
     Point(1, 2, 3, LibGEOS.GEOSContext())
     LibGEOS.allow_global_context!(false) do
         @test_throws ErrorException Point(1, 2, 3)
+        context = LibGEOS.GEOSContext()
+        point = Point(1, 2, 3, context)
+        @test GeoInterface.coordinates(point) == [1, 2, 3]
+        @test GeoInterface.getcoord(point, 2) == 2
+        @test GeoInterface.coordinates(LineString([[1.0, 2.0], [3.0, 4.0]], context)) ==
+              [[1, 2], [3, 4]]
     end
     Point(1, 2, 3)
+    # the setting is restored when the function throws
+    @test_throws ErrorException LibGEOS.allow_global_context!(() -> error("failed"), false)
+    @test Point(1, 2, 3) isa Point
 end
 
 @testset "Context mixing" begin
@@ -244,4 +253,71 @@ end
     s = read(buf, String)
     @test length(s) < 30
     @test occursin("Polygon(...)", s)
+end
+
+@testset "GEOS errors don't leak memory" begin
+    # Throwing a Julia exception from inside GEOS leaked its C++ exception,
+    # about 250 bytes per error. This runs in a new Julia process, because
+    # Sys.maxrss is the peak memory use, which earlier tests may have raised.
+    code = """
+    using LibGEOS
+    reader = LibGEOS.WKTReader(LibGEOS.get_global_context())
+    readerror() =
+        try
+            readgeom("POINT (1 2", reader)
+        catch e
+            e
+        end
+    readerror() isa LibGEOS.GEOSError || error("expected a GEOSError")
+    # collect garbage often, so that the Julia heap doesn't grow
+    readerrors() = (foreach(_ -> readerror(), 1:10_000); GC.gc(false))
+    foreach(_ -> readerrors(), 1:10)
+    before = Int(Sys.maxrss())
+    foreach(_ -> readerrors(), 1:20)
+    print((Int(Sys.maxrss()) - before) / 2^20)
+    """
+    julia = `$(Base.julia_cmd()) --project=$(Base.active_project()) -e $code`
+    growth_mb = parse(Float64, read(julia, String))
+    @test growth_mb < 20
+end
+
+@testset "An error in a call with a raw context pointer isn't thrown later" begin
+    context = LibGEOS.GEOSContext()
+    reader = LibGEOS.WKTReader(context)
+    @test LibGEOS.GEOSWKTReader_read_r(context.ptr, reader, "POINT (1 2") == C_NULL
+    @test readgeom("POINT (1 2)", reader, context) isa Point
+    @test LibGEOS.GEOSWKTReader_read_r(context.ptr, reader, "POINT (1 2") == C_NULL
+    finalize(reader)
+    @test reader.ptr == C_NULL
+end
+
+@testset "Finalizers leave the error of a running call alone" begin
+    # A finalizer can run on another thread between GEOS reporting an error
+    # and the call that caused it throwing that error.
+    context = LibGEOS.GEOSContext()
+    point = Point(1.0, 2.0, context)
+    polygon = readgeom("POLYGON((0 0, 1 0, 1 1, 0 0))", context)
+    objects = (
+        LibGEOS.WKTReader(context),
+        LibGEOS.WKTWriter(context),
+        LibGEOS.WKBReader(context),
+        LibGEOS.WKBWriter(context),
+        LibGEOS.prepareGeom(polygon, context),
+        STRtree([point]; context),
+        point,
+    )
+    context.errormessage = "error of a running call"
+    for object in objects
+        finalize(object)
+        @test object.ptr == C_NULL
+        @test context.errormessage == "error of a running call"
+    end
+    @test_throws LibGEOS.GEOSError LibGEOS.geos_check(nothing, context)
+    @test isempty(context.errormessage)
+
+    finished = LibGEOS.GEOSContext()
+    finished.errormessage = "error of a running call"
+    finalize(finished)
+    @test finished.ptr == C_NULL
+    @test finished.errormessage == "error of a running call"
 end
